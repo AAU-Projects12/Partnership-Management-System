@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import generateTokenAndSetCookie from "../Utils/generateTokenAndSetCookie.js";
 import User from "../Models/user.model.js";
 
 export const signup = async (req, res) => {
@@ -25,11 +26,10 @@ export const signup = async (req, res) => {
       password: hashedPassword,
     });
 
-    console.log("Attempting to save user:", newUser); // Debugging
-
-    await newUser.save();
+    console.log("Attempting to save user:", newUser);
 
     generateTokenAndSetCookie(newUser._id, res);
+    await newUser.save();
 
     res.status(201).json({
       _id: newUser._id,
@@ -63,7 +63,7 @@ export const login = async (req, res) => {
 
     res.status(200).json({
       _id: user._id,
-      fullName: user.fullName,
+      firstName: user.firstName,
       username: user.username,
     });
   } catch (error) {
