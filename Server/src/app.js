@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 
 import authRoutes from "./routes/auth.routes.js";
+import partneshipRoutes from "./routes/partnership.routes.js";
 import db_connection from "../database/db_connection.js";
 
 dotenv.config();
@@ -24,6 +25,7 @@ app.use(
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/partnership", partneshipRoutes);
 
 // DB + Server
 const startServer = async () => {
