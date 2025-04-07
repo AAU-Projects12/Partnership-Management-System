@@ -9,7 +9,7 @@ export default function Login() {
 
   const handleLogin = async ()=>{
     try {
-      const res = await login({email,password,userName})
+      const res = await login({email,password})
       console.log("Logged in successfully!")
     } catch (error) {
       console.log(error)
