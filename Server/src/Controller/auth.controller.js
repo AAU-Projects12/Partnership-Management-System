@@ -2,18 +2,27 @@ import bcrypt from "bcryptjs";
 import generateTokenAndSetCookie from "../Utils/generateTokenAndSetCookie.js";
 import User from "../Models/user.model.js";
 
+const isValidEmail = (email) => {
+  const pattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return pattern.test(email);
+};
+
 export const signup = async (req, res) => {
-  const { firstName, lastName, username, password, confirmPassword } = req.body;
+  const { firstName, lastName, email, password, confirmPassword } = req.body;
   try {
     console.log(req.body);
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: "Invalid email format" });
+    }
 
     if (password !== confirmPassword) {
       return res.status(400).json({ error: "Passwords don't match" });
     }
 
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: "Username already exists" });
+      return res.status(400).json({ error: "Email already registered" });
     }
 
     // Hash password
@@ -22,7 +31,7 @@ export const signup = async (req, res) => {
     const newUser = new User({
       firstName,
       lastName,
-      username,
+      email,
       password: hashedPassword,
     });
 
@@ -30,12 +39,13 @@ export const signup = async (req, res) => {
 
     generateTokenAndSetCookie(newUser._id, res);
     await newUser.save();
+    console.log("here");
 
     res.status(201).json({
       _id: newUser._id,
       firstName: newUser.firstName,
       lastName: newUser.lastName,
-      username: newUser.username,
+      email: newUser.email,
     });
 
     console.log("User saved successfully");
@@ -47,16 +57,16 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).json({ error: "Invalid username or password" });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
-      return res.status(400).json({ error: "Invalid username or password" });
+      return res.status(400).json({ error: "Invalid email or password" });
     }
 
     generateTokenAndSetCookie(user._id, res);
@@ -64,7 +74,7 @@ export const login = async (req, res) => {
     res.status(200).json({
       _id: user._id,
       firstName: user.firstName,
-      username: user.username,
+      email: user.email,
     });
   } catch (error) {
     console.error("Error in login controller:", error.message);

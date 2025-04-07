@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-import authRoutes from "./routes/auth.routes.js";
-import partneshipRoutes from "./routes/partnership.routes.js";
+import authRoutes from "./Routes/auth.routes.js";
+import partneshipRoutes from "./Routes/partnership.routes.js";
 import db_connection from "../database/db_connection.js";
 
 dotenv.config();
