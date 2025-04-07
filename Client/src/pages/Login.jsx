@@ -1,20 +1,21 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { login } from "../api";
-
+import { toast } from "react-hot-toast";
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const [email,setEmail] = useState('');
-  const [password,setPassword] = useState('');
-
-  const handleLogin = async ()=>{
+  const handleLogin = async (e) => {
+    e.preventDefault();
     try {
-      const res = await login({email,password})
-      console.log("Logged in successfully!")
+      const res = await login({ email, password });
+      // alert("Logged in successfully!");
+      toast.success("Logged in successfully!");
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   return (
     <div className="main-container bg-white w-screen min-h-screen relative overflow-hidden flex flex-col">
@@ -60,7 +61,10 @@ export default function Login() {
           </p>
 
           {/* Input Fields */}
-          <form onSubmit={handleLogin} className="mt-6 w-full max-w-sm flex flex-col gap-4">
+          <form
+            onSubmit={handleLogin}
+            className="mt-6 w-full max-w-sm flex flex-col gap-4"
+          >
             <input
               type="email"
               placeholder="Email"

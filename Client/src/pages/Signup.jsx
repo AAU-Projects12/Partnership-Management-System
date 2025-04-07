@@ -1,23 +1,31 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { signUp } from "../api";
+import { toast } from "react-hot-toast";
 
 export default function SignUp() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [firstName , setFirstName] = useState('')
-  const [lastName , setLastName] = useState('')
-  const [email , setEmail] = useState('')
-  const [password , setPassword] = useState('')
-  const [confirmPassword , setConfirmPassword] = useState('')
-
-  const handleSignup = async () => {
+  const handleSignup = async (e) => {
+    e.preventDefault();
     try {
-      const res = await signUp({firstName,lastName,email,password,confirmPassword});
-      console.log("User successfully Registered!")
+      const res = await signUp({
+        firstName,
+        lastName,
+        email,
+        password,
+        confirmPassword,
+      });
+      // alert("User successfully Registered!");
+      toast.success("User successfully Registered!");
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   return (
     <div className="main-container bg-white w-screen min-h-screen relative overflow-hidden flex flex-col">
@@ -63,14 +71,17 @@ export default function SignUp() {
           </p>
 
           {/* Input Fields */}
-          <form className="mt-6 w-full max-w-sm flex flex-col gap-4" onSubmit={handleSignup}>
-          <input
+          <form
+            className="mt-6 w-full max-w-sm flex flex-col gap-4"
+            onSubmit={handleSignup}
+          >
+            <input
               type="text"
               placeholder="First Name"
               className="border-2 border-[#00588b] rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500"
               onChange={(e) => setFirstName(e.target.value)}
               value={firstName}
-           />
+            />
             <input
               type="text"
               placeholder="Last Name"
@@ -100,7 +111,10 @@ export default function SignUp() {
               value={confirmPassword}
             />
 
-            <button type="submit" className="flex items-center justify-center bg-[#00588b] text-white px-6 py-3 mt-6 rounded-full gap-2 hover:bg-[#004a75] transition">
+            <button
+              type="submit"
+              className="flex items-center justify-center bg-[#00588b] text-white px-6 py-3 mt-6 rounded-full gap-2 hover:bg-[#004a75] transition"
+            >
               Sign Up
               <img
                 src="https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-04-04/YvWR34sXt7.png"
