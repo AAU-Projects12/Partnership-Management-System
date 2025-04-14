@@ -3,3 +3,9 @@
 body{
     font-family: "Inter", sans-serif;
 }
+
+.border-b {
+    border-bottom-style: var(--tw-border-style);
+    border-bottom-width: 0.5px;
+    color: grey;
+}

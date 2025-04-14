@@ -26,7 +26,7 @@ const NavItem = ({ icon, label, active = false }) => (
 
 // Partner Row Component
 const PartnerRow = ({ logo, name, type, duration, contact, status }) => (
-  <div className="grid grid-cols-8 gap-4 p-4 border-b items-center text-sm">
+  <div className="grid grid-cols-8 gap-4 p-4 border-b border-[#D9D9D9] items-center text-sm">
     <div className="flex items-center justify-center">
       <input type="checkbox" className="h-4 w-4 rounded border-gray-300" />
     </div>
@@ -108,6 +108,42 @@ const PartnershipDashboard = () => {
       contact: "Mr. Johness",
       status: "active",
     },
+    {
+        id: 4,
+        logo: "/placeholder.svg",
+        name: "Ovid Holdings",
+        type: "Research",
+        duration: "1.5 year",
+        contact: "Mr. Johness",
+        status: "active",
+      },
+      {
+        id: 4,
+        logo: "/placeholder.svg",
+        name: "Ovid Holdings",
+        type: "Research",
+        duration: "1.5 year",
+        contact: "Mr. Johness",
+        status: "active",
+      },
+      {
+        id: 4,
+        logo: "/placeholder.svg",
+        name: "Ovid Holdings",
+        type: "Research",
+        duration: "1.5 year",
+        contact: "Mr. Johness",
+        status: "active",
+      },
+      {
+        id: 4,
+        logo: "/placeholder.svg",
+        name: "Ovid Holdings",
+        type: "Research",
+        duration: "1.5 year",
+        contact: "Mr. Johness",
+        status: "active",
+      },
   ];
 
   return (
@@ -212,7 +248,7 @@ const PartnershipDashboard = () => {
           <div className="flex justify-between items-center mb-6">
             <div>
               <h2 className="text-2xl font-bold">Active Partnership</h2>
-              <p className="text-gray-500 text-sm">
+              <p className="text-[#004165] text-sm mt-0.5">
                 Explore details about active agreements, project focus areas,
                 and partner organizations.
               </p>
@@ -280,16 +316,12 @@ const PartnershipDashboard = () => {
           </div>
 
           {/* Partnership Lists */}
-          <div className="bg-[#DBE4E9] rounded-3xl p-6">
-            <h3 className="text-lg font-bold mb-4">Partnership Lists</h3>
-            <div className="bg-white rounded-lg overflow-hidden">
+          <div className="bg-[#DBE4E9] rounded-3xl pt-6">
+            <h3 className="text-lg font-bold mb-6 ml-6">Partnership Lists</h3>
+            <div className="bg-white rounded-b-3xl overflow-hidden">
               {/* Table Header */}
-              <div className="grid grid-cols-8 gap-4 p-4 border-b text-gray-600 font-medium">
+              <div className="grid grid-cols-8 gap-4 p-4 border-b-0.5 text-gray-600 font-medium shadow-md">
                 <div className="flex items-center justify-center">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300"
-                  />
                 </div>
                 <div>LOGO</div>
                 <div>PARTNER'S NAME</div>
@@ -314,7 +346,7 @@ const PartnershipDashboard = () => {
               ))}
 
               {/* Show More Button */}
-              <div className="flex justify-center p-2 border-t">
+              <div className="flex justify-center p-2 border-t border-[#004165]">
                 <button className="text-gray-500 p-1">
                   <ChevronDown className="h-5 w-5" />
                 </button>
