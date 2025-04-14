@@ -266,7 +266,7 @@ const PartnershipDashboard = () => {
                 <input
                   type="text"
                   placeholder="Search Partners"
-                  className="w-full pl-10 pr-10 py-2 rounded-full border border-gray-200 bg-white"
+                  className="w-full pl-10 pr-10 py-2 rounded-full border border-gray-200 focus:outline-none hover:border-[#00334e] bg-white"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
