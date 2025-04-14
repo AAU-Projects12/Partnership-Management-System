@@ -28,7 +28,7 @@ export default function Main() {
           {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/signup" element={<Signup />} />
           <Route
-          path="/Partnership"
+          path="/partnership"
           element={<PartnershipDashboard />}
         />
         </Routes>

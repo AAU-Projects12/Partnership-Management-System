@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import { login } from "../api";
 import { toast } from "react-hot-toast";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -12,6 +13,7 @@ export default function Login() {
       const res = await login({ email, password });
       // alert("Logged in successfully!");
       toast.success("Logged in successfully!");
+      navigate("/partnership")
     } catch (error) {
       console.log(error);
     }
