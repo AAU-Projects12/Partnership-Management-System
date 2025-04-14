@@ -4,6 +4,8 @@ import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import PartnershipDashboard from "./partnership.jsx";
+
 
 export default function Main() {
   return (
@@ -22,9 +24,13 @@ export default function Main() {
 
       <Router>
         <Routes>
-          {/* <Route path="/" element={<Login />} /> */}
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Login />} />
+          {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/signup" element={<Signup />} />
+          <Route
+          path="/Partnership"
+          element={<PartnershipDashboard />}
+        />
         </Routes>
       </Router>
     </>

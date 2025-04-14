@@ -127,7 +127,7 @@ export default function SignUp() {
             Already have an Account?{" "}
             <Link
               className="text-[#00578a] underline hover:no-underline"
-              to="/login"
+              to="/"
             >
               Login
             </Link>
