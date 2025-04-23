@@ -10,6 +10,7 @@ import {
   Eye,
   ChevronDown,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import NavBar from './components/NavBar';
 // import {AAU_logo} from "./assets/AAU_logo.png"
 
@@ -163,9 +164,9 @@ const PartnershipDashboard = () => {
                 and partner organizations.
               </p>
             </div>
-            <button className="bg-[#004165] hover:bg-[#00334e] text-white rounded-full px-6 py-2 flex items-center">
+            <Link to="/add-partnership" className="bg-[#004165] hover:bg-[#00334e] text-white rounded-full px-6 py-2 flex items-center">
               <Plus className="mr-2 h-4 w-4" /> New Partner
-            </button>
+            </Link>
           </div>
 
           {/* Search and Filter */}

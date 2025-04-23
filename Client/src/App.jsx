@@ -7,6 +7,7 @@ import { Toaster } from "react-hot-toast";
 import PartnershipDashboard from "./partnership.jsx";
 import Dashboard from "./pages/dashboard.jsx";
 import Users from "./pages/users.jsx";
+import AddPartnership from "./pages/add-partnership.jsx";
 
 
 export default function Main() {
@@ -30,6 +31,7 @@ export default function Main() {
           {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/signup" element={<Signup />} />
           <Route path="/partnership" element={<PartnershipDashboard />} />
+          <Route path="/add-partnership" element={<AddPartnership />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/users" element={<Users />} />
           <Route path="/settings" element={<Dashboard />} />
