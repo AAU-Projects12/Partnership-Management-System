@@ -10,6 +10,7 @@ import {
   Eye,
   ChevronDown,
 } from "lucide-react";
+import NavBar from './components/NavBar';
 // import {AAU_logo} from "./assets/AAU_logo.png"
 
 // Navigation Item Component
@@ -148,98 +149,7 @@ const PartnershipDashboard = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="bg-[#004165] text-white p-4">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="rounded-full  p-1 w-14 h-14 flex items-center justify-center">
-              <img
-                src="https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-04-04/DXFCdgcvP5.png"
-                alt="Addis Ababa University Logo"
-                className="w-15 h-12 rounded-full"
-              />
-            </div>
-            <div>
-              <h1 className="font-bold text-lg">Addis Ababa University</h1>
-              <p className="text-xs uppercase tracking-wider">
-                Partnership Management System
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-1">
-              <span className="text-white">Email:</span>
-              <a href="mailto:vpsci@aau.edu.et" className="text-white">
-                vpsci@aau.edu.et
-              </a>
-            </div>
-            <div className="flex items-center gap-1">
-              <span>+251-118-278433 or +251-111-239706</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Navigation */}
-      <nav className="bg-white border-b">
-        <div className="container mx-auto flex">
-          <NavItem
-            icon={
-              <div className="w-4 h-4 grid grid-cols-2 gap-0.5">
-                <div className="bg-current"></div>
-                <div className="bg-current"></div>
-                <div className="bg-current"></div>
-                <div className="bg-current"></div>
-              </div>
-            }
-            label="Dashboard"
-          />
-          <NavItem
-            icon={
-              <div className="w-4 h-4 border-2 border-current rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 border-t-2 border-current rotate-45 translate-y-[1px]"></div>
-              </div>
-            }
-            label="Partnerships"
-            active
-          />
-          <NavItem
-            icon={
-              <div className="w-4 h-4">
-                <div className="w-4 h-2 border-2 border-current rounded-full"></div>
-                <div className="w-4 h-2 bg-current rounded-full mt-0.5"></div>
-              </div>
-            }
-            label="Users"
-          />
-          <NavItem
-            icon={
-              <div className="w-4 h-4 border-2 border-current rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 bg-current rounded-full"></div>
-              </div>
-            }
-            label="Settings"
-          />
-          <NavItem
-            icon={
-              <div className="w-4 h-4 border-2 border-current rounded-full flex items-center justify-center">
-                <div className="w-2 h-0.5 bg-current"></div>
-              </div>
-            }
-            label="Profile"
-          />
-          <div className="ml-auto">
-            <NavItem
-              icon={
-                <div className="w-4 h-4 flex items-center">
-                  <div className="w-3 h-3 border-t-2 border-r-2 border-current rotate-45"></div>
-                </div>
-              }
-              label="Logout"
-            />
-          </div>
-        </div>
-      </nav>
+      <NavBar />
 
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 py-8 px-8">

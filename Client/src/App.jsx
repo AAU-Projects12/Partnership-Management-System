@@ -6,6 +6,8 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import PartnershipDashboard from "./partnership.jsx";
 import Dashboard from "./pages/dashboard.jsx";
+import Users from "./pages/users.jsx";
+
 
 export default function Main() {
   return (
@@ -27,14 +29,12 @@ export default function Main() {
           <Route path="/" element={<Login />} />
           {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/signup" element={<Signup />} />
-          <Route
-          path="/partnership"
-          element={<PartnershipDashboard />}
-        />
-        <Route
-          path="/Dashboard"
-          element={<Dashboard />}
-        />
+          <Route path="/partnership" element={<PartnershipDashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/settings" element={<Dashboard />} />
+          <Route path="/profile" element={<Dashboard />} />
+          
         </Routes>
       </Router>
     </>
