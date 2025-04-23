@@ -5,7 +5,7 @@ import Signup from "./pages/Signup.jsx";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import PartnershipDashboard from "./partnership.jsx";
-
+import Dashboard from "./pages/dashboard.jsx";
 
 export default function Main() {
   return (
@@ -30,6 +30,10 @@ export default function Main() {
           <Route
           path="/partnership"
           element={<PartnershipDashboard />}
+        />
+        <Route
+          path="/Dashboard"
+          element={<Dashboard />}
         />
         </Routes>
       </Router>
