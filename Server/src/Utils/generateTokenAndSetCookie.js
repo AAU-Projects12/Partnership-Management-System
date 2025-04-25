@@ -1,22 +1,27 @@
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config();
 
-// This should come from an environment variable in real apps
-const JWT_SECRET = process.env.PRIVATE_KEY;
+       const generateTokenAndSetCookie = (user, res) => {
+         try {
+           console.log("Generating token for user:", user._id, user.role);
+           const token = jwt.sign(
+             { id: user._id, role: user.role, campusId: user.campusId },
+             process.env.PRIVATE_KEY,
+             { expiresIn: "1d" }
+           );
 
-const generateTokenAndSetCookie = (userId, res) => {
-  const token = jwt.sign({ id: userId }, JWT_SECRET, {
-    expiresIn: "1d",
-  });
+           console.log("Setting cookie with token:", token);
+           res.cookie("jwt", token, {
+             httpOnly: true,
+             secure: false, // Allow cookies over http in development must be reverted DONT FORGETTTT
+             sameSite: "strict",
+             maxAge: 24 * 60 * 60 * 1000,
+           });
 
-  // Set token as an HTTP-only cookie
-  res.cookie("jwt", token, {
-    httpOnly: true,
-    // secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 24 * 60 * 60 * 1000, // 1 day
-  });
-};
+           return token;
+         } catch (error) {
+           console.error("Error generating token:", error.message, error.stack);
+           throw error;
+         }
+       };
 
-export default generateTokenAndSetCookie;
+       export default generateTokenAndSetCookie;
