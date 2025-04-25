@@ -1,0 +1,751 @@
+
+openapi: 3.0.3
+info:
+  title: Partnership Management System API
+  description: API for managing partnerships, users, and administrative tasks in the Partnership Management System.
+  version: 1.0.0
+servers:
+  - url: http://localhost:7004/api
+    description: Local development server
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: jwt
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "68091c42e0a0c6209db77223"
+        firstName:
+          type: string
+          example: "Regular"
+        lastName:
+          type: string
+          example: "User"
+        email:
+          type: string
+          example: "user@example.com"
+        role:
+          type: string
+          enum: ["User", "Admin", "SuperAdmin"]
+          example: "User"
+        campusId:
+          type: string
+          example: "campus_123"
+        status:
+          type: string
+          enum: ["pending", "active", "inactive"]
+          example: "active"
+    Partnership:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "68091c42e0a0c6209db77224"
+        partnersName:
+          type: string
+          example: "Test University"
+        email:
+          type: string
+          example: "test@university.com"
+        region:
+          type: string
+          example: "East Africa"
+        category:
+          type: string
+          example: "Education"
+        phoneNumber:
+          type: string
+          example: "+1234567890"
+        inceptionDate:
+          type: string
+          format: date-time
+          example: "2023-01-01T00:00:00.000Z"
+        expiringDate:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00.000Z"
+        aauLeadContact:
+          type: string
+          example: "John Doe"
+        partnerLeadContact:
+          type: string
+          example: "Jane Smith"
+        MOUFile:
+          type: string
+          example: "mou_test.pdf"
+        type:
+          type: string
+          example: "Research"
+        description:
+          type: string
+          example: "Test collaboration"
+        status:
+          type: string
+          enum: ["Active", "Expired", "Pending"]
+          example: "Active"
+        campusId:
+          type: string
+          example: "campus_123"
+        createdBy:
+          type: string
+          example: "68091c42e0a0c6209db77223"
+        isArchive:
+          type: boolean
+          example: false
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid request"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                example: "field"
+              value:
+                type: string
+                example: "invalid_id"
+              msg:
+                type: string
+                example: "Invalid partnership ID"
+              path:
+                type: string
+                example: "id"
+              location:
+                type: string
+                example: "params"
+paths:
+  /auth/signup:
+    post:
+      summary: Register a new user
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  example: "Regular"
+                lastName:
+                  type: string
+                  example: "User"
+                email:
+                  type: string
+                  example: "user@example.com"
+                password:
+                  type: string
+                  example: "User123!"
+                confirmPassword:
+                  type: string
+                  example: "User123!"
+                role:
+                  type: string
+                  enum: ["User", "Admin", "SuperAdmin"]
+                  example: "User"
+                campusId:
+                  type: string
+                  example: "campus_123"
+              required:
+                - firstName
+                - lastName
+                - email
+                - password
+                - confirmPassword
+      responses:
+        '201':
+          description: User created successfully
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Max-Age=86400; Path=/; HttpOnly; SameSite=Strict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/login:
+    post:
+      summary: Log in a user
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "user@example.com"
+                password:
+                  type: string
+                  example: "User123!"
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Login successful
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Max-Age=86400; Path=/; HttpOnly; SameSite=Strict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/logout:
+    post:
+      summary: Log out a user
+      tags: [Authentication]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logged out successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partnership:
+    post:
+      summary: Create a new partnership
+      tags: [Partnership]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Partnership'
+      responses:
+        '201':
+          description: Partnership created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Partnership'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Get all partnerships
+      tags: [Partnership]
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: ["Active", "Expired", "Pending"]
+          description: Filter by status
+        - in: query
+          name: region
+          schema:
+            type: string
+          description: Filter by region
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: Filter by category
+      responses:
+        '200':
+          description: List of partnerships
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Partnership'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partnership/export:
+    get:
+      summary: Export all partnerships
+      tags: [Partnership]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of partnerships for export
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Partnership'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partnership/{id}:
+    get:
+      summary: Get a partnership by ID
+      tags: [Partnership]
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Partnership ID
+      responses:
+        '200':
+          description: Partnership details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Partnership'
+        '400':
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Partnership not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update a partnership
+      tags: [Partnership]
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Partnership ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Partnership'
+      responses:
+        '200':
+          description: Partnership updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Partnership'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Partnership not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete a partnership
+      tags: [Partnership]
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Partnership ID
+      responses:
+        '200':
+          description: Partnership deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Partnership deleted successfully"
+        '400':
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Partnership not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /partnership/{id}/renew:
+    patch:
+      summary: Renew a partnership
+      tags: [Partnership]
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Partnership ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expiringDate:
+                  type: string
+                  format: date-time
+                  example: "2025-01-01T00:00:00.000Z"
+                MOUFile:
+                  type: string
+                  example: "mou_renewed.pdf"
+              required:
+                - expiringDate
+                - MOUFile
+      responses:
+        '200':
+          description: Partnership renewed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Partnership'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Partnership not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /users:
+    get:
+      summary: Get all users
+      tags: [User]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /admin/approve-user:
+    post:
+      summary: Approve a user
+      tags: [Admin]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: "68091c42e0a0c6209db77223"
+              required:
+                - userId
+      responses:
+        '200':
+          description: User approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User approved successfully"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /admin/reject-user:
+    post:
+      summary: Reject a user
+      tags: [Admin]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: "68091c42e0a0c6209db77223"
+              required:
+                - userId
+      responses:
+        '200':
+          description: User rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User rejected successfully"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /superadmin/assign-admin:
+    post:
+      summary: Assign admin role to a user
+      tags: [SuperAdmin]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: "68091c42e0a0c6209db77223"
+                campusId:
+                  type: string
+                  example: "campus_123"
+              required:
+                - userId
+                - campusId
+      responses:
+        '200':
+          description: Admin assigned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin assigned successfully"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /superadmin/partnerships:
+    get:
+      summary: Get all partnerships (SuperAdmin)
+      tags: [SuperAdmin]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of partnerships
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Partnership'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
