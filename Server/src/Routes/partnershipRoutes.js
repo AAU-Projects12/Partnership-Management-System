@@ -29,8 +29,35 @@ router.get(
   "/",
   auth.authenticateToken,
   auth.authorizeRoles("Admin", "SuperAdmin"),
+  [
+    check("limit")
+      .optional()
+      .isInt({ min: 1, max: 100 })
+      .withMessage("Limit must be an integer between 1 and 100"),
+    check("page")
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage("Page must be a positive integer"),
+    check("startDate")
+      .optional()
+      .isISO8601()
+      .withMessage("Start date must be a valid ISO 8601 date"),
+    check("endDate")
+      .optional()
+      .isISO8601()
+      .withMessage("End date must be a valid ISO 8601 date"),
+    check("status")
+      .optional()
+      .isIn(["Pending", "Active", "Rejected"])
+      .withMessage("Invalid status value"),
+    check("archived")
+      .optional()
+      .isBoolean()
+      .withMessage("Archived must be a boolean"),
+  ],
   partnershipController.getPartnerships
 );
+
 router.get(
   "/export",
   auth.authenticateToken,
@@ -74,5 +101,28 @@ router.patch(
   partnershipController.renewPartnership
 );
 
+router.patch(
+  "/:id/approve",
+  auth.authenticateToken,
+  auth.authorizeRoles("Admin", "SuperAdmin"),
+  [check("id").isMongoId().withMessage("Invalid partnership ID")],
+  partnershipController.approvePartnership
+);
+
+router.patch(
+  "/:id/reject",
+  auth.authenticateToken,
+  auth.authorizeRoles("Admin", "SuperAdmin"),
+  [check("id").isMongoId().withMessage("Invalid partnership ID")],
+  partnershipController.rejectPartnership
+);
+
+router.patch(
+  "/:id/archive",
+  auth.authenticateToken,
+  auth.authorizeRoles("Admin", "SuperAdmin"),
+  [check("id").isMongoId().withMessage("Invalid partnership ID")],
+  partnershipController.archivePartnership
+);
 
 export default router;
