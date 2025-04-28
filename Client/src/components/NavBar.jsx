@@ -6,6 +6,7 @@ import {
   Cog6ToothIcon,
   UserIcon,
   ArrowRightEndOnRectangleIcon,
+  BellIcon,
 } from '@heroicons/react/24/outline';
 
 const NavBar = () => {
@@ -89,10 +90,21 @@ const NavBar = () => {
             <span>Profile</span>
           </Link>
         </div>
-        <Link to="/" className="text-gray-500 hover:text-blue-600 flex items-center space-x-1">
-          <ArrowRightEndOnRectangleIcon className="w-5 h-5" />
-          <span>Logout</span>
-        </Link>
+        <div className="flex items-center space-x-4">
+          <Link 
+            to="/notifications" 
+            className={`${isActive('/notifications') ? 'text-gray-800 font-semibold' : 'text-gray-500 hover:text-blue-600'} flex items-center space-x-1 relative`}
+          >
+            <BellIcon className="w-5 h-5" />
+            <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs">3</span>
+            </div>
+          </Link>
+          <Link to="/" className="text-gray-500 hover:text-blue-600 flex items-center space-x-1">
+            <ArrowRightEndOnRectangleIcon className="w-5 h-5" />
+            <span>Logout</span>
+          </Link>
+        </div>
       </nav>
     </>
   );

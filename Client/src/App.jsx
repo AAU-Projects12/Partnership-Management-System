@@ -8,6 +8,9 @@ import PartnershipDashboard from "./partnership.jsx";
 import Dashboard from "./pages/dashboard.jsx";
 import Users from "./pages/users.jsx";
 import AddPartnership from "./pages/add-partnership.jsx";
+import Settings from "./pages/settings.jsx";
+import Profile from "./pages/profile.jsx";
+import Notifications from "./pages/notifications.jsx";
 
 
 export default function Main() {
@@ -34,8 +37,9 @@ export default function Main() {
           <Route path="/add-partnership" element={<AddPartnership />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/users" element={<Users />} />
-          <Route path="/settings" element={<Dashboard />} />
-          <Route path="/profile" element={<Dashboard />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/notifications" element={<Notifications />} />
           
         </Routes>
       </Router>
