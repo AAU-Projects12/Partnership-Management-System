@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link,useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { login } from "../api";
 import { toast } from "react-hot-toast";
 export default function Login() {
@@ -7,16 +7,39 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  const [error, setError] = useState({
+    email: "",
+    password: "",
+  })
+
+  const validateField = (name, value) => {
+    let error = '';
+
+    if (!value.trim()) {
+      error = `${name.charAt(0).toUpperCase() + name.slice(1)} is required!`
+    }
+
+    setError(prev => ({ ...prev, [name]: error }));
+    return error === "";
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    try {
-      const res = await login({ email, password });
-      // alert("Logged in successfully!");
-      toast.success("Logged in successfully!");
-      navigate("/partnership")
-    } catch (error) {
-      console.log(error);
+    const isEmailValid = validateField("email", email);
+    const isPasswordValid = validateField("password", password);
+
+    if (isEmailValid && isPasswordValid) {
+      try {
+        const res = await login({ email, password });
+        // alert("Logged in successfully!");
+        toast.success("Logged in successfully!");
+        navigate("/partnership")
+      } catch (error) {
+        console.log(error);
+      }
     }
+
+
   };
 
   return (
@@ -67,22 +90,29 @@ export default function Login() {
             onSubmit={handleLogin}
             className="mt-6 w-full max-w-sm flex flex-col gap-4"
           >
+            <div>
             <input
               type="email"
               placeholder="Email"
-              className="border-2 border-[#00588b] rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500"
+              className={`border-2 w-full ${error.email ? 'border-red-500' : 'border-[#00588b]'} rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
               onChange={(e) => setEmail(e.target.value)}
               value={email}
             />
+            {error.email && (<p className="text-red-500 text-sm mt-1 ml-4">{error.email}</p>)}
+            </div>
+            <div className="flex flex-col justify-start">
             <input
               type="password"
               placeholder="Password"
-              className="border-2 border-[#00588b] rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500"
+              className={`border-2 w-full ${error.password ? 'border-red-500' : 'border-[#00588b]'} rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
               onChange={(e) => setPassword(e.target.value)}
               value={password}
             />
+            {error.password && (<p className="item-start text-red-500 text-sm mt-1 ml-4">{error.password}</p>)}
+            </div>
+           
 
-            <button className="flex items-center justify-center bg-[#00588b] text-white px-6 py-3 mt-6 rounded-full gap-2 hover:bg-[#004a75] transition">
+            <button className="flex items-center justify-center bg-[#00588b] text-white px-6 py-3 mt-6 rounded-full gap-2 hover:bg-[#004a75] transition cursor-pointer">
               Login
               <img
                 src="https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-04-04/YvWR34sXt7.png"

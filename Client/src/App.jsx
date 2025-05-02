@@ -4,7 +4,7 @@ import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import PartnershipDashboard from "./partnership.jsx";
+import PartnershipDashboard from "./pages/partnership.jsx";
 import Dashboard from "./pages/dashboard.jsx";
 import Users from "./pages/users.jsx";
 import AddPartnership from "./pages/add-partnership.jsx";

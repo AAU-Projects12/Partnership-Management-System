@@ -43,7 +43,7 @@ const Settings = () => {
               <Switch
                 checked={darkMode}
                 onChange={toggleSwitch(setDarkMode)}
-                className={`${darkMode ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full`}
+                className={`${darkMode ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
               >
                 <span className="sr-only">Enable Dark Mode</span>
                 <span
@@ -63,7 +63,7 @@ const Settings = () => {
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm cursor-pointer"
               >
                 <option>English</option>
                 <option>Amharic</option>
@@ -93,7 +93,7 @@ const Settings = () => {
               >
                 <span className="sr-only">Enable Email Notifications</span>
                 <span
-                  className={`${emailNotifications ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                  className={`${emailNotifications ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition cursor-pointer`}
                 />
               </Switch>
             </div>
@@ -109,7 +109,7 @@ const Settings = () => {
               <Switch
                 checked={systemNotifications}
                 onChange={toggleSwitch(setSystemNotifications)}
-                className={`${systemNotifications ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full`}
+                className={`${systemNotifications ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
               >
                 <span className="sr-only">Enable System Notifications</span>
                 <span
@@ -129,7 +129,7 @@ const Settings = () => {
               <Switch
                 checked={partnershipUpdates}
                 onChange={toggleSwitch(setPartnershipUpdates)}
-                className={`${partnershipUpdates ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full`}
+                className={`${partnershipUpdates ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
               >
                 <span className="sr-only">Enable Partnership Updates</span>
                 <span
@@ -155,7 +155,7 @@ const Settings = () => {
               <Switch
                 checked={dataSharing}
                 onChange={toggleSwitch(setDataSharing)}
-                className={`${dataSharing ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full`}
+                className={`${dataSharing ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
               >
                 <span className="sr-only">Enable Data Sharing</span>
                 <span
@@ -179,8 +179,8 @@ const Settings = () => {
                 </div>
               </div>
               <div className="ml-9 space-y-3">
-                <button className="text-sm text-blue-600 hover:text-blue-800">Change Password</button>
-                <button className="block text-sm text-blue-600 hover:text-blue-800">Update Email Address</button>
+                <button className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">Change Password</button>
+                <button className="block text-sm text-blue-600 hover:text-blue-800 cursor-pointer">Update Email Address</button>
               </div>
             </div>
 
@@ -193,7 +193,7 @@ const Settings = () => {
                 </div>
               </div>
               <div className="ml-9">
-                <button className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                <button className="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 cursor-pointer">
                   Delete Account
                 </button>
               </div>

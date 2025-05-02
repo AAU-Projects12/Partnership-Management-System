@@ -66,21 +66,30 @@ const AddPartnership = () => {
               {/* Organization Type */}
               <div>
                 <label htmlFor="organizationType" className="block text-sm font-medium text-gray-700 mb-1">Organization Type</label>
-                <select
-                  id="organizationType"
-                  name="organizationType"
-                  value={formData.organizationType}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                  required
-                >
-                  <option value="" disabled>Select organization type</option>
-                  <option value="Government">Government</option>
-                  <option value="NGO">NGO</option>
-                  <option value="Private">Private</option>
-                  <option value="Academic">Academic</option>
-                  <option value="Research">Research</option>
-                </select>
+                <div className="relative inline-block w-64">
+                  <select
+                    id="organizationType"
+                    name="organizationType"
+                    value={formData.organizationType}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+                    required
+                  >
+                    <option value="" disabled>Select organization type</option>
+                    <option value="Government">Government</option>
+                    <option value="NGO">NGO</option>
+                    <option value="Private">Private</option>
+                    <option value="Academic">Academic</option>
+                    <option value="Research">Research</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20">
+                      <path d="M5.516 7.548l4.484 4.484 4.484-4.484L16 9l-6 6-6-6z" />
+                    </svg>
+                  </div>
+                </div>
+
               </div>
 
               {/* Signed Date */}
@@ -92,7 +101,7 @@ const AddPartnership = () => {
                   name="signedDate"
                   value={formData.signedDate}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                   required
                 />
               </div>
@@ -106,7 +115,7 @@ const AddPartnership = () => {
                   name="endDate"
                   value={formData.endDate}
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                   required
                 />
               </div>
@@ -129,42 +138,60 @@ const AddPartnership = () => {
               {/* College */}
               <div>
                 <label htmlFor="college" className="block text-sm font-medium text-gray-700 mb-1">College</label>
-                <select
-                  id="college"
-                  name="college"
-                  value={formData.college}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                  required
-                >
-                  <option value="" disabled>Select college</option>
-                  <option value="College of Business and Economics">College of Business and Economics</option>
-                  <option value="College of Social Science, Arts and Humanities">College of Social Science, Arts and Humanities</option>
-                  <option value="College of Veterinary Medicine and Agriculture">College of Veterinary Medicine and Agriculture</option>
-                  <option value="School of Law">School of Law</option>
-                  <option value="College of Technology and Built Environment">College of Technology and Built Environment</option>
-                  <option value="College of Natural and Computational Sciences">College of Natural and Computational Sciences</option>
-                  <option value="College of Education and Language Studies">College of Education and Language Studies</option>
-                  <option value="College of Health Science">College of Health Science</option>
-                </select>
+                <div className="relative inline-block w-64">
+                  <select
+                    id="college"
+                    name="college"
+                    value={formData.college}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+                    required
+                  >
+                    <option value="" disabled>Select college</option>
+                    <option value="College of Business and Economics">College of Business and Economics</option>
+                    <option value="College of Social Science, Arts and Humanities">College of Social Science, Arts and Humanities</option>
+                    <option value="College of Veterinary Medicine and Agriculture">College of Veterinary Medicine and Agriculture</option>
+                    <option value="School of Law">School of Law</option>
+                    <option value="College of Technology and Built Environment">College of Technology and Built Environment</option>
+                    <option value="College of Natural and Computational Sciences">College of Natural and Computational Sciences</option>
+                    <option value="College of Education and Language Studies">College of Education and Language Studies</option>
+                    <option value="College of Health Science">College of Health Science</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20">
+                      <path d="M5.516 7.548l4.484 4.484 4.484-4.484L16 9l-6 6-6-6z" />
+                    </svg>
+                  </div>
+                </div>
+
               </div>
 
               {/* Status */}
               <div>
                 <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                  required
-                >
-                  <option value="Active">Active</option>
-                  <option value="Inactive">Inactive</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Expired">Expired</option>
-                </select>
+                <div className="relative inline-block w-64">
+                  <select
+                    id="status"
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+                    required
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Expired">Expired</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20">
+                      <path d="M5.516 7.548l4.484 4.484 4.484-4.484L16 9l-6 6-6-6z" />
+                    </svg>
+                  </div>
+                </div>
+
               </div>
             </div>
 
@@ -227,7 +254,7 @@ const AddPartnership = () => {
               </Link>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
                 Add Partnership
               </button>

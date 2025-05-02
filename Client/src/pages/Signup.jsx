@@ -9,21 +9,83 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+
+  const validateField = (name, value) => {
+    let error = "";
+    
+    if (!value.trim()) {
+      error = `${name.charAt(0).toUpperCase() + name.slice(1)} is required!`;
+    } else if (name === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      error = "Please enter a valid email address";
+    } else if (name === "password" && value.length < 8) {
+      error = "Password must be at least 8 characters long";
+    } else if (name === "confirmPassword" && value !== password) {
+      error = "Passwords do not match";gs
+    }
+
+    setErrors(prev => ({ ...prev, [name]: error }));
+    return error === "";
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    switch(name) {
+      case "firstName":
+        setFirstName(value);
+        break;
+      case "lastName":
+        setLastName(value);
+        break;
+      case "email":
+        setEmail(value);
+        break;
+      case "password":
+        setPassword(value);
+        if (confirmPassword) {
+          validateField("confirmPassword", confirmPassword);
+        }
+        break;
+      case "confirmPassword":
+        setConfirmPassword(value);
+        break;
+    }
+    
+    validateField(name, value);
+  };
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    try {
-      const res = await signUp({
-        firstName,
-        lastName,
-        email,
-        password,
-        confirmPassword,
-      });
-      // alert("User successfully Registered!");
-      toast.success("User successfully Registered!");
-    } catch (error) {
-      console.log(error);
+    
+    // Validate all fields
+    const isFirstNameValid = validateField("firstName", firstName);
+    const isLastNameValid = validateField("lastName", lastName);
+    const isEmailValid = validateField("email", email);
+    const isPasswordValid = validateField("password", password);
+    const isConfirmPasswordValid = validateField("confirmPassword", confirmPassword);
+    
+    if (isFirstNameValid && isLastNameValid && isEmailValid && 
+        isPasswordValid && isConfirmPasswordValid) {
+      try {
+        await signUp({
+          firstName,
+          lastName,
+          email,
+          password,
+          confirmPassword,
+        });
+        toast.success("User successfully Registered!");
+      } catch (error) {
+        toast.error("Registration failed. Please try again.");
+        console.error(error);
+      }
     }
   };
 
@@ -75,41 +137,80 @@ export default function SignUp() {
             className="mt-6 w-full max-w-sm flex flex-col gap-4"
             onSubmit={handleSignup}
           >
-            <input
-              type="text"
-              placeholder="First Name"
-              className="border-2 border-[#00588b] rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500"
-              onChange={(e) => setFirstName(e.target.value)}
-              value={firstName}
-            />
-            <input
-              type="text"
-              placeholder="Last Name"
-              className="border-2 border-[#00588b] rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500"
-              onChange={(e) => setLastName(e.target.value)}
-              value={lastName}
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              className="border-2 border-[#00588b] rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500"
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              className="border-2 border-[#00588b] rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500"
-              onChange={(e) => setPassword(e.target.value)}
-              value={password}
-            />
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              className="border-2 border-[#00588b] rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500"
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              value={confirmPassword}
-            />
+            <div>
+              <input
+                type="text"
+                name="firstName"
+                placeholder="First Name"
+                className={`border-2 w-full ${errors.firstName ? 'border-red-500' : 'border-[#00588b]'} rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
+                onChange={handleChange}
+                value={firstName}
+                onBlur={(e) => validateField("firstName", e.target.value)}
+              />
+              {errors.firstName && (
+                <p className="text-red-500 text-sm mt-1 ml-4">{errors.firstName}</p>
+              )}
+            </div>
+
+            <div>
+              <input
+                type="text"
+                name="lastName"
+                placeholder="Last Name"
+                className={`border-2 w-full ${errors.lastName ? 'border-red-500' : 'border-[#00588b]'} rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
+                onChange={handleChange}
+                value={lastName}
+                onBlur={(e) => validateField("lastName", e.target.value)}
+              />
+              {errors.lastName && (
+                <p className="text-red-500 text-sm mt-1 ml-4">{errors.lastName}</p>
+              )}
+            </div>
+
+            <div>
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                className={`border-2 w-full ${errors.email ? 'border-red-500' : 'border-[#00588b]'} rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
+                onChange={handleChange}
+                value={email}
+                onBlur={(e) => validateField("email", e.target.value)}
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1 ml-4">{errors.email}</p>
+              )}
+            </div>
+
+            <div>
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                className={`border-2 w-full ${errors.password ? 'border-red-500' : 'border-[#00588b]'} rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
+                onChange={handleChange}
+                value={password}
+                onBlur={(e) => validateField("password", e.target.value)}
+              />
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1 ml-4">{errors.password}</p>
+              )}
+            </div>
+
+            <div>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                className={`border-2 w-full ${errors.confirmPassword ? 'border-red-500' : 'border-[#00588b]'} rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
+                onChange={handleChange}
+                value={confirmPassword}
+                onBlur={(e) => validateField("confirmPassword", e.target.value)}
+              />
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1 ml-4">{errors.confirmPassword}</p>
+              )}
+            </div>
 
             <button
               type="submit"
@@ -123,7 +224,7 @@ export default function SignUp() {
               />
             </button>
           </form>
-          <p className=" mt-4 text-lg">
+          <p className="mt-4 text-lg">
             Already have an Account?{" "}
             <Link
               className="text-[#00578a] underline hover:no-underline"

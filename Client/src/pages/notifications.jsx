@@ -91,7 +91,7 @@ const Notifications = () => {
             <h1 className="text-2xl font-bold text-gray-800">Notifications</h1>
             <button 
               onClick={markAllAsRead}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
             >
               Mark all as read
             </button>
@@ -101,31 +101,31 @@ const Notifications = () => {
           <div className="flex space-x-2 mb-6">
             <button 
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 text-sm font-medium rounded-md ${filter === 'all' ? 'bg-[#004165] text-white' : 'bg-white text-gray-700'}`}
+              className={`px-4 py-2 text-sm font-medium rounded-md ${filter === 'all' ? 'bg-[#004165] text-white' : 'bg-white text-gray-700'} cursor-pointer`}
             >
               All
             </button>
             <button 
               onClick={() => setFilter('unread')}
-              className={`px-4 py-2 text-sm font-medium rounded-md ${filter === 'unread' ? 'bg-[#004165] text-white' : 'bg-white text-gray-700'}`}
+              className={`px-4 py-2 text-sm font-medium rounded-md ${filter === 'unread' ? 'bg-[#004165] text-white' : 'bg-white text-gray-700'} cursor-pointer`}
             >
               Unread
             </button>
             <button 
               onClick={() => setFilter('partnership')}
-              className={`px-4 py-2 text-sm font-medium rounded-md ${filter === 'partnership' ? 'bg-[#004165] text-white' : 'bg-white text-gray-700'}`}
+              className={`px-4 py-2 text-sm font-medium rounded-md ${filter === 'partnership' ? 'bg-[#004165] text-white' : 'bg-white text-gray-700'} cursor-pointer`}
             >
               Partnerships
             </button>
             <button 
               onClick={() => setFilter('system')}
-              className={`px-4 py-2 text-sm font-medium rounded-md ${filter === 'system' ? 'bg-[#004165] text-white' : 'bg-white text-gray-700'}`}
+              className={`px-4 py-2 text-sm font-medium rounded-md ${filter === 'system' ? 'bg-[#004165] text-white' : 'bg-white text-gray-700'} cursor-pointer`}
             >
               System
             </button>
             <button 
               onClick={() => setFilter('alert')}
-              className={`px-4 py-2 text-sm font-medium rounded-md ${filter === 'alert' ? 'bg-[#004165] text-white' : 'bg-white text-gray-700'}`}
+              className={`px-4 py-2 text-sm font-medium rounded-md ${filter === 'alert' ? 'bg-[#004165] text-white' : 'bg-white text-gray-700'} cursor-pointer`}
             >
               Alerts
             </button>

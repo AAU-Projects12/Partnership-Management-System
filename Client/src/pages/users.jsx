@@ -32,7 +32,7 @@ const Users = () => {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Users Management</h1>
-          <button className="bg-[#004165] text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+          <button className="bg-[#004165] text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center cursor-pointer">
             <span className="mr-1">+</span> Add User
           </button>
         </div>
@@ -63,7 +63,7 @@ const Users = () => {
               )}
             </div>
             <div className="flex items-center ml-4">
-              <button className="p-2 text-gray-500 hover:text-blue-600">
+              <button className="p-2 text-gray-500 hover:text-blue-600 cursor-pointer">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
@@ -73,7 +73,7 @@ const Users = () => {
                   <button
                     key={option}
                     onClick={() => setActiveFilter(option)}
-                    className={`px-3 py-1 rounded-md text-sm ${activeFilter === option ? 'bg-blue-600 text-white' : 'bg-white text-gray-600'}`}
+                    className={`px-3 py-1 rounded-md text-sm ${activeFilter === option ? 'bg-blue-600 text-white' : 'bg-white text-gray-600'} cursor-pointer`}
                   >
                     {option}
                   </button>
@@ -133,13 +133,13 @@ const Users = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                       <div className="flex justify-center space-x-2">
-                        <button className="text-red-600 hover:text-red-900">
+                        <button className="text-red-600 hover:text-red-900 cursor-pointer">
                           <TrashIcon className="h-5 w-5" />
                         </button>
-                        <button className="text-blue-600 hover:text-blue-900">
+                        <button className="text-blue-600 hover:text-blue-900 cursor-pointer">
                           <PencilIcon className="h-5 w-5" />
                         </button>
-                        <button className="text-gray-600 hover:text-gray-900">
+                        <button className="text-gray-600 hover:text-gray-900 cursor-pointer">
                           <EyeIcon className="h-5 w-5" />
                         </button>
                       </div>

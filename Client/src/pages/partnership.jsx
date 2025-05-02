@@ -11,8 +11,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import NavBar from './components/NavBar';
-// import {AAU_logo} from "./assets/AAU_logo.png"
+import NavBar from '../components/NavBar';
 
 // Navigation Item Component
 const NavItem = ({ icon, label, active = false }) => (
@@ -36,10 +35,10 @@ const PartnerRow = ({ logo, name, type, duration, contact, status }) => (
       <img
         src={logo || "/placeholder.svg"}
         alt={name}
-        className="w-8 h-8 rounded-full"
+        className="w-8 h-8 rounded-full cursor-pointer"
       />
     </div>
-    <div className="font-medium text-[#004165]">{name}</div>
+    <div className="font-medium text-[#004165] cursor-pointer">{name}</div>
     <div>{type}</div>
     <div>{duration}</div>
     <div>{contact}</div>
@@ -55,13 +54,13 @@ const PartnerRow = ({ logo, name, type, duration, contact, status }) => (
       </span>
     </div>
     <div className="flex gap-2">
-      <button className="p-1 text-gray-500 hover:text-gray-700">
+      <button className="p-1 text-gray-500 hover:text-gray-700 cursor-pointer">
         <Trash2 className="h-4 w-4" />
       </button>
-      <button className="p-1 text-gray-500 hover:text-gray-700">
+      <button className="p-1 text-gray-500 hover:text-gray-700 cursor-pointer">
         <Edit className="h-4 w-4" />
       </button>
-      <button className="p-1 text-gray-500 hover:text-gray-700">
+      <button className="p-1 text-gray-500 hover:text-gray-700 cursor-pointer">
         <Eye className="h-4 w-4" />
       </button>
     </div>
@@ -204,22 +203,22 @@ const PartnershipDashboard = () => {
                   </button>
                 )}
               </div>
-              <button className="border border-gray-300 rounded-full px-4 py-2">
+              <button className="border border-gray-300 rounded-full px-4 py-2 cursor-pointer">
                 <Filter className="h-4 w-4" />
               </button>
 
               {/* Filter Buttons Section */}
               <div className="bg-[#6D91A7] rounded-full flex items-center px-2">
-                <button className="rounded-full bg-white text-xs px-4 py-1 h-8">
+                <button className="rounded-full bg-white text-xs px-4 py-1 h-8 cursor-pointer">
                   Name
                 </button>
-                <button className="rounded-full  text-xs px-4 py-1 h-8">
+                <button className="rounded-full  text-xs px-4 py-1 h-8 cursor-pointer">
                   Category
                 </button>
-                <button className="rounded-full  text-xs px-4 py-1 h-8">
+                <button className="rounded-full  text-xs px-4 py-1 h-8 cursor-pointer">
                   Region
                 </button>
-                <button className="rounded-full  text-xs px-4 py-1 h-8">
+                <button className="rounded-full  text-xs px-4 py-1 h-8 cursor-pointer">
                   Time Left
                 </button>
               </div>
@@ -257,7 +256,7 @@ const PartnershipDashboard = () => {
               ))}
 
               {/* Show More Button */}
-              <div className="flex justify-center p-2 border-t border-[#004165]">
+              <div className="flex justify-center p-2 border-t border-[#004165] cursor-pointer">
                 <button className="text-gray-500 p-1">
                   <ChevronDown className="h-5 w-5" />
                 </button>

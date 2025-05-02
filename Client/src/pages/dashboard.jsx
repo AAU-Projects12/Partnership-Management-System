@@ -178,7 +178,7 @@ const Dashboard = () => {
             <select
               value={collegeFilter}
               onChange={(e) => setCollegeFilter(e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               {colleges.map((college) => (
                 <option key={college} value={college}>
@@ -186,7 +186,7 @@ const Dashboard = () => {
                 </option>
               ))}
             </select>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 cursor-pointer">
               + New Partner
             </button>
           </div>
@@ -275,25 +275,25 @@ const Dashboard = () => {
             <div className="flex space-x-1">
               <button
                 onClick={() => setTimeFilter('Weekly')}
-                className={`px-3 py-1 rounded-md text-sm ${timeFilter === 'Weekly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}
+                className={`px-3 py-1 rounded-md text-sm ${timeFilter === 'Weekly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'} cursor-pointer`}
               >
                 Weekly
               </button>
               <button
                 onClick={() => setTimeFilter('Monthly')}
-                className={`px-3 py-1 rounded-md text-sm ${timeFilter === 'Monthly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}
+                className={`px-3 py-1 rounded-md text-sm ${timeFilter === 'Monthly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'} cursor-pointer`}
               >
                 Monthly
               </button>
               <button
                 onClick={() => setTimeFilter('Yearly')}
-                className={`px-3 py-1 rounded-md text-sm ${timeFilter === 'Yearly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}
+                className={`px-3 py-1 rounded-md text-sm ${timeFilter === 'Yearly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'} cursor-pointer`}
               >
                 Yearly
               </button>
               <button
                 onClick={() => setTimeFilter('All Times')}
-                className={`px-3 py-1 rounded-md text-sm ${timeFilter === 'All Times' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}
+                className={`px-3 py-1 rounded-md text-sm ${timeFilter === 'All Times' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'} cursor-pointer`}
               >
                 All Times
               </button>
