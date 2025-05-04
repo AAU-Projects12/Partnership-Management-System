@@ -11,7 +11,7 @@ import AddPartnership from "./pages/add-partnership.jsx";
 import Settings from "./pages/settings.jsx";
 import Profile from "./pages/profile.jsx";
 import Notifications from "./pages/notifications.jsx";
-
+import NotFound from "./pages/NotFound.jsx";
 
 export default function Main() {
   return (
@@ -40,7 +40,7 @@ export default function Main() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/notifications" element={<Notifications />} />
-          
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </>
