@@ -2,6 +2,17 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { signUp } from "../api";
 import { toast } from "react-hot-toast";
+import aauLogo from "../assets/aauLogo.png";
+import aauimg from "../assets/aauimg.png";
+import logo1 from "../assets/logo1.png";
+import logo2 from "../assets/logo2.png";
+import logo3 from "../assets/logo3.png";
+import logo4 from "../assets/logo4.png";
+import logo5 from "../assets/logo5.png";
+import logo6 from "../assets/logo6.png";
+import logo7 from "../assets/logo7.png";
+import logo8 from "../assets/logo8.png";
+import logo9 from "../assets/logo9.png";
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState("");
@@ -14,12 +25,12 @@ export default function SignUp() {
     lastName: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
 
   const validateField = (name, value) => {
     let error = "";
-    
+
     if (!value.trim()) {
       error = `${name.charAt(0).toUpperCase() + name.slice(1)} is required!`;
     } else if (name === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
@@ -27,17 +38,18 @@ export default function SignUp() {
     } else if (name === "password" && value.length < 8) {
       error = "Password must be at least 8 characters long";
     } else if (name === "confirmPassword" && value !== password) {
-      error = "Passwords do not match";gs
+      error = "Passwords do not match";
+      gs;
     }
 
-    setErrors(prev => ({ ...prev, [name]: error }));
+    setErrors((prev) => ({ ...prev, [name]: error }));
     return error === "";
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    switch(name) {
+
+    switch (name) {
       case "firstName":
         setFirstName(value);
         break;
@@ -57,22 +69,30 @@ export default function SignUp() {
         setConfirmPassword(value);
         break;
     }
-    
+
     validateField(name, value);
   };
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    
+
     // Validate all fields
     const isFirstNameValid = validateField("firstName", firstName);
     const isLastNameValid = validateField("lastName", lastName);
     const isEmailValid = validateField("email", email);
     const isPasswordValid = validateField("password", password);
-    const isConfirmPasswordValid = validateField("confirmPassword", confirmPassword);
-    
-    if (isFirstNameValid && isLastNameValid && isEmailValid && 
-        isPasswordValid && isConfirmPasswordValid) {
+    const isConfirmPasswordValid = validateField(
+      "confirmPassword",
+      confirmPassword
+    );
+
+    if (
+      isFirstNameValid &&
+      isLastNameValid &&
+      isEmailValid &&
+      isPasswordValid &&
+      isConfirmPasswordValid
+    ) {
       try {
         await signUp({
           firstName,
@@ -102,13 +122,12 @@ export default function SignUp() {
           <span>+251-118-278433 or +251-111-239706</span>
         </div>
       </div>
-
       {/* Main Content */}
       <div className="flex flex-col lg:flex-row flex-1 w-full">
         {/* Image*/}
         <div className="relative bg-[#014166] w-full lg:w-1/2 h-[450px] lg:h-auto rounded-br-[300px] overflow-hidden">
           <img
-            src="https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-04-04/fncovdvbMG.png"
+            src={aauimg}
             alt="background"
             className="absolute top-0 left-0 w-full h-full object-cover z-10 opacity-70"
           />
@@ -116,11 +135,7 @@ export default function SignUp() {
 
         {/* Right Content */}
         <div className="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 py-12 text-center relative z-20">
-          <img
-            src="https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-04-04/DXFCdgcvP5.png"
-            alt="logo"
-            className="w-20 mb-4"
-          />
+          <img src={aauLogo} alt="logo" className="w-20 mb-4" />
           <h1 className="text-2xl lg:text-3xl font-bold text-black">
             Addis Ababa University
           </h1>
@@ -142,13 +157,17 @@ export default function SignUp() {
                 type="text"
                 name="firstName"
                 placeholder="First Name"
-                className={`border-2 w-full ${errors.firstName ? 'border-red-500' : 'border-[#00588b]'} rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
+                className={`border-2 w-full ${
+                  errors.firstName ? "border-red-500" : "border-[#00588b]"
+                } rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
                 onChange={handleChange}
                 value={firstName}
                 onBlur={(e) => validateField("firstName", e.target.value)}
               />
               {errors.firstName && (
-                <p className="text-red-500 text-sm mt-1 ml-4">{errors.firstName}</p>
+                <p className="text-red-500 text-sm mt-1 ml-4">
+                  {errors.firstName}
+                </p>
               )}
             </div>
 
@@ -157,13 +176,17 @@ export default function SignUp() {
                 type="text"
                 name="lastName"
                 placeholder="Last Name"
-                className={`border-2 w-full ${errors.lastName ? 'border-red-500' : 'border-[#00588b]'} rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
+                className={`border-2 w-full ${
+                  errors.lastName ? "border-red-500" : "border-[#00588b]"
+                } rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
                 onChange={handleChange}
                 value={lastName}
                 onBlur={(e) => validateField("lastName", e.target.value)}
               />
               {errors.lastName && (
-                <p className="text-red-500 text-sm mt-1 ml-4">{errors.lastName}</p>
+                <p className="text-red-500 text-sm mt-1 ml-4">
+                  {errors.lastName}
+                </p>
               )}
             </div>
 
@@ -172,7 +195,9 @@ export default function SignUp() {
                 type="email"
                 name="email"
                 placeholder="Email"
-                className={`border-2 w-full ${errors.email ? 'border-red-500' : 'border-[#00588b]'} rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
+                className={`border-2 w-full ${
+                  errors.email ? "border-red-500" : "border-[#00588b]"
+                } rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
                 onChange={handleChange}
                 value={email}
                 onBlur={(e) => validateField("email", e.target.value)}
@@ -187,13 +212,17 @@ export default function SignUp() {
                 type="password"
                 name="password"
                 placeholder="Password"
-                className={`border-2 w-full ${errors.password ? 'border-red-500' : 'border-[#00588b]'} rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
+                className={`border-2 w-full ${
+                  errors.password ? "border-red-500" : "border-[#00588b]"
+                } rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
                 onChange={handleChange}
                 value={password}
                 onBlur={(e) => validateField("password", e.target.value)}
               />
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1 ml-4">{errors.password}</p>
+                <p className="text-red-500 text-sm mt-1 ml-4">
+                  {errors.password}
+                </p>
               )}
             </div>
 
@@ -202,13 +231,17 @@ export default function SignUp() {
                 type="password"
                 name="confirmPassword"
                 placeholder="Confirm Password"
-                className={`border-2 w-full ${errors.confirmPassword ? 'border-red-500' : 'border-[#00588b]'} rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
+                className={`border-2 w-full ${
+                  errors.confirmPassword ? "border-red-500" : "border-[#00588b]"
+                } rounded-full px-4 py-3 placeholder:text-sm placeholder:text-gray-500`}
                 onChange={handleChange}
                 value={confirmPassword}
                 onBlur={(e) => validateField("confirmPassword", e.target.value)}
               />
               {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1 ml-4">{errors.confirmPassword}</p>
+                <p className="text-red-500 text-sm mt-1 ml-4">
+                  {errors.confirmPassword}
+                </p>
               )}
             </div>
 
@@ -235,27 +268,16 @@ export default function SignUp() {
           </p>
         </div>
       </div>
-
-      {/* Footer Logos*/}
       <div className="w-full bg-white shadow-md py-6 flex flex-wrap justify-center items-center gap-4 mt-auto px-4">
-        {[
-          "y0rhtHirob",
-          "BXaR8XHk0C",
-          "k5PGxTCs0F",
-          "HQOmE5SR2A",
-          "LW3kEYvpAu",
-          "mqbonTYqtm",
-          "9yAtzXbiMi",
-          "tyAQkk5rfp",
-          "3AJeb17BFE",
-        ].map((imgId, index) => (
-          <img
-            key={index}
-            src={`https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-04-04/${imgId}.png`}
-            alt={`logo-${index}`}
-            className="h-16 w-auto"
-          />
-        ))}
+        `<img src={logo1} className="h-16 w-auto" />
+        <img src={logo2} className="h-16 w-auto" />
+        <img src={logo3} className="h-16 w-auto" />
+        <img src={logo4} className="h-16 w-auto" />
+        <img src={logo5} className="h-16 w-auto" />
+        <img src={logo6} className="h-16 w-auto" />
+        <img src={logo7} className="h-16 w-auto" />
+        <img src={logo8} className="h-16 w-auto" />
+        <img src={logo9} className="h-16 w-auto" />`
       </div>
     </div>
   );
