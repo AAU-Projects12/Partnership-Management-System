@@ -90,7 +90,7 @@ export default function SignUp() {
   };
 
   return (
-    <div className="main-container bg-white w-screen min-h-screen relative overflow-hidden flex flex-col">
+    <div className="main-container bg-white w-full min-h-screen relative overflow-hidden flex flex-col">
       {/* Top Bar */}
       <div className="w-full bg-[#014166] shadow-md z-10 py-4 px-6 flex flex-col sm:flex-row items-center sm:justify-start gap-4 text-white text-sm font-bold">
         <div className="flex items-center gap-2">

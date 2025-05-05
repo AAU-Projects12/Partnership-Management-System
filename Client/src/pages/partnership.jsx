@@ -1,161 +1,170 @@
-"use client";
-
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Filter,
   Plus,
-  Trash2,
-  Edit,
-  Eye,
   ChevronDown,
+  ChevronUp,
+  X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import NavBar from '../components/NavBar';
 
-// Navigation Item Component
-const NavItem = ({ icon, label, active = false }) => (
-  <div
-    className={`px-6 py-4 flex items-center gap-2 font-medium ${
-      active ? "border-b-2 border-[#004165] text-[#004165]" : "text-gray-600"
-    }`}
-  >
-    {icon}
-    <span>{label}</span>
-  </div>
-);
+// Components
+import NavBar from "../components/NavBar";
+import FilterButton from "../features/partnership/components/FilterButton";
+import FilterDropdown from '../features/partnership/components/FilterDropdown';
+import TableHeader from '../features/partnership/components/TableHeader';
+import PartnerRow from '../features/partnership/components/PartnerRow';
+import Pagination from '../features/partnership/components/Pagination';
+import Toast from '../features/partnership/components/Toast';
+import ConfirmDialog from '../features/partnership/components/ConfirmDialog';
+import FilterDialog from "../features/partnership/components/FilterDialog";
 
-// Partner Row Component
-const PartnerRow = ({ logo, name, type, duration, contact, status }) => (
-  <div className="grid grid-cols-8 gap-4 p-4 border-b border-[#D9D9D9] items-center text-sm">
-    <div className="flex items-center justify-center">
-      <input type="checkbox" className="h-4 w-4 rounded border-gray-300" />
-    </div>
-    <div>
-      <img
-        src={logo || "/placeholder.svg"}
-        alt={name}
-        className="w-8 h-8 rounded-full cursor-pointer"
-      />
-    </div>
-    <div className="font-medium text-[#004165] cursor-pointer">{name}</div>
-    <div>{type}</div>
-    <div>{duration}</div>
-    <div>{contact}</div>
-    <div>
-      <span
-        className={`inline-flex px-4 py-1 rounded-full text-sm font-medium ${
-          status === "active"
-            ? "bg-green-100 text-green-700"
-            : "bg-red-100 text-red-700"
-        }`}
-      >
-        {status === "active" ? "Active" : "Expired"}
-      </span>
-    </div>
-    <div className="flex gap-2">
-      <button className="p-1 text-gray-500 hover:text-gray-700 cursor-pointer">
-        <Trash2 className="h-4 w-4" />
-      </button>
-      <button className="p-1 text-gray-500 hover:text-gray-700 cursor-pointer">
-        <Edit className="h-4 w-4" />
-      </button>
-      <button className="p-1 text-gray-500 hover:text-gray-700 cursor-pointer">
-        <Eye className="h-4 w-4" />
-      </button>
-    </div>
-  </div>
-);
+// Data and utilities
+import {
+  samplePartners,
+  partnerTypes,
+  partnerStatuses,
+  durationCategories,
+  tableColumns
+} from '../features/partnership/data/sampleData';
+import {
+  filterBySearch,
+  applyFilters,
+  sortPartners,
+  paginatePartners
+} from '../features/partnership/utils/partnershipUtils';
+import useLocalStorage from '../features/partnership/hooks/useLocalStorage';
 
-// Main Component
 const PartnershipDashboard = () => {
+  // State for search and filters
   const [searchQuery, setSearchQuery] = useState("");
+  const [partners, setPartners] = useState(samplePartners);
+  const [filteredPartners, setFilteredPartners] = useState(partners);
+  const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
 
-  // Sample data
-  const partners = [
-    {
-      id: 1,
-      logo: "/placeholder.svg",
-      name: "Turkish Foundation",
-      type: "Research",
-      duration: "1 year",
-      contact: "Mr. Johness",
-      status: "expired",
-    },
-    {
-      id: 2,
-      logo: "/placeholder.svg",
-      name: "Civil Society",
-      type: "Research",
-      duration: "5 Months",
-      contact: "Mr. Johness",
-      status: "active",
-    },
-    {
-      id: 3,
-      logo: "/placeholder.svg",
-      name: "Minstry Of Education",
-      type: "Research",
-      duration: "2 year",
-      contact: "Mr. Johness",
-      status: "active",
-    },
-    {
-      id: 4,
-      logo: "/placeholder.svg",
-      name: "Ovid Holdings",
-      type: "Research",
-      duration: "1.5 year",
-      contact: "Mr. Johness",
-      status: "active",
-    },
-    {
-        id: 4,
-        logo: "/placeholder.svg",
-        name: "Ovid Holdings",
-        type: "Research",
-        duration: "1.5 year",
-        contact: "Mr. Johness",
-        status: "active",
-      },
-      {
-        id: 4,
-        logo: "/placeholder.svg",
-        name: "Ovid Holdings",
-        type: "Research",
-        duration: "1.5 year",
-        contact: "Mr. Johness",
-        status: "active",
-      },
-      {
-        id: 4,
-        logo: "/placeholder.svg",
-        name: "Ovid Holdings",
-        type: "Research",
-        duration: "1.5 year",
-        contact: "Mr. Johness",
-        status: "active",
-      },
-      {
-        id: 4,
-        logo: "/placeholder.svg",
-        name: "Ovid Holdings",
-        type: "Research",
-        duration: "1.5 year",
-        contact: "Mr. Johness",
-        status: "active",
-      },
-  ];
+  // Filter states
+  const [activeFilterButton, setActiveFilterButton] = useLocalStorage("activeFilterButton", "name");
+  const [filters, setFilters] = useLocalStorage("partnershipFilters", {
+    types: [],
+    statuses: [],
+    durations: []
+  });
+
+  // Sorting state
+  const [sortConfig, setSortConfig] = useLocalStorage("partnershipSort", {
+    column: "name",
+    direction: "asc"
+  });
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useLocalStorage("currentPage", 1);
+  const [itemsPerPage, setItemsPerPage] = useLocalStorage("itemsPerPage", 5);
+
+  // UI states
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: null
+  });
+
+  // Apply filters, sorting, and search
+  useEffect(() => {
+    let result = [...partners];
+
+    // Apply search query
+    result = filterBySearch(result, searchQuery);
+
+    // Apply filters
+    result = applyFilters(result, filters);
+
+    // Apply sorting
+    if (sortConfig.column) {
+      result = sortPartners(result, sortConfig.column, sortConfig.direction);
+    }
+
+    setFilteredPartners(result);
+
+    // Reset to first page when filters change
+    if (currentPage !== 1 && result.length <= itemsPerPage) {
+      setCurrentPage(1);
+    }
+  }, [searchQuery, partners, filters, sortConfig]);
+
+  // Handle sorting
+  const handleSort = (column, direction) => {
+    if (column === 'actions') return; // Don't sort by actions column
+
+    setSortConfig({
+      column,
+      direction
+    });
+  };
+
+  // Handle partner delete
+  const handleDeletePartner = (partnerId) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: "Delete Partner",
+      message: "Are you sure you want to delete this partner? This action cannot be undone.",
+      onConfirm: () => {
+        setPartners(prev => prev.filter(partner => partner.id !== partnerId));
+        showToast("Partner deleted successfully", "success");
+        setConfirmDialog({ ...confirmDialog, isOpen: false });
+      }
+    });
+  };
+
+  // Handle partner edit
+  const handleEditPartner = (partnerId) => {
+    // For demo purposes, we'll just show a toast
+    showToast(`Editing partner ${partnerId}`, "info");
+  };
+
+  // Show toast notification
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setFilters({
+      types: [],
+      statuses: [],
+      durations: []
+    });
+    setSortConfig({
+      column: "name",
+      direction: "asc"
+    });
+    setActiveFilterButton("name");
+    showToast("All filters cleared", "info");
+  };
+
+  // Get paginated partners for current view
+  const paginatedPartners = paginatePartners(filteredPartners, currentPage, itemsPerPage);
+
+  // Check if any filters are active
+  const hasActiveFilters = searchQuery.trim() !== "" ||
+    filters.types.length > 0 ||
+    filters.statuses.length > 0 ||
+    filters.durations.length > 0;
+
+  const modifiedColumns = tableColumns.filter(col => col.key !== 'selectAll');
 
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
 
       {/* Main Content */}
-      <main className="flex-1 bg-gray-50 py-8 px-8">
+      <main className="flex-1 bg-gray-50 py-8 px-4 md:px-8">
         <div className="container mx-auto">
           {/* Active Partnership Header */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
               <h2 className="text-2xl font-bold">Active Partnership</h2>
               <p className="text-[#004165] text-sm mt-0.5">
@@ -163,108 +172,214 @@ const PartnershipDashboard = () => {
                 and partner organizations.
               </p>
             </div>
-            <Link to="/add-partnership" className="bg-[#004165] hover:bg-[#00334e] text-white rounded-full px-6 py-2 flex items-center">
+
+            <Link
+              to="/add-partnership"
+              className="bg-[#004165] hover:bg-[#00334e] text-white rounded-full px-6 py-2 flex items-center transition-colors"
+            >
               <Plus className="mr-2 h-4 w-4" /> New Partner
             </Link>
           </div>
 
           {/* Search and Filter */}
-          <div className="bg-[#DBE4E9] rounded-full p-6 mb-8">
-            <div className="flex gap-4">
+          <div className="bg-[#DBE4E9] rounded-lg md:rounded-full p-4 md:p-6 mb-8">
+            <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
                 <input
                   type="text"
                   placeholder="Search Partners"
-                  className="w-full pl-10 pr-10 py-2 rounded-full border border-gray-200 focus:outline-none hover:border-[#00334e] bg-white"
+                  className="w-full pl-10 pr-10 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#004165] hover:border-[#00334e] bg-white transition-all"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 {searchQuery && (
                   <button
-                    className="absolute right-3 top-2.5"
+                    className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
                     onClick={() => setSearchQuery("")}
                   >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M18 6L6 18M6 6L18 18"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
+                    <X className="h-4 w-4" />
                   </button>
                 )}
               </div>
-              <button className="border border-gray-300 rounded-full px-4 py-2 cursor-pointer">
+              <button
+                onClick={() => setIsFilterDialogOpen(true)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${hasActiveFilters
+                  ? 'bg-[#004165] text-white'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+              >
                 <Filter className="h-4 w-4" />
+                {hasActiveFilters && (
+                  <span className="flex items-center justify-center bg-white text-[#004165] rounded-full w-5 h-5 text-xs">
+                    {filters.types.length + filters.statuses.length + filters.durations.length}
+                  </span>
+                )}
               </button>
+              {/* <div className="flex flex-wrap gap-2">
+                <FilterDropdown
+                  label="Type"
+                  options={partnerTypes}
+                  selectedOptions={filters.types}
+                  onChange={(selected) => setFilters({...filters, types: selected})}
+                />
+                
+                <FilterDropdown
+                  label="Status"
+                  options={partnerStatuses}
+                  selectedOptions={filters.statuses}
+                  onChange={(selected) => setFilters({...filters, statuses: selected})}
+                />
+                
+                <FilterDropdown
+                  label="Duration"
+                  options={durationCategories}
+                  selectedOptions={filters.durations}
+                  onChange={(selected) => setFilters({...filters, durations: selected})}
+                />
+                
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div> */}
 
               {/* Filter Buttons Section */}
               <div className="bg-[#6D91A7] rounded-full flex items-center px-2">
-                <button className="rounded-full bg-white text-xs px-4 py-1 h-8 cursor-pointer">
-                  Name
-                </button>
-                <button className="rounded-full  text-xs px-4 py-1 h-8 cursor-pointer">
-                  Category
-                </button>
-                <button className="rounded-full  text-xs px-4 py-1 h-8 cursor-pointer">
-                  Region
-                </button>
-                <button className="rounded-full  text-xs px-4 py-1 h-8 cursor-pointer">
-                  Time Left
-                </button>
+                <FilterButton
+                  label="Name"
+                  isActive={activeFilterButton === "name"}
+                  onClick={() => {
+                    setActiveFilterButton("name");
+                    setSortConfig({ column: "name", direction: "asc" });
+                  }}
+                />
+                <FilterButton
+                  label="Type"
+                  isActive={activeFilterButton === "type"}
+                  onClick={() => {
+                    setActiveFilterButton("type");
+                    setSortConfig({ column: "type", direction: "asc" });
+                  }}
+                />
+                <FilterButton
+                  label="Status"
+                  isActive={activeFilterButton === "status"}
+                  onClick={() => {
+                    setActiveFilterButton("status");
+                    setSortConfig({ column: "status", direction: "asc" });
+                  }}
+                />
+                <FilterButton
+                  label="Duration"
+                  isActive={activeFilterButton === "duration"}
+                  onClick={() => {
+                    setActiveFilterButton("duration");
+                    setSortConfig({ column: "duration", direction: "asc" });
+                  }}
+                />
               </div>
             </div>
+
+
+
           </div>
 
           {/* Partnership Lists */}
-          <div className="bg-[#DBE4E9] rounded-3xl pt-6">
-            <h3 className="text-lg font-bold mb-6 ml-6">Partnership Lists</h3>
-            <div className="bg-white rounded-b-3xl overflow-hidden">
-              {/* Table Header */}
-              <div className="grid grid-cols-8 gap-4 p-4 border-b-0.5 text-gray-600 font-medium shadow-md">
-                <div className="flex items-center justify-center">
-                </div>
-                <div>LOGO</div>
-                <div>PARTNER'S NAME</div>
-                <div>TYPE</div>
-                <div>DURATION</div>
-                <div>LEAD CONTACT</div>
-                <div>STATUS</div>
-                <div>ACTIONS</div>
+          <div className="bg-[#DBE4E9] rounded-3xl mb-6">
+            <div className="flex justify-between items-center px-6 py-4">
+              <h3 className="text-lg font-bold">Partnership Lists</h3>
+
+              <div className="text-sm text-gray-600">
+                Showing {Math.min(filteredPartners.length, 1 + (currentPage - 1) * itemsPerPage)}-
+                {Math.min(currentPage * itemsPerPage, filteredPartners.length)} of {filteredPartners.length} partners
               </div>
 
-              {/* Table Rows */}
-              {partners.map((partner) => (
-                <PartnerRow
-                  key={partner.id}
-                  logo={partner.logo}
-                  name={partner.name}
-                  type={partner.type}
-                  duration={partner.duration}
-                  contact={partner.contact}
-                  status={partner.status}
-                />
-              ))}
-
-              {/* Show More Button */}
-              <div className="flex justify-center p-2 border-t border-[#004165] cursor-pointer">
-                <button className="text-gray-500 p-1">
-                  <ChevronDown className="h-5 w-5" />
-                </button>
-              </div>
+              <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="text-[#004165] hover:bg-[#004165]/10 p-2 rounded-full transition-colors"
+              >
+                {isCollapsed ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+              </button>
             </div>
+
+            {!isCollapsed && (
+              <div className="bg-white rounded-b-3xl overflow-hidden">
+                {/* Table Header */}
+                <TableHeader
+                  columns={modifiedColumns}
+                  sortConfig={sortConfig}
+                  onSort={handleSort}
+                />
+
+                {/* No Results */}
+                {paginatedPartners.length === 0 && (
+                  <div className="p-8 text-center text-gray-500">
+                    <p>No partners found matching your criteria.</p>
+                    {hasActiveFilters && (
+                      <button
+                        onClick={clearAllFilters}
+                        className="mt-2 text-[#004165] hover:underline"
+                      >
+                        Clear all filters
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Table Rows */}
+                {paginatedPartners.map((partner) => (
+                  <PartnerRow
+                    key={partner.id}
+                    partner={partner}
+                    onDelete={handleDeletePartner}
+                    onEdit={handleEditPartner}
+                  />
+                ))}
+
+                {/* Pagination */}
+                <Pagination
+                  totalItems={filteredPartners.length}
+                  itemsPerPage={itemsPerPage}
+                  currentPage={currentPage}
+                  onPageChange={setCurrentPage}
+                  onItemsPerPageChange={setItemsPerPage}
+                />
+              </div>
+            )}
           </div>
         </div>
       </main>
+      {/* Filter Dialog */}
+      <FilterDialog
+        isOpen={isFilterDialogOpen}
+        onClose={() => setIsFilterDialogOpen(false)}
+        filters={filters}
+        onFilterChange={setFilters}
+        onClearFilters={clearAllFilters}
+        hasActiveFilters={hasActiveFilters}
+      />
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+      />
     </div>
   );
 };

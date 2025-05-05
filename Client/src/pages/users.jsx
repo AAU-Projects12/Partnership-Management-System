@@ -95,7 +95,7 @@ const Users = () => {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <input type="checkbox" className="h-4 w-4 text-blue-600 rounded" />
                   </th>
-                  <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-7 py-3  text-start text-xs font-medium text-gray-500 uppercase tracking-wider">
                     USER
                   </th>
                   <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -116,7 +116,7 @@ const Users = () => {
                       <input type="checkbox" className="h-4 w-4 text-blue-600 rounded" />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center justify-start">
                         <div className="flex-shrink-0 h-10 w-10 bg-[#004165] rounded-full flex items-center justify-center text-white font-bold">
                           {user.name.charAt(0)}
                         </div>

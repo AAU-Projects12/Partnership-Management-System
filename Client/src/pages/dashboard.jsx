@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
+import { Link } from 'react-router-dom';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
 import NavBar from '../components/NavBar';
 
@@ -186,9 +187,12 @@ const Dashboard = () => {
                 </option>
               ))}
             </select>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 cursor-pointer">
+            <Link
+              to="/add-partnership"
+              className="bg-[#004165] hover:bg-[#00334e] text-white rounded-full px-6 py-2 flex items-center transition-colors"
+            >
               + New Partner
-            </button>
+            </Link>
           </div>
         </div>
 
