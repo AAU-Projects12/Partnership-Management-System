@@ -1,7 +1,52 @@
 import { validationResult } from "express-validator";
 import Partnership from "../Models/partnershipModel.js";
+import mongoose from "mongoose";
 
-// Create a new partnership (User with active status, Admin, SuperAdmin)
+export const getAllPartnerships = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { status, region, category, type, startDate, endDate, archived = false, limit = 10, page = 1 } = req.query;
+
+    const query = {};
+    if (status) query.status = status;
+    if (region) query.region = region;
+    if (category) query.category = category;
+    if (type) query.type = type;
+    if (startDate || endDate) {
+      query.inceptionDate = {};
+      if (startDate) query.inceptionDate.$gte = new Date(startDate);
+      if (endDate) query.inceptionDate.$lte = new Date(endDate);
+    }
+    query.isArchived = archived === "true";
+
+    if (req.user.role !== "SuperAdmin") {
+      query.campusId = req.user.campusId;
+    }
+
+    const total = await Partnership.countDocuments(query);
+    const partnerships = await Partnership.find(query)
+      .limit(Number(limit))
+      .skip((Number(page) - 1) * Number(limit));
+
+    res.status(200).json({
+      partnerships,
+      pagination: {
+        total,
+        page: Number(page),
+        pages: Math.ceil(total / limit),
+        limit: Number(limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error in getAllPartnerships:", error.message, error.stack);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 export const createPartnership = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -9,28 +54,70 @@ export const createPartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    // Temporarily comment out for testing
+    console.log("User attempting to create partnership:", {
+      userId: req.user.userId,
+      role: req.user.role,
+      campusId: req.user.campusId,
+      status: req.user.status,
+    });
+
     if (req.user.role === "User" && req.user.status !== "active") {
-      return res.status(403).json({ error: "User account not active" });
+      console.log("User not active:", req.user.status);
+      return res.status(403).json({ error: `User account not active. Current status: ${req.user.status}` });
     }
 
+    const {
+      partnersName,
+      email,
+      region,
+      category,
+      phoneNumber,
+      inceptionDate,
+      expiringDate,
+      aauLeadContact,
+      partnerLeadContact,
+      MOUFile,
+      type,
+      description,
+    } = req.body;
+
+    if (new Date(inceptionDate) >= new Date(expiringDate)) {
+      return res.status(400).json({ error: "Expiring date must be after inception date" });
+    }
+
+    const partnershipStatus = req.user.role === "User" ? "Pending" : "Active";
+
     const partnership = new Partnership({
-      ...req.body,
-      campusId: req.user.campusId,
+      partnersName,
+      email,
+      region,
+      category,
+      phoneNumber,
+      inceptionDate: new Date(inceptionDate),
+      expiringDate: new Date(expiringDate),
+      aauLeadContact,
+      partnerLeadContact,
+      MOUFile,
+      type,
+      description,
+      status: partnershipStatus,
+      campusId: req.user.role === "SuperAdmin" ? "default_campus" : req.user.campusId,
       createdBy: req.user.userId,
-      status: req.user.role === "User" ? "Pending" : "Active",
+      isArchived: false,
     });
+
     await partnership.save();
-    res
-      .status(201)
-      .json({ message: "Partnership created successfully", partnership });
+
+    res.status(201).json({
+      message: "Partnership created successfully",
+      partnership,
+    });
   } catch (error) {
     console.error("Error creating partnership:", error.message, error.stack);
     res.status(500).json({ error: "Server error" });
   }
 };
 
-// Get all partnerships (Admin/SuperAdmin, filtered by campus for Admins)
 export const getPartnerships = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -38,22 +125,62 @@ export const getPartnerships = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { status, region, category } = req.query;
+    const { status, region, category, type, startDate, endDate, archived, limit = 10, page = 1 } = req.query;
     let filter = req.user.role === "SuperAdmin" ? {} : { campusId: req.user.campusId };
 
     if (status) filter.status = status;
     if (region) filter.region = region;
     if (category) filter.category = category;
+    if (type) filter.type = type;
 
-    const partnerships = await Partnership.find(filter);
-    res.status(200).json(partnerships);
+    if (startDate || endDate) {
+      filter.inceptionDate = {};
+      if (startDate) {
+        if (!isValidDate(startDate)) {
+          return res.status(400).json({ error: "Invalid start date format" });
+        }
+        filter.inceptionDate.$gte = new Date(startDate);
+      }
+      if (endDate) {
+        if (!isValidDate(endDate)) {
+          return res.status(400).json({ error: "Invalid end date format" });
+        }
+        filter.inceptionDate.$lte = new Date(endDate);
+      }
+    }
+
+    filter.isArchived = archived === "true" ? true : false;
+
+    const parsedLimit = parseInt(limit);
+    const parsedPage = parseInt(page);
+    if (parsedLimit < 1 || parsedPage < 1) {
+      return res.status(400).json({ error: "Limit and page must be positive integers" });
+    }
+    if (parsedLimit > 100) {
+      return res.status(400).json({ error: "Limit cannot exceed 100" });
+    }
+
+    const skip = (parsedPage - 1) * parsedLimit;
+    const total = await Partnership.countDocuments(filter);
+    const partnerships = await Partnership.find(filter)
+      .skip(skip)
+      .limit(parsedLimit);
+
+    res.status(200).json({
+      partnerships,
+      pagination: {
+        total,
+        page: parsedPage,
+        pages: Math.ceil(total / parsedLimit),
+        limit: parsedLimit,
+      },
+    });
   } catch (error) {
     console.error("Error fetching partnerships:", error.message, error.stack);
     res.status(500).json({ error: "Server error" });
   }
 };
 
-// Get a single partnership by ID (Admin/SuperAdmin, campus-restricted for Admins)
 export const getPartnershipById = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -61,11 +188,11 @@ export const getPartnershipById = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter = req.user.role === "SuperAdmin" 
+    const filter = req.user.role === "SuperAdmin"
       ? { _id: req.params.id }
       : { _id: req.params.id, campusId: req.user.campusId };
     const partnership = await Partnership.findOne(filter);
-    
+
     if (!partnership) {
       return res.status(404).json({ message: "Partnership not found or not in your campus" });
     }
@@ -76,7 +203,6 @@ export const getPartnershipById = async (req, res) => {
   }
 };
 
-// Update a partnership by ID (Admin/SuperAdmin, campus-restricted for Admins)
 export const updatePartnership = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -84,7 +210,7 @@ export const updatePartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter = req.user.role === "SuperAdmin" 
+    const filter = req.user.role === "SuperAdmin"
       ? { _id: req.params.id }
       : { _id: req.params.id, campusId: req.user.campusId };
     const updatedPartnership = await Partnership.findOneAndUpdate(
@@ -107,7 +233,6 @@ export const updatePartnership = async (req, res) => {
   }
 };
 
-// Delete a partnership by ID (Admin/SuperAdmin, campus-restricted for Admins)
 export const deletePartnership = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -115,7 +240,7 @@ export const deletePartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter = req.user.role === "SuperAdmin" 
+    const filter = req.user.role === "SuperAdmin"
       ? { _id: req.params.id }
       : { _id: req.params.id, campusId: req.user.campusId };
     const deletedPartnership = await Partnership.findOneAndDelete(filter);
@@ -131,7 +256,6 @@ export const deletePartnership = async (req, res) => {
   }
 };
 
-// Renew partnership (Admin/SuperAdmin, campus-restricted for Admins)
 export const renewPartnership = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -139,11 +263,11 @@ export const renewPartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter = req.user.role === "SuperAdmin" 
+    const filter = req.user.role === "SuperAdmin"
       ? { _id: req.params.id }
       : { _id: req.params.id, campusId: req.user.campusId };
     const partnership = await Partnership.findOne(filter);
-    
+
     if (!partnership) {
       return res.status(404).json({ message: "Partnership not found or not in your campus" });
     }
@@ -162,7 +286,6 @@ export const renewPartnership = async (req, res) => {
   }
 };
 
-// Export partnerships (Admin/SuperAdmin, campus-restricted for Admins, Day 1 task)
 export const exportPartnerships = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -170,20 +293,149 @@ export const exportPartnerships = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter = req.user.role === "SuperAdmin" 
-      ? {} 
+    const filter = req.user.role === "SuperAdmin"
+      ? {}
       : { campusId: req.user.campusId };
     const partnerships = await Partnership.find(filter);
 
-    // TODO: Format for export (e.g., CSV, PDF) per SRS UC-15
-    res.status(200).json(partnerships); // Placeholder: return JSON for now
+    res.status(200).json(partnerships);
   } catch (error) {
     console.error("Error exporting partnerships:", error.message, error.stack);
     res.status(500).json({ error: "Server error" });
   }
 };
 
+export const approvePartnership = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid partnership ID" });
+    }
+
+    if (!["Admin", "SuperAdmin"].includes(req.user.role)) {
+      return res.status(403).json({ error: "Only Admins or SuperAdmins can approve partnerships" });
+    }
+
+    const filter = req.user.role === "SuperAdmin"
+      ? { _id: id }
+      : { _id: id, campusId: req.user.campusId };
+
+    const partnership = await Partnership.findOne(filter);
+    if (!partnership) {
+      return res.status(404).json({ error: "Partnership not found or not in your campus" });
+    }
+
+    if (partnership.status !== "Pending") {
+      return res.status(400).json({ error: "Only pending partnerships can be approved" });
+    }
+
+    partnership.status = "Active";
+    await partnership.save();
+
+    res.status(200).json({
+      message: "Partnership approved successfully",
+      partnership,
+    });
+  } catch (error) {
+    console.error("Error approving partnership:", error.message, error.stack);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const rejectPartnership = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid partnership ID" });
+    }
+
+    if (!["Admin", "SuperAdmin"].includes(req.user.role)) {
+      return res.status(403).json({ error: "Only Admins or SuperAdmins can reject partnerships" });
+    }
+
+    const filter = req.user.role === "SuperAdmin"
+      ? { _id: id }
+      : { _id: id, campusId: req.user.campusId };
+
+    const partnership = await Partnership.findOne(filter);
+    if (!partnership) {
+      return res.status(404).json({ error: "Partnership not found or not in your campus" });
+    }
+
+    if (partnership.status !== "Pending") {
+      return res.status(400).json({ error: "Only pending partnerships can be rejected" });
+    }
+
+    partnership.status = "Rejected";
+    await partnership.save();
+
+    res.status(200).json({
+      message: "Partnership rejected successfully",
+      partnership,
+    });
+  } catch (error) {
+    console.error("Error rejecting partnership:", error.message, error.stack);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const archivePartnership = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid partnership ID" });
+    }
+
+    const filter = req.user.role === "SuperAdmin"
+      ? { _id: id }
+      : { _id: id, campusId: req.user.campusId };
+
+    const partnership = await Partnership.findOne(filter);
+    if (!partnership) {
+      return res.status(404).json({ error: "Partnership not found or not in your campus" });
+    }
+
+    if (partnership.isArchived) {
+      return res.status(400).json({ error: "Partnership is already archived" });
+    }
+
+    partnership.isArchived = true;
+    await partnership.save();
+
+    res.status(200).json({
+      message: "Partnership archived successfully",
+      partnership,
+    });
+  } catch (error) {
+    console.error("Error archiving partnership:", error.message, error.stack);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+function isValidDate(dateString) {
+  return !isNaN(Date.parse(dateString));
+}
+
 export default {
+  getAllPartnerships,
   createPartnership,
   getPartnerships,
   getPartnershipById,
@@ -191,4 +443,7 @@ export default {
   deletePartnership,
   renewPartnership,
   exportPartnerships,
+  approvePartnership,
+  rejectPartnership,
+  archivePartnership,
 };

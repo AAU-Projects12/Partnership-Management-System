@@ -10,7 +10,7 @@ const isValidEmail = (email) => {
 export const signup = async (req, res) => {
   const { firstName, lastName, email, password, confirmPassword, campusId, role } = req.body;
   try {
-    console.log("Signup request body:", req.body); // Log request body
+    console.log("Signup request body:", req.body);
 
     if (!isValidEmail(email)) {
       return res.status(400).json({ error: "Invalid email format" });
@@ -27,12 +27,19 @@ export const signup = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Set role: Allow SuperAdmin if specified, otherwise default to User
-    const userRole = role === "SuperAdmin" ? "SuperAdmin" : "User";
-    console.log("Assigned role:", userRole); // Log assigned role
+    // Allow specified role (SuperAdmin, Admin, User)
+    const userRole = role || "User";
+    console.log("Assigned role:", userRole);
 
-    // Set status: Active for SuperAdmin, pending for others
+    // Set status: active for SuperAdmin, pending for Admin/User
     const userStatus = userRole === "SuperAdmin" ? "active" : "pending";
+
+    // Set campusId: null for SuperAdmin, required for others
+    const userCampusId = userRole === "SuperAdmin" ? null : campusId || "default_campus";
+
+    if (userRole !== "SuperAdmin" && !campusId) {
+      return res.status(400).json({ error: "Campus ID is required for non-SuperAdmin users" });
+    }
 
     const newUser = new User({
       firstName,
@@ -40,7 +47,7 @@ export const signup = async (req, res) => {
       email,
       password: hashedPassword,
       role: userRole,
-      campusId: userRole === "SuperAdmin" ? null : campusId || "default_campus",
+      campusId: userCampusId,
       status: userStatus,
     });
     console.log("Attempting to save user:", newUser);
@@ -53,6 +60,9 @@ export const signup = async (req, res) => {
       firstName: newUser.firstName,
       lastName: newUser.lastName,
       email: newUser.email,
+      role: newUser.role,
+      campusId: newUser.campusId,
+      status: newUser.status,
     });
 
     console.log("User saved successfully");
@@ -62,7 +72,6 @@ export const signup = async (req, res) => {
   }
 };
 
-// Rest of the file (login, logout) remains unchanged
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -82,10 +91,14 @@ export const login = async (req, res) => {
     res.status(200).json({
       _id: user._id,
       firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
+      role: user.role,
+      campusId: user.campusId,
+      status: user.status,
     });
   } catch (error) {
-    console.error("Error in login controller:", error.message);
+    console.error("Error in login controller:", error.message, error.stack);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -95,7 +108,7 @@ export const logout = (req, res) => {
     res.cookie("jwt", "", { maxAge: 0 });
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
-    console.error("Error in logout controller:", error.message);
+    console.error("Error in logout controller:", error.message, error.stack);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };

@@ -8,7 +8,7 @@ export const authenticateToken = async (req, res, next) => {
     return res.status(401).json({ error: "Access token required" });
   }
   try {
-    const decoded = jwt.verify(token, process.env.PRIVATE_KEY);
+    const decoded = jwt.verify(token, process.env.PRIVATE_KEY || process.env.JWT_SECRET);
     console.log("Decoded JWT:", decoded);
 
     if (!decoded.id || !decoded.role) {
@@ -24,12 +24,7 @@ export const authenticateToken = async (req, res, next) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    if (user.status !== "active") {
-      console.log("User not active:", user.status);
-      return res.status(403).json({ error: "User account not active" });
-    }
-
-    // Use decoded.role, but verify it matches DB role
+    // Verify role consistency
     if (decoded.role !== user.role) {
       console.log(`Role mismatch: JWT role=${decoded.role}, DB role=${user.role}`);
       return res.status(403).json({ error: "Role mismatch in token" });
@@ -38,7 +33,8 @@ export const authenticateToken = async (req, res, next) => {
     req.user = {
       userId: decoded.id,
       role: decoded.role,
-      campusId: decoded.campusId
+      campusId: decoded.campusId || user.campusId,
+      status: user.status,
     };
     console.log("req.user set to:", req.user);
 
@@ -52,7 +48,6 @@ export const authenticateToken = async (req, res, next) => {
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     console.log(`Checking roles: user role=${req.user.role}, required=${roles}`);
-    // Normalize roles to handle case sensitivity
     const normalizedUserRole = req.user.role ? req.user.role.toLowerCase() : "";
     const normalizedRequiredRoles = roles.map(r => r.toLowerCase());
     if (!normalizedUserRole || !normalizedRequiredRoles.includes(normalizedUserRole)) {
