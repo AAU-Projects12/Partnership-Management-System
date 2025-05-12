@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { signUp } from "../api";
 import { toast } from "react-hot-toast";
 import { Check, ChevronDown } from "lucide-react";
+import { Eye, EyeClosed } from "lucide-react";
 import aauLogo from "../assets/aauLogo.png";
 import aauimg from "../assets/aauimg.png";
 import logo1 from "../assets/logo1.png";
@@ -22,7 +23,12 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [college, setCollege] = useState("");
+  const [department, setDepartment] = useState("");
+  const [researchInstitute, setResearchInstitute] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownOpen2, setDropdownOpen2] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // State for toggling password visibility
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({
     firstName: "",
     lastName: "",
@@ -30,6 +36,7 @@ export default function SignUp() {
     password: "",
     confirmPassword: "",
   });
+  const departments = ["Central", "College", "Research Institute"];
   // List of AAU colleges
   const colleges = [
     "College of Business and Economics",
@@ -41,6 +48,112 @@ export default function SignUp() {
     "College of Education and Language Studies",
     "College of Health Science",
   ];
+  const researchInstitutes = [
+    "Institute of Advanced Science and Technology",
+    "Institute of Geophysics, Space Science, Astronomy",
+    "Institute of Peace and Security Studies",
+    "Institute of Social and Economic Research (ISER)	",
+    "Aklilu Lemma Institute of Health Research (AL-IHR) ",
+    "Institute of Ethiopian Studies (IES)",
+    "Institute of Water, Environment and Climate Research (IEWCR)",
+  ];
+  const departmentController = (department) => {
+    if (department === "College") {
+      return (
+        <div className="relative">
+          <div
+            className={`border-2 w-full ${
+              errors.college ? "border-red-500" : "border-[#00588b]"
+            } rounded-full px-4 py-3 flex justify-between items-center cursor-pointer`}
+            onClick={() => setDropdownOpen2(!dropdownOpen2)}
+          >
+            <span
+              className={
+                college ? "text-black truncate" : "text-gray-500 text-sm"
+              }
+            >
+              {college || "Select College"}
+            </span>
+            <ChevronDown
+              className={`w-5 h-5 text-gray-500 transition-transform ${
+                dropdownOpen2 ? "rotate-180" : ""
+              }`}
+            />
+          </div>
+
+          {dropdownOpen2 && (
+            <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {colleges.map((item, index) => (
+                <div
+                  key={index}
+                  className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${
+                    college === item ? "bg-[#00588b]/10 font-medium" : ""
+                  }`}
+                  onClick={() => selectCollege(item)}
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {errors.college && (
+            <p className="text-red-500 text-sm mt-1 ml-4">{errors.college}</p>
+          )}
+        </div>
+      );
+    } else if (department === "Research Institute") {
+      return (
+        <div className="relative">
+          <div
+            className={`border-2 w-full ${
+              errors.researchInstitute ? "border-red-500" : "border-[#00588b]"
+            } rounded-full px-4 py-3 flex justify-between items-center cursor-pointer`}
+            onClick={() => setDropdownOpen2(!dropdownOpen2)}
+          >
+            <span
+              className={
+                researchInstitute
+                  ? "text-black truncate"
+                  : "text-gray-500 text-sm"
+              }
+            >
+              {researchInstitute || "Select Research Institute"}
+            </span>
+            <ChevronDown
+              className={`w-5 h-5 text-gray-500 transition-transform ${
+                dropdownOpen2 ? "rotate-180" : ""
+              }`}
+            />
+          </div>
+
+          {dropdownOpen2 && (
+            <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {researchInstitutes.map((item, index) => (
+                <div
+                  key={index}
+                  className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${
+                    researchInstitute === item
+                      ? "bg-[#00588b]/10 font-medium"
+                      : ""
+                  }`}
+                  onClick={() => selectResearchInstitute(item)}
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {errors.researchInstitute && (
+            <p className="text-red-500 text-sm mt-1 ml-4">
+              {errors.researchInstitute}
+            </p>
+          )}
+        </div>
+      );
+    }
+  };
   const validateField = (name, value) => {
     let error = "";
 
@@ -82,18 +195,35 @@ export default function SignUp() {
         setConfirmPassword(value);
 
         break;
+      case "department":
+        setDepartment(value);
+        break;
       case "college":
         setCollege(value);
+        break;
+      case "researchInstitute":
+        setResearchInstitute(value);
         break;
     }
 
     validateField(name, value);
   };
 
+  const selectDepartment = (selected) => {
+    setDepartment(selected);
+    setDropdownOpen(false);
+    validateField("department", selected);
+  };
+
   const selectCollege = (selected) => {
     setCollege(selected);
-    setDropdownOpen(false);
+    setDropdownOpen2(false);
     validateField("college", selected);
+  };
+  const selectResearchInstitute = (selected) => {
+    setResearchInstitute(selected);
+    setDropdownOpen2(false);
+    validateField("researchInstitute", selected);
   };
 
   const handleSignup = async (e) => {
@@ -233,16 +363,16 @@ export default function SignUp() {
             <div className="relative">
               <div
                 className={`border-2 w-full ${
-                  errors.college ? "border-red-500" : "border-[#00588b]"
+                  errors.department ? "border-red-500" : "border-[#00588b]"
                 } rounded-full px-4 py-3 flex justify-between items-center cursor-pointer`}
                 onClick={() => setDropdownOpen(!dropdownOpen)}
               >
                 <span
                   className={
-                    college ? "text-black truncate" : "text-gray-500 text-sm"
+                    department ? "text-black truncate" : "text-gray-500 text-sm"
                   }
                 >
-                  {college || "Select College"}
+                  {department || "Select Institution Type"}
                 </span>
                 <ChevronDown
                   className={`w-5 h-5 text-gray-500 transition-transform ${
@@ -253,13 +383,13 @@ export default function SignUp() {
 
               {dropdownOpen && (
                 <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  {colleges.map((item, index) => (
+                  {departments.map((item, index) => (
                     <div
                       key={index}
                       className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${
-                        college === item ? "bg-[#00588b]/10 font-medium" : ""
+                        department === item ? "bg-[#00588b]/10 font-medium" : ""
                       }`}
-                      onClick={() => selectCollege(item)}
+                      onClick={() => selectDepartment(item)}
                     >
                       {item}
                     </div>
@@ -273,10 +403,13 @@ export default function SignUp() {
                 </p>
               )}
             </div>
+            {department === "College" && departmentController("College")}
+            {department === "Research Institute" &&
+              departmentController("Research Institute")}
 
-            <div>
+            <div className="relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Password"
                 className={`border-2 w-full ${
@@ -286,6 +419,17 @@ export default function SignUp() {
                 value={password}
                 onBlur={(e) => validateField("password", e.target.value)}
               />
+              <button
+                type="button"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)} // Toggle visibility
+              >
+                {showPassword ? (
+                  <EyeClosed className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1 ml-4">
                   {errors.password}
@@ -293,9 +437,9 @@ export default function SignUp() {
               )}
             </div>
 
-            <div>
+            <div className="relative">
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 placeholder="Confirm Password"
                 className={`border-2 w-full ${
@@ -305,6 +449,17 @@ export default function SignUp() {
                 value={confirmPassword}
                 onBlur={(e) => validateField("confirmPassword", e.target.value)}
               />
+              <button
+                type="button"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)} // Toggle visibility
+              >
+                {showConfirmPassword ? (
+                  <EyeClosed className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
               {errors.confirmPassword && (
                 <p className="text-red-500 text-sm mt-1 ml-4">
                   {errors.confirmPassword}

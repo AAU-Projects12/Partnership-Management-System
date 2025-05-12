@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../api";
 import { toast } from "react-hot-toast";
-import  aauLogo  from "../assets/aauLogo.png";
-import  aauimg  from "../assets/aauimg.png";
+import { Eye, EyeClosed } from "lucide-react";
+import aauLogo from "../assets/aauLogo.png";
+import aauimg from "../assets/aauimg.png";
 import logo1 from "../assets/logo1.png";
 import logo2 from "../assets/logo2.png";
 import logo3 from "../assets/logo3.png";
@@ -17,6 +18,7 @@ import logo9 from "../assets/logo9.png";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const [error, setError] = useState({
@@ -110,9 +112,9 @@ export default function Login() {
                 <p className="text-red-500 text-sm mt-1 ml-4">{error.email}</p>
               )}
             </div>
-            <div className="flex flex-col justify-start">
+            <div className="flex flex-col justify-start relative">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 className={`border-2 w-full ${
                   error.password ? "border-red-500" : "border-[#00588b]"
@@ -120,6 +122,19 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 value={password}
               />
+              <button>
+                {showPassword ? (
+                  <EyeClosed
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                    onClick={() => setShowPassword(!showPassword)}
+                  />
+                ) : (
+                  <Eye
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                    onClick={() => setShowPassword(!showPassword)}
+                  />
+                )}
+              </button>
               {error.password && (
                 <p className="item-start text-red-500 text-sm mt-1 ml-4">
                   {error.password}
