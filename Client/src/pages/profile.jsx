@@ -1,61 +1,68 @@
-import React, { useState } from 'react';
-import { UserIcon, PencilIcon, KeyIcon, ClockIcon } from '@heroicons/react/24/outline';
-import NavBar from '../components/NavBar';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  UserIcon,
+  PencilIcon,
+  KeyIcon,
+  ClockIcon,
+  ArrowRightEndOnRectangleIcon,
+} from "@heroicons/react/24/outline";
+import NavBar from "../components/NavBar";
 
 const Profile = () => {
   // Mock user data
   const [user, setUser] = useState({
-    name: 'Alice Johnson',
-    email: 'alice.johnson@example.com',
-    role: 'Super-Admin',
-    department: 'Partnership Office',
-    joinDate: '2022-03-15',
-    profileImage: null // No image by default
+    name: "Alice Johnson",
+    email: "alice.johnson@example.com",
+    role: "Super-Admin",
+    department: "Partnership Office",
+    joinDate: "2022-03-15",
+    profileImage: null, // No image by default
   });
 
   // Mock audit logs
   const [auditLogs, setAuditLogs] = useState([
     {
       id: 1,
-      action: 'Logged in',
-      timestamp: '2023-06-15T10:30:00',
-      details: 'User logged in from 192.168.1.1'
+      action: "Logged in",
+      timestamp: "2023-06-15T10:30:00",
+      details: "User logged in from 192.168.1.1",
     },
     {
       id: 2,
-      action: 'Updated partnership',
-      timestamp: '2023-06-14T14:45:00',
-      details: 'Modified Turkish Foundation partnership details'
+      action: "Updated partnership",
+      timestamp: "2023-06-14T14:45:00",
+      details: "Modified Turkish Foundation partnership details",
     },
     {
       id: 3,
-      action: 'Added new user',
-      timestamp: '2023-06-12T09:15:00',
-      details: 'Created account for David Kim'
+      action: "Added new user",
+      timestamp: "2023-06-12T09:15:00",
+      details: "Created account for David Kim",
     },
     {
       id: 4,
-      action: 'Changed password',
-      timestamp: '2023-06-10T16:20:00',
-      details: 'User changed their password'
+      action: "Changed password",
+      timestamp: "2023-06-10T16:20:00",
+      details: "User changed their password",
     },
     {
       id: 5,
-      action: 'Exported report',
-      timestamp: '2023-06-08T11:05:00',
-      details: 'Generated partnership status report'
+      action: "Exported report",
+      timestamp: "2023-06-08T11:05:00",
+      details: "Generated partnership status report",
     },
   ]);
 
   // Format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric',
-      month: 'long', 
-      day: 'numeric', 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -78,21 +85,40 @@ const Profile = () => {
                   <div className="flex flex-col items-center">
                     <div className="h-24 w-24 bg-[#004165] rounded-full flex items-center justify-center text-white text-3xl font-bold mb-4">
                       {user.profileImage ? (
-                        <img src={user.profileImage} alt={user.name} className="h-24 w-24 rounded-full" />
+                        <img
+                          src={user.profileImage}
+                          alt={user.name}
+                          className="h-24 w-24 rounded-full"
+                        />
                       ) : (
                         user.name.charAt(0)
                       )}
                     </div>
-                    <h2 className="text-xl font-semibold text-gray-900">{user.name}</h2>
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      {user.name}
+                    </h2>
                     <p className="text-sm text-gray-500">{user.role}</p>
-                    <p className="text-sm text-gray-500 mt-1">{user.department}</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {user.department}
+                    </p>
                   </div>
 
                   <div className="mt-6 space-y-4">
                     <div className="flex items-center">
                       <div className="w-8 flex-shrink-0 text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                          />
                         </svg>
                       </div>
                       <div>
@@ -102,13 +128,30 @@ const Profile = () => {
                     </div>
                     <div className="flex items-center">
                       <div className="w-8 flex-shrink-0 text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
                         </svg>
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Joined</p>
-                        <p className="text-sm font-medium">{new Date(user.joinDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <p className="text-sm font-medium">
+                          {new Date(user.joinDate).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -122,6 +165,13 @@ const Profile = () => {
                       <KeyIcon className="h-4 w-4 mr-2" />
                       Change Password
                     </button>
+                    <Link
+                      to="/"
+                      className="w-full flex items-center justify-center cursor-pointer px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <ArrowRightEndOnRectangleIcon className="w-5 h-5" />
+                      <span>Logout</span>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -131,8 +181,12 @@ const Profile = () => {
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-lg font-semibold text-gray-800">Activity Log</h2>
-                  <p className="text-sm text-gray-500">Recent actions performed by you in the system</p>
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    Activity Log
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Recent actions performed by you in the system
+                  </p>
                 </div>
                 <div className="divide-y divide-gray-200">
                   {auditLogs.map((log) => (
@@ -145,10 +199,16 @@ const Profile = () => {
                         </div>
                         <div className="ml-3 flex-1">
                           <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-gray-900">{log.action}</p>
-                            <p className="text-xs text-gray-500">{formatDate(log.timestamp)}</p>
+                            <p className="text-sm font-medium text-gray-900">
+                              {log.action}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {formatDate(log.timestamp)}
+                            </p>
                           </div>
-                          <p className="mt-1 text-sm text-gray-600">{log.details}</p>
+                          <p className="mt-1 text-sm text-gray-600">
+                            {log.details}
+                          </p>
                         </div>
                       </div>
                     </div>

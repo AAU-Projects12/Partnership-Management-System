@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { signUp } from "../api";
 import { toast } from "react-hot-toast";
+import { Check, ChevronDown } from "lucide-react";
 import aauLogo from "../assets/aauLogo.png";
 import aauimg from "../assets/aauimg.png";
 import logo1 from "../assets/logo1.png";
@@ -20,6 +21,8 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [college, setCollege] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [errors, setErrors] = useState({
     firstName: "",
     lastName: "",
@@ -27,7 +30,17 @@ export default function SignUp() {
     password: "",
     confirmPassword: "",
   });
-
+  // List of AAU colleges
+  const colleges = [
+    "College of Business and Economics",
+    "College of Social Science, Arts and Humanities",
+    "College of Veterinary Medicine and Agriculture",
+    "School of Law",
+    "College of Technology and Built Environment",
+    "College of Natural and Computational Sciences",
+    "College of Education and Language Studies",
+    "College of Health Science",
+  ];
   const validateField = (name, value) => {
     let error = "";
 
@@ -67,10 +80,20 @@ export default function SignUp() {
         break;
       case "confirmPassword":
         setConfirmPassword(value);
+
+        break;
+      case "college":
+        setCollege(value);
         break;
     }
 
     validateField(name, value);
+  };
+
+  const selectCollege = (selected) => {
+    setCollege(selected);
+    setDropdownOpen(false);
+    validateField("college", selected);
   };
 
   const handleSignup = async (e) => {
@@ -204,6 +227,50 @@ export default function SignUp() {
               />
               {errors.email && (
                 <p className="text-red-500 text-sm mt-1 ml-4">{errors.email}</p>
+              )}
+            </div>
+            {/* College Dropdown */}
+            <div className="relative">
+              <div
+                className={`border-2 w-full ${
+                  errors.college ? "border-red-500" : "border-[#00588b]"
+                } rounded-full px-4 py-3 flex justify-between items-center cursor-pointer`}
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
+                <span
+                  className={
+                    college ? "text-black truncate" : "text-gray-500 text-sm"
+                  }
+                >
+                  {college || "Select College"}
+                </span>
+                <ChevronDown
+                  className={`w-5 h-5 text-gray-500 transition-transform ${
+                    dropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </div>
+
+              {dropdownOpen && (
+                <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {colleges.map((item, index) => (
+                    <div
+                      key={index}
+                      className={`px-4 py-2 hover:bg-gray-100 cursor-pointer ${
+                        college === item ? "bg-[#00588b]/10 font-medium" : ""
+                      }`}
+                      onClick={() => selectCollege(item)}
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {errors.college && (
+                <p className="text-red-500 text-sm mt-1 ml-4">
+                  {errors.college}
+                </p>
               )}
             </div>
 
