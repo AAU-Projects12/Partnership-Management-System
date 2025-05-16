@@ -1,26 +1,49 @@
 import express from "express";
-import { check } from "express-validator";
+import { check, body } from "express-validator";
 import auth from "../Middlewares/auth.js";
 import partnershipController from "../Controllers/partnershipController.js";
 
 const router = express.Router();
 
+// In your routes file (partnershipRoutes.js)
 router.post(
   "/",
   auth.authenticateToken,
   auth.authorizeRoles("User", "Admin", "SuperAdmin"),
   [
-    check("partnersName").notEmpty().withMessage("Partner name is required"),
-    check("email").isEmail().withMessage("Valid email is required"),
-    check("region").notEmpty().withMessage("Region is required"),
-    check("category").notEmpty().withMessage("Category is required"),
-    check("phoneNumber").notEmpty().withMessage("Phone number is required"),
-    check("inceptionDate").isISO8601().withMessage("Valid inception date is required"),
-    check("expiringDate").isISO8601().withMessage("Valid expiring date is required"),
-    check("aauLeadContact").notEmpty().withMessage("AAU lead contact is required"),
-    check("partnerLeadContact").notEmpty().withMessage("Partner lead contact is required"),
-    check("MOUFile").notEmpty().withMessage("MOU file is required"),
-    check("type").notEmpty().withMessage("Type is required"),
+    // Partner Institution validation
+    check("partnerInstitution.name").notEmpty().withMessage("Partner name is required"),
+    check("partnerInstitution.address").notEmpty().withMessage("Partner address is required"),
+    check("partnerInstitution.country").notEmpty().withMessage("Partner country is required"),
+    check("partnerInstitution.typeOfOrganization").notEmpty().withMessage("Organization type is required"),
+    
+    // AAU Contact validation
+    check("aauContact.interestedCollegeOrDepartment").notEmpty().withMessage("AAU department is required"),
+    
+    // Contact Person validation
+    check("partnerContactPerson.name").notEmpty().withMessage("Partner contact name is required"),
+    check("partnerContactPerson.institutionalEmail").isEmail().withMessage("Valid partner email is required"),
+    check("partnerContactPerson.phoneNumber").notEmpty().withMessage("Partner phone number is required"),
+    
+    // AAU Contact Person validation
+    check("aauContactPerson.name").notEmpty().withMessage("AAU contact name is required"),
+    check("aauContactPerson.institutionalEmail").isEmail().withMessage("Valid AAU email is required"),
+    check("aauContactPerson.phoneNumber").notEmpty().withMessage("AAU phone number is required"),
+    
+    // Date validation
+    check("potentialStartDate").isISO8601().withMessage("Valid start date is required"),
+    check("durationOfPartnership").notEmpty().withMessage("Duration is required"),
+    
+    // Collaboration areas
+    check("potentialAreasOfCollaboration").isArray({ min: 1 }).withMessage("At least one collaboration area is required"),
+    
+    // Conditional validation for "Other" collaboration
+    body().custom((value, { req }) => {
+      if (value.potentialAreasOfCollaboration.includes("Other") && !value.otherCollaborationArea) {
+        throw new Error("Other collaboration description is required when 'Other' is selected");
+      }
+      return true;
+    })
   ],
   partnershipController.createPartnership
 );
