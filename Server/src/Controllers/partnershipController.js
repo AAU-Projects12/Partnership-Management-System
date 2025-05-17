@@ -9,19 +9,12 @@ export const getAllPartnerships = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { status, region, category, type, startDate, endDate, archived = false, limit = 10, page = 1 } = req.query;
+    const { status, typeOfOrganization, limit = 10, page = 1 } = req.query;
 
     const query = {};
     if (status) query.status = status;
-    if (region) query.region = region;
-    if (category) query.category = category;
-    if (type) query.type = type;
-    if (startDate || endDate) {
-      query.inceptionDate = {};
-      if (startDate) query.inceptionDate.$gte = new Date(startDate);
-      if (endDate) query.inceptionDate.$lte = new Date(endDate);
-    }
-    query.isArchived = archived === "true";
+    if (typeOfOrganization) query["partnerInstitution.typeOfOrganization"] = typeOfOrganization;
+    query.isArchived = false;
 
     if (req.user.role !== "SuperAdmin") {
       query.campusId = req.user.campusId;
@@ -61,45 +54,41 @@ export const createPartnership = async (req, res) => {
       status: req.user.status,
     });
 
-    if (req.user.role === "User" && req.user.status !== "active") {
+    if (req.user.status !== "active") {
       console.log("User not active:", req.user.status);
       return res.status(403).json({ error: `User account not active. Current status: ${req.user.status}` });
     }
 
     const {
-      partnersName,
-      email,
-      region,
-      category,
-      phoneNumber,
-      inceptionDate,
-      expiringDate,
-      aauLeadContact,
-      partnerLeadContact,
-      MOUFile,
-      type,
-      description,
+      partnerInstitution,
+      aauContact,
+      potentialAreasOfCollaboration,
+      otherCollaborationArea,
+      potentialStartDate,
+      durationOfPartnership,
+      partnerContactPerson,
+      partnerContactPersonSecondary,
+      aauContactPerson,
+      aauContactPersonSecondary,
     } = req.body;
 
-    if (new Date(inceptionDate) >= new Date(expiringDate)) {
-      return res.status(400).json({ error: "Expiring date must be after inception date" });
+    if (potentialAreasOfCollaboration.includes("Other") && !otherCollaborationArea) {
+      return res.status(400).json({ error: "Other collaboration area is required when 'Other' is selected" });
     }
 
-    const partnershipStatus = req.user.role === "User" ? "Pending" : "Active";
+    const partnershipStatus = req.user.role === "Admin" ? "Pending" : "Active";
 
     const partnership = new Partnership({
-      partnersName,
-      email,
-      region,
-      category,
-      phoneNumber,
-      inceptionDate: new Date(inceptionDate),
-      expiringDate: new Date(expiringDate),
-      aauLeadContact,
-      partnerLeadContact,
-      MOUFile,
-      type,
-      description,
+      partnerInstitution,
+      aauContact,
+      potentialAreasOfCollaboration,
+      otherCollaborationArea,
+      potentialStartDate: new Date(potentialStartDate),
+      durationOfPartnership,
+      partnerContactPerson,
+      partnerContactPersonSecondary,
+      aauContactPerson,
+      aauContactPersonSecondary,
       status: partnershipStatus,
       campusId: req.user.role === "SuperAdmin" ? "default_campus" : req.user.campusId,
       createdBy: req.user.userId,
@@ -125,28 +114,18 @@ export const getPartnerships = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { status, region, category, type, startDate, endDate, archived, limit = 10, page = 1 } = req.query;
+    const { status, typeOfOrganization, potentialStartDate, durationOfPartnership, archived, limit = 10, page = 1 } = req.query;
     let filter = req.user.role === "SuperAdmin" ? {} : { campusId: req.user.campusId };
 
     if (status) filter.status = status;
-    if (region) filter.region = region;
-    if (category) filter.category = category;
-    if (type) filter.type = type;
+    if (typeOfOrganization) filter["partnerInstitution.typeOfOrganization"] = typeOfOrganization;
+    if (durationOfPartnership) filter.durationOfPartnership = durationOfPartnership;
 
-    if (startDate || endDate) {
-      filter.inceptionDate = {};
-      if (startDate) {
-        if (!isValidDate(startDate)) {
-          return res.status(400).json({ error: "Invalid start date format" });
-        }
-        filter.inceptionDate.$gte = new Date(startDate);
+    if (potentialStartDate) {
+      if (!isValidDate(potentialStartDate)) {
+        return res.status(400).json({ error: "Invalid potential start date format" });
       }
-      if (endDate) {
-        if (!isValidDate(endDate)) {
-          return res.status(400).json({ error: "Invalid end date format" });
-        }
-        filter.inceptionDate.$lte = new Date(endDate);
-      }
+      filter.potentialStartDate = { $gte: new Date(potentialStartDate) };
     }
 
     filter.isArchived = archived === "true" ? true : false;
@@ -213,9 +192,15 @@ export const updatePartnership = async (req, res) => {
     const filter = req.user.role === "SuperAdmin"
       ? { _id: req.params.id }
       : { _id: req.params.id, campusId: req.user.campusId };
+
+    const updateData = { ...req.body };
+    if (updateData.potentialAreasOfCollaboration && updateData.potentialAreasOfCollaboration.includes("Other") && !updateData.otherCollaborationArea) {
+      return res.status(400).json({ error: "Other collaboration area is required when 'Other' is selected" });
+    }
+
     const updatedPartnership = await Partnership.findOneAndUpdate(
       filter,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
 
@@ -272,8 +257,8 @@ export const renewPartnership = async (req, res) => {
       return res.status(404).json({ message: "Partnership not found or not in your campus" });
     }
 
-    partnership.expiringDate = req.body.expiringDate;
-    partnership.MOUFile = req.body.MOUFile;
+    partnership.potentialStartDate = new Date(req.body.potentialStartDate);
+    partnership.durationOfPartnership = req.body.durationOfPartnership;
     await partnership.save();
 
     res.status(200).json({

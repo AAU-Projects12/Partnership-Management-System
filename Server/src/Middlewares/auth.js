@@ -32,6 +32,7 @@ export const authenticateToken = async (req, res, next) => {
 
     req.user = {
       userId: decoded.id,
+      email: user.email,  // Add email to req.user for password reset verification
       role: decoded.role,
       campusId: decoded.campusId || user.campusId,
       status: user.status,
@@ -59,4 +60,26 @@ export const authorizeRoles = (...roles) => {
   };
 };
 
-export default { authenticateToken, authorizeRoles };
+// New middleware to verify user can only reset their own password
+export const verifyOwnership = (req, res, next) => {
+  const requestedEmail = req.body.email;
+  const loggedInUserEmail = req.user.email;
+  
+  console.log(`Ownership check: requested=${requestedEmail}, loggedIn=${loggedInUserEmail}`);
+  
+  if (requestedEmail !== loggedInUserEmail) {
+    console.log("Unauthorized password reset attempt");
+    return res.status(403).json({ 
+      error: "You can only reset your own password" 
+    });
+  }
+  
+  console.log("Ownership verified");
+  next();
+};
+
+export default { 
+  authenticateToken, 
+  authorizeRoles, 
+  verifyOwnership 
+};
