@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { login } from "../api";
 import { toast } from "react-hot-toast";
 import { Eye, EyeClosed } from "lucide-react";
+import { useUser } from "../context/UserContext";
 import aauLogo from "../assets/aauLogo.png";
 import aauimg from "../assets/aauimg.png";
 import logo1 from "../assets/logo1.png";
@@ -20,6 +21,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { login: loginContext } = useUser();
 
   const [error, setError] = useState({
     email: "",
@@ -36,7 +38,6 @@ export default function Login() {
     setError((prev) => ({ ...prev, [name]: error }));
     return error === "";
   };
-
   const handleLogin = async (e) => {
     e.preventDefault();
     const isEmailValid = validateField("email", email);
@@ -44,12 +45,32 @@ export default function Login() {
 
     if (isEmailValid && isPasswordValid) {
       try {
-        const res = await login({ email, password });
-        // alert("Logged in successfully!");
+        const response = await login({ email, password });
+        const userData = response.data;
+
+        // Store auth token if it's in the response
+        // (assuming the server returns it in a token field)
+        if (response.data.token) {
+          localStorage.setItem("authToken", response.data.token);
+        }
+
+        // Save user data to context
+        loginContext(userData);
         toast.success("Logged in successfully!");
         navigate("/partnership");
       } catch (error) {
-        console.log(error);
+        console.error("Login error:", error);
+        if (error.response) {
+          if (error.response.status === 400) {
+            toast.error("Invalid email or password");
+          } else if (error.response.status === 500) {
+            toast.error("Server error. Please try again later.");
+          } else {
+            toast.error(error.response.data.error || "Login failed");
+          }
+        } else {
+          toast.error("Network error. Please check your connection.");
+        }
       }
     }
   };

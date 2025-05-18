@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   UserIcon,
   PencilIcon,
@@ -8,19 +8,36 @@ import {
   ArrowRightEndOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import NavBar from "../components/NavBar";
+import { useUser } from "../context/UserContext";
 
 const Profile = () => {
-  // Mock user data
+  const { user: contextUser, logout } = useUser();
+  const navigate = useNavigate();
+
   const [user, setUser] = useState({
-    name: "Alice Johnson",
-    email: "alice.johnson@example.com",
-    role: "Super-Admin",
+    name: "",
+    email: "",
+    role: "",
     department: "Partnership Office",
-    joinDate: "2022-03-15",
-    profileImage: null, // No image by default
+    joinDate: new Date().toISOString(),
+    profileImage: null,
   });
 
-  // Mock audit logs
+  useEffect(() => {
+    if (contextUser) {
+      setUser({
+        name: `${contextUser.firstName || ""} ${
+          contextUser.lastName || ""
+        }`.trim(),
+        email: contextUser.email || "",
+        role: contextUser.role || "User",
+        department: contextUser.campusId ? "Department" : "Partnership Office",
+        joinDate: new Date().toISOString(),
+        profileImage: null,
+      });
+    }
+  }, [contextUser]);
+
   const [auditLogs, setAuditLogs] = useState([
     {
       id: 1,
@@ -54,7 +71,6 @@ const Profile = () => {
     },
   ]);
 
-  // Format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -66,19 +82,21 @@ const Profile = () => {
     });
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
       <NavBar />
-
-      {/* Main Content */}
       <div className="p-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
           </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Profile Information */}
+            {/* Profile Info */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="p-6">
@@ -102,24 +120,10 @@ const Profile = () => {
                       {user.department}
                     </p>
                   </div>
-
                   <div className="mt-6 space-y-4">
                     <div className="flex items-center">
                       <div className="w-8 flex-shrink-0 text-gray-500">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                          />
-                        </svg>
+                        <UserIcon className="h-5 w-5" />
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Email</p>
@@ -128,20 +132,7 @@ const Profile = () => {
                     </div>
                     <div className="flex items-center">
                       <div className="w-8 flex-shrink-0 text-gray-500">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
+                        <ClockIcon className="h-5 w-5" />
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Joined</p>
@@ -155,29 +146,28 @@ const Profile = () => {
                       </div>
                     </div>
                   </div>
-
                   <div className="mt-6 space-y-3">
-                    <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white cursor-pointer hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                       <PencilIcon className="h-4 w-4 mr-2" />
                       Edit Profile
                     </button>
-                    <button className="w-full flex items-center justify-center cursor-pointer px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                       <KeyIcon className="h-4 w-4 mr-2" />
                       Change Password
                     </button>
-                    <Link
-                      to="/"
-                      className="w-full flex items-center justify-center cursor-pointer px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
-                      <ArrowRightEndOnRectangleIcon className="w-5 h-5" />
+                      <ArrowRightEndOnRectangleIcon className="w-5 h-5 mr-2" />
                       <span>Logout</span>
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Audit Logs */}
+            {/* Activity Logs */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200">
@@ -214,7 +204,7 @@ const Profile = () => {
                     </div>
                   ))}
                 </div>
-                {auditLogs.length > 5 && (
+                {auditLogs.length >= 5 && (
                   <div className="px-6 py-4 border-t border-gray-200 text-center">
                     <button className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
                       View all activity

@@ -1,23 +1,24 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
   Bars3Icon,
   UsersIcon,
   Cog6ToothIcon,
   UserIcon,
-  ArrowRightEndOnRectangleIcon,
   BellIcon,
-} from '@heroicons/react/24/outline';
-import aauLogo from "../assets/aauLogo.png"
+} from "@heroicons/react/24/outline";
+import { useUser } from "../context/UserContext";
+import UserProfileMenu from "./UserProfileMenu";
+import aauLogo from "../assets/aauLogo.png";
 
 const NavBar = () => {
   const location = useLocation();
+  const { user } = useUser();
 
   // Function to check if the current path matches the link path
   const isActive = (path) => {
     return location.pathname === path;
   };
-
 
   return (
     <>
@@ -54,53 +55,78 @@ const NavBar = () => {
             <div className="flex space-x-6">
               <Link
                 to="/dashboard"
-                className={`${isActive('/dashboard') ? 'text-[#04B09E] font-semibold' : 'text-white hover:text-[#04B09E]'} flex items-center space-x-1 cursor-pointer`}
+                className={`${
+                  isActive("/dashboard")
+                    ? "text-[#04B09E] font-semibold"
+                    : "text-white hover:text-[#04B09E]"
+                } flex items-center space-x-1 cursor-pointer`}
               >
                 <Bars3Icon className="w-5 h-5" />
                 <span>Dashboard</span>
               </Link>
               <Link
                 to="/partnership"
-                className={`${isActive('/partnership') ? 'text-[#04B09E] font-semibold' : 'text-white hover:text-[#04B09E]'} flex items-center space-x-1 cursor-pointer`}
+                className={`${
+                  isActive("/partnership")
+                    ? "text-[#04B09E] font-semibold"
+                    : "text-white hover:text-[#04B09E]"
+                } flex items-center space-x-1 cursor-pointer`}
               >
                 <UsersIcon className="w-5 h-5" />
                 <span>Partnerships</span>
               </Link>
               <Link
                 to="/users"
-                className={`${isActive('/users') ? 'text-[#04B09E] font-semibold' : 'text-white hover:text-[#04B09E]'} flex items-center space-x-1 cursor-pointer`}
+                className={`${
+                  isActive("/users")
+                    ? "text-[#04B09E] font-semibold"
+                    : "text-white hover:text-[#04B09E]"
+                } flex items-center space-x-1 cursor-pointer`}
               >
                 <UsersIcon className="w-5 h-5" />
                 <span>Users</span>
               </Link>
               <Link
                 to="/settings"
-                className={`${isActive('/settings') ? 'text-[#04B09E] font-semibold' : 'text-white hover:text-[#04B09E]'} flex items-center space-x-1 cursor-pointer`}
+                className={`${
+                  isActive("/settings")
+                    ? "text-[#04B09E] font-semibold"
+                    : "text-white hover:text-[#04B09E]"
+                } flex items-center space-x-1 cursor-pointer`}
               >
                 <Cog6ToothIcon className="w-5 h-5" />
                 <span>Settings</span>
               </Link>
               <Link
                 to="/profile"
-                className={`${isActive('/profile') ? 'text-[#04B09E] font-semibold' : 'text-white hover:text-[#04B09E]'} flex items-center space-x-1 cursor-pointer`}
+                className={`${
+                  isActive("/profile")
+                    ? "text-[#04B09E] font-semibold"
+                    : "text-white hover:text-[#04B09E]"
+                } flex items-center space-x-1 cursor-pointer`}
               >
                 <UserIcon className="w-5 h-5" />
                 <span>Profile</span>
-              </Link>
+              </Link>{" "}
               <div className="pl-4">
                 <Link
                   to="/notifications"
-                  className={`${isActive('/notifications') ? 'text-[#04B09E] font-semibold' : 'text-white hover:text-[#04B09E]'} flex items-center space-x-1 relative cursor-pointer`}
+                  className={`${
+                    isActive("/notifications")
+                      ? "text-[#04B09E] font-semibold"
+                      : "text-white hover:text-[#04B09E]"
+                  } flex items-center space-x-1 relative cursor-pointer`}
                 >
                   <BellIcon className="w-5 h-5" />
                   <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs">3</span>
                   </div>
                 </Link>
-
-
               </div>
-
+              {/* User Profile Menu */}
+              <div className="pl-4">
+                <UserProfileMenu />
+              </div>
             </div>
             {/* <div className="flex items-center space-x-4">
               <Link
@@ -118,12 +144,8 @@ const NavBar = () => {
               </Link>
             </div> */}
           </section>
-
-
         </div>
       </div>
-
-
     </>
   );
 };

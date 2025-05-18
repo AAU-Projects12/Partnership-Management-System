@@ -13,10 +13,12 @@ import Profile from "./pages/profile.jsx";
 import Notifications from "./pages/notifications.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import PartnershipDetail from "./features/partnership/pages/PartnershipDetails.jsx";
+import { UserProvider } from "./context/UserContext.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 export default function Main() {
   return (
-    <>
+    <UserProvider>
       <Toaster
         position="bottom-center"
         reverseOrder={false}
@@ -27,24 +29,78 @@ export default function Main() {
             color: "#fff",
           },
         }}
-      />
-
+      />{" "}
       <Router>
         <Routes>
           <Route path="/" element={<Login />} />
-          {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/signup" element={<Signup />} />
-          <Route path="/partnership" element={<PartnershipDashboard />} />
-          <Route path="/add-partnership" element={<AddPartnership />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/notifications" element={<Notifications />} />
+          <Route
+            path="/partnership"
+            element={
+              <ProtectedRoute>
+                <PartnershipDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/add-partnership"
+            element={
+              <ProtectedRoute>
+                <AddPartnership />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute>
+                <Users />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <Notifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/partnership/:id"
+            element={
+              <ProtectedRoute>
+                <PartnershipDetail />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<NotFound />} />
-          <Route path="/partnership/:id" element={<PartnershipDetail />} />
         </Routes>
       </Router>
-    </>
+    </UserProvider>
   );
 }
