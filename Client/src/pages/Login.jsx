@@ -45,19 +45,46 @@ export default function Login() {
 
     if (isEmailValid && isPasswordValid) {
       try {
-        const response = await login({ email, password });
+        const response = await login({ email, password }); // This is the login function from api.jsx
+
         const userData = response.data;
 
-        // Store auth token if it's in the response
-        // (assuming the server returns it in a token field)
-        if (response.data.token) {
-          localStorage.setItem("authToken", response.data.token);
+        // Look for token in different locations
+        // 1. Check if token is in response.data (typical REST API pattern)
+        let token = userData?.token;
+
+        // 2. Check if token is in response headers (common in some APIs)
+        if (!token) {
+          token =
+            response.headers?.authorization?.replace("Bearer ", "") ||
+            response.headers?.["x-auth-token"] ||
+            response.headers?.["authToken"];
         }
 
-        // Save user data to context
-        loginContext(userData);
-        toast.success("Logged in successfully!");
-        navigate("/partnership");
+        // 3. If still no token, but we have user data with _id, we could construct a temporary identifier
+        // This is a fallback approach - ideally, the server should send a proper JWT token
+        if (!token && userData?._id) {
+          // Note: This is NOT a real JWT token, just a placeholder. In a real app, the server should provide the token.
+          token = userData._id; // Using the user ID as a minimal token for testing
+          console.warn(
+            "Using user ID as token because no token was found in the response. This is not secure!"
+          );
+        }
+
+        if (token && userData) {
+          loginContext(userData, token);
+          toast.success("Logged in successfully!");
+          navigate("/partnership");
+        } else {
+          // Still couldn't find a token to use
+          toast.error(
+            "Login successful, but couldn't establish a secure session. Please contact your administrator."
+          );
+          console.error(
+            "Login response did not include a proper token:",
+            userData
+          );
+        }
       } catch (error) {
         console.error("Login error:", error);
         if (error.response) {

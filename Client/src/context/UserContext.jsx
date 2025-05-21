@@ -11,28 +11,47 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user data from localStorage on initial render
+  // Load user data and token from localStorage on initial render
   useEffect(() => {
-    const loadUserFromStorage = () => {
+    const loadAuthDataFromStorage = () => {
       try {
         const storedUser = localStorage.getItem("user");
-        if (storedUser) {
+        const storedToken = localStorage.getItem("authToken"); // Check for the auth token as well
+
+        if (storedUser && storedToken) {
+          // Only set user if both user data and token exist
           setUser(JSON.parse(storedUser));
+        } else {
+          // If user data or token is missing, clear both to ensure a clean state
+          setUser(null);
+          localStorage.removeItem("user");
+          localStorage.removeItem("authToken");
         }
       } catch (error) {
-        console.error("Error loading user from storage:", error);
+        console.error("Error loading auth data from storage:", error);
+        // Ensure a clean state on error
+        setUser(null);
+        localStorage.removeItem("user");
+        localStorage.removeItem("authToken");
       } finally {
         setLoading(false);
       }
     };
 
-    loadUserFromStorage();
+    loadAuthDataFromStorage();
   }, []);
 
   // Login function
-  const login = (userData) => {
+  const login = (userData, token) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
+    if (token) {
+      localStorage.setItem("authToken", token); // Store the token
+    } else {
+      // If no token is provided during login, it's an inconsistent state, so clear to be safe.
+      localStorage.removeItem("authToken");
+      console.warn("Login function called without a token.");
+    }
   };
   // Logout function
   const logout = () => {

@@ -21,3 +21,5 @@ API.interceptors.request.use(
 export const signUp = (userData) => API.post("/auth/signup", userData);
 export const login = (userData) => API.post("/auth/login", userData);
 export const logout = () => API.post("/auth/logout");
+export const createPartnership = (partnershipData) =>
+  API.post("/partnership", partnershipData);
