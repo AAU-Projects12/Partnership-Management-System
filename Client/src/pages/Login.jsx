@@ -222,24 +222,6 @@ export default function Login() {
         <img src={logo7} className="h-16 w-auto" />
         <img src={logo8} className="h-16 w-auto" />
         <img src={logo9} className="h-16 w-auto" />
-        {/* {[
-          "y0rhtHirob",
-          "BXaR8XHk0C",
-          "k5PGxTCs0F",
-          "HQOmE5SR2A",
-          "LW3kEYvpAu",
-          "mqbonTYqtm",
-          "9yAtzXbiMi",
-          "tyAQkk5rfp",
-          "3AJeb17BFE",
-        ].map((imgId, index) => (
-          <img
-            key={index}
-            src={`https://codia-f2c.s3.us-west-1.amazonaws.com/image/2025-04-04/${imgId}.png`}
-            alt={`logo-${index}`}
-            className="h-16 w-auto"
-          />
-        ))} */}
       </div>
     </div>
   );
