@@ -36,7 +36,9 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    console.log("Login attempt:", { email, passwordLength: password.length });
+    // console.log("Login attempt:", { email, passwordLength: password.body });
+// Remove .body, as 'password' already holds the string value
+console.log("Login attempt:", { email, password });
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -81,18 +83,18 @@ export const logout = (req, res) => {
 export const resetPassword = async (req, res) => {
   try {
     const { newPassword, confirmPassword } = req.body;
-    const { email } = req.user; // Get email from authenticated user
-
-    if (!newPassword || !confirmPassword) {
-      return res.status(400).json({ error: "New password and confirmation are required" });
-    }
+    const { email } = req.user; 
 
     if (newPassword !== confirmPassword) {
       return res.status(400).json({ error: "Passwords don't match" });
     }
 
     const user = await User.findOne({ email });
-    user.password = newPassword;
+    
+    // THIS IS THE FIX: HASH THE NEW PASSWORD BEFORE SAVING
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    
     await user.save();
 
     res.status(200).json({ message: "Password reset successfully" });
@@ -101,5 +103,6 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 export default { login, logout, resetPassword, authMiddleware };
