@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:7004/api", 
+  baseURL: "http://localhost:7004/api",
 });
 
 API.interceptors.request.use(
@@ -22,3 +22,9 @@ export const login = (userData) => API.post("/auth/login", userData);
 export const logout = () => API.post("/auth/logout");
 export const createPartnership = (partnershipData) =>
   API.post("/partnership", partnershipData);
+export const resetPassword = (data) => API.post("/auth/reset-password", data);
+export const getPartnerships = (params) => API.get("/partnership", { params });
+export const getPartnershipById = (id) => API.get(`/partnership/${id}`);
+export const updatePartnership = (id, data) =>
+  API.put(`/partnership/${id}`, data);
+export const deletePartnership = (id) => API.delete(`/partnership/${id}`);

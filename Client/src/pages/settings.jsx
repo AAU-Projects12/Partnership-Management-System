@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Switch } from '@headlessui/react';
+import React, { useState } from "react";
+import { Switch } from "@headlessui/react";
 import {
   Cog6ToothIcon,
   BellIcon,
@@ -8,8 +8,9 @@ import {
   MoonIcon,
   LanguageIcon,
   TrashIcon,
-} from '@heroicons/react/24/outline';
-import NavBar from '../components/NavBar';
+} from "@heroicons/react/24/outline";
+import NavBar from "../components/NavBar";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
   // State for settings
@@ -17,9 +18,11 @@ const Settings = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [systemNotifications, setSystemNotifications] = useState(true);
   const [partnershipUpdates, setPartnershipUpdates] = useState(true);
-  const [language, setLanguage] = useState('English');
+  const [language, setLanguage] = useState("English");
   const [dataSharing, setDataSharing] = useState(false);
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState("general");
+
+  const navigate = useNavigate();
 
   // Toggle function for switches
   const toggleSwitch = (setter) => (value) => setter(value);
@@ -27,27 +30,35 @@ const Settings = () => {
   // Function to render the settings tab content
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'general':
+      case "general":
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900">General Settings</h3>
-            
+            <h3 className="text-lg font-medium text-gray-900">
+              General Settings
+            </h3>
+
             <div className="flex items-center justify-between py-4 border-b border-gray-200">
               <div className="flex items-center space-x-3">
                 <MoonIcon className="h-6 w-6 text-gray-500" />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Dark Mode</p>
-                  <p className="text-xs text-gray-500">Switch between light and dark themes</p>
+                  <p className="text-xs text-gray-500">
+                    Switch between light and dark themes
+                  </p>
                 </div>
               </div>
               <Switch
                 checked={darkMode}
                 onChange={toggleSwitch(setDarkMode)}
-                className={`${darkMode ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
+                className={`${
+                  darkMode ? "bg-blue-600" : "bg-gray-200"
+                } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
               >
                 <span className="sr-only">Enable Dark Mode</span>
                 <span
-                  className={`${darkMode ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                  className={`${
+                    darkMode ? "translate-x-6" : "translate-x-1"
+                  } inline-block h-4 w-4 transform rounded-full bg-white transition`}
                 />
               </Switch>
             </div>
@@ -57,7 +68,9 @@ const Settings = () => {
                 <LanguageIcon className="h-6 w-6 text-gray-500" />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Language</p>
-                  <p className="text-xs text-gray-500">Select your preferred language</p>
+                  <p className="text-xs text-gray-500">
+                    Select your preferred language
+                  </p>
                 </div>
               </div>
               <select
@@ -73,27 +86,37 @@ const Settings = () => {
             </div>
           </div>
         );
-      case 'notifications':
+      case "notifications":
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900">Notification Settings</h3>
-            
+            <h3 className="text-lg font-medium text-gray-900">
+              Notification Settings
+            </h3>
+
             <div className="flex items-center justify-between py-4 border-b border-gray-200">
               <div className="flex items-center space-x-3">
                 <BellIcon className="h-6 w-6 text-gray-500" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Email Notifications</p>
-                  <p className="text-xs text-gray-500">Receive notifications via email</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    Email Notifications
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Receive notifications via email
+                  </p>
                 </div>
               </div>
               <Switch
                 checked={emailNotifications}
                 onChange={toggleSwitch(setEmailNotifications)}
-                className={`${emailNotifications ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full`}
+                className={`${
+                  emailNotifications ? "bg-blue-600" : "bg-gray-200"
+                } relative inline-flex h-6 w-11 items-center rounded-full`}
               >
                 <span className="sr-only">Enable Email Notifications</span>
                 <span
-                  className={`${emailNotifications ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition cursor-pointer`}
+                  className={`${
+                    emailNotifications ? "translate-x-6" : "translate-x-1"
+                  } inline-block h-4 w-4 transform rounded-full bg-white transition cursor-pointer`}
                 />
               </Switch>
             </div>
@@ -102,18 +125,26 @@ const Settings = () => {
               <div className="flex items-center space-x-3">
                 <BellIcon className="h-6 w-6 text-gray-500" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">System Notifications</p>
-                  <p className="text-xs text-gray-500">Receive notifications within the system</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    System Notifications
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Receive notifications within the system
+                  </p>
                 </div>
               </div>
               <Switch
                 checked={systemNotifications}
                 onChange={toggleSwitch(setSystemNotifications)}
-                className={`${systemNotifications ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
+                className={`${
+                  systemNotifications ? "bg-blue-600" : "bg-gray-200"
+                } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
               >
                 <span className="sr-only">Enable System Notifications</span>
                 <span
-                  className={`${systemNotifications ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                  className={`${
+                    systemNotifications ? "translate-x-6" : "translate-x-1"
+                  } inline-block h-4 w-4 transform rounded-full bg-white transition`}
                 />
               </Switch>
             </div>
@@ -122,65 +153,96 @@ const Settings = () => {
               <div className="flex items-center space-x-3">
                 <BellIcon className="h-6 w-6 text-gray-500" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Partnership Updates</p>
-                  <p className="text-xs text-gray-500">Get notified about partnership changes</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    Partnership Updates
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Get notified about partnership changes
+                  </p>
                 </div>
               </div>
               <Switch
                 checked={partnershipUpdates}
                 onChange={toggleSwitch(setPartnershipUpdates)}
-                className={`${partnershipUpdates ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
+                className={`${
+                  partnershipUpdates ? "bg-blue-600" : "bg-gray-200"
+                } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
               >
                 <span className="sr-only">Enable Partnership Updates</span>
                 <span
-                  className={`${partnershipUpdates ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                  className={`${
+                    partnershipUpdates ? "translate-x-6" : "translate-x-1"
+                  } inline-block h-4 w-4 transform rounded-full bg-white transition`}
                 />
               </Switch>
             </div>
           </div>
         );
-      case 'privacy':
+      case "privacy":
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900">Privacy Settings</h3>
-            
+            <h3 className="text-lg font-medium text-gray-900">
+              Privacy Settings
+            </h3>
+
             <div className="flex items-center justify-between py-4 border-b border-gray-200">
               <div className="flex items-center space-x-3">
                 <ShieldCheckIcon className="h-6 w-6 text-gray-500" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Data Sharing</p>
-                  <p className="text-xs text-gray-500">Allow sharing of non-sensitive data for system improvements</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    Data Sharing
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Allow sharing of non-sensitive data for system improvements
+                  </p>
                 </div>
               </div>
               <Switch
                 checked={dataSharing}
                 onChange={toggleSwitch(setDataSharing)}
-                className={`${dataSharing ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
+                className={`${
+                  dataSharing ? "bg-blue-600" : "bg-gray-200"
+                } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
               >
                 <span className="sr-only">Enable Data Sharing</span>
                 <span
-                  className={`${dataSharing ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                  className={`${
+                    dataSharing ? "translate-x-6" : "translate-x-1"
+                  } inline-block h-4 w-4 transform rounded-full bg-white transition`}
                 />
               </Switch>
             </div>
           </div>
         );
-      case 'account':
+      case "account":
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-medium text-gray-900">Account Settings</h3>
-            
+            <h3 className="text-lg font-medium text-gray-900">
+              Account Settings
+            </h3>
+
             <div className="py-4 border-b border-gray-200">
               <div className="flex items-center space-x-3 mb-4">
                 <UserIcon className="h-6 w-6 text-gray-500" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Account Information</p>
-                  <p className="text-xs text-gray-500">Manage your account details</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    Account Information
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Manage your account details
+                  </p>
                 </div>
               </div>
               <div className="ml-9 space-y-3">
-                <button className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">Change Password</button>
-                <button className="block text-sm text-blue-600 hover:text-blue-800 cursor-pointer">Update Email Address</button>
+                <button
+                  className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
+                  onClick={() => navigate("/reset-password")}
+                >
+                  Change Password
+                </button>
+                <button className="block text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
+                  Update Email Address
+                </button>
               </div>
             </div>
 
@@ -188,8 +250,12 @@ const Settings = () => {
               <div className="flex items-center space-x-3 mb-4">
                 <TrashIcon className="h-6 w-6 text-red-500" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Delete Account</p>
-                  <p className="text-xs text-gray-500">Permanently delete your account and all data</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    Delete Account
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Permanently delete your account and all data
+                  </p>
                 </div>
               </div>
               <div className="ml-9">
@@ -222,29 +288,45 @@ const Settings = () => {
               <div className="w-64 bg-gray-50 p-6 border-r border-gray-200">
                 <nav className="space-y-2">
                   <button
-                    onClick={() => setActiveTab('general')}
-                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${activeTab === 'general' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                    onClick={() => setActiveTab("general")}
+                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${
+                      activeTab === "general"
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
                   >
                     <Cog6ToothIcon className="h-5 w-5" />
                     <span>General</span>
                   </button>
                   <button
-                    onClick={() => setActiveTab('notifications')}
-                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${activeTab === 'notifications' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                    onClick={() => setActiveTab("notifications")}
+                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${
+                      activeTab === "notifications"
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
                   >
                     <BellIcon className="h-5 w-5" />
                     <span>Notifications</span>
                   </button>
                   <button
-                    onClick={() => setActiveTab('privacy')}
-                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${activeTab === 'privacy' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                    onClick={() => setActiveTab("privacy")}
+                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${
+                      activeTab === "privacy"
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
                   >
                     <ShieldCheckIcon className="h-5 w-5" />
                     <span>Privacy</span>
                   </button>
                   <button
-                    onClick={() => setActiveTab('account')}
-                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${activeTab === 'account' ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                    onClick={() => setActiveTab("account")}
+                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${
+                      activeTab === "account"
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
                   >
                     <UserIcon className="h-5 w-5" />
                     <span>Account</span>
@@ -253,9 +335,7 @@ const Settings = () => {
               </div>
 
               {/* Settings Content */}
-              <div className="flex-1 p-6">
-                {renderTabContent()}
-              </div>
+              <div className="flex-1 p-6">{renderTabContent()}</div>
             </div>
           </div>
         </div>

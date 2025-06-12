@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import LoadingSpinner from "./LoadingSpinner";
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useUser();
 
   if (loading) {
@@ -15,7 +15,12 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/" replace />;
   }
 
-  // Render the protected component if user is authenticated
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    // If user's role is not allowed, redirect to a not found or unauthorized page
+    return <Navigate to="/not-found" replace />;
+  }
+
+  // Render the protected component if user is authenticated and authorized
   return children;
 };
 

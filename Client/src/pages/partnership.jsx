@@ -6,19 +6,22 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  Edit,
+  Trash2,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // Components
 import NavBar from "../components/NavBar";
 import FilterButton from "../features/partnership/components/FilterButton";
-import FilterDropdown from '../features/partnership/components/FilterDropdown';
-import TableHeader from '../features/partnership/components/TableHeader';
-import PartnerRow from '../features/partnership/components/PartnerRow';
-import Pagination from '../features/partnership/components/Pagination';
-import Toast from '../features/partnership/components/Toast';
-import ConfirmDialog from '../features/partnership/components/ConfirmDialog';
+import FilterDropdown from "../features/partnership/components/FilterDropdown";
+import TableHeader from "../features/partnership/components/TableHeader";
+import PartnerRow from "../features/partnership/components/PartnerRow";
+import Pagination from "../features/partnership/components/Pagination";
+import Toast from "../features/partnership/components/Toast";
+import ConfirmDialog from "../features/partnership/components/ConfirmDialog";
 import FilterDialog from "../features/partnership/components/FilterDialog";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 // Data and utilities
 import {
@@ -26,15 +29,16 @@ import {
   partnerTypes,
   partnerStatuses,
   durationCategories,
-  tableColumns
-} from '../features/partnership/data/sampleData';
+  tableColumns,
+} from "../features/partnership/data/sampleData";
 import {
   filterBySearch,
   applyFilters,
   sortPartners,
-  paginatePartners
-} from '../features/partnership/utils/partnershipUtils';
-import useLocalStorage from '../features/partnership/hooks/useLocalStorage';
+  paginatePartners,
+} from "../features/partnership/utils/partnershipUtils";
+import useLocalStorage from "../features/partnership/hooks/useLocalStorage";
+import { getPartnerships } from "../api.jsx";
 
 const PartnershipDashboard = () => {
   // State for search and filters
@@ -44,17 +48,20 @@ const PartnershipDashboard = () => {
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
 
   // Filter states
-  const [activeFilterButton, setActiveFilterButton] = useLocalStorage("activeFilterButton", "name");
+  const [activeFilterButton, setActiveFilterButton] = useLocalStorage(
+    "activeFilterButton",
+    "name"
+  );
   const [filters, setFilters] = useLocalStorage("partnershipFilters", {
     types: [],
     statuses: [],
-    durations: []
+    durations: [],
   });
 
   // Sorting state
   const [sortConfig, setSortConfig] = useLocalStorage("partnershipSort", {
     column: "name",
-    direction: "asc"
+    direction: "asc",
   });
 
   // Pagination state
@@ -68,10 +75,42 @@ const PartnershipDashboard = () => {
     isOpen: false,
     title: "",
     message: "",
-    onConfirm: null
+    onConfirm: null,
   });
 
+  const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
+
   // Apply filters, sorting, and search
+  useEffect(() => {
+    async function fetchPartners() {
+      setLoading(true);
+      try {
+        const response = await getPartnerships();
+        // Map backend data to frontend table structure
+        const mappedPartners = (response.data.partnerships || []).map((p) => ({
+          id: p._id || p.id,
+          logo: p.logo || "/placeholder.svg",
+          name: p.partnerInstitution?.name || "-",
+          type: p.partnerInstitution?.typeOfOrganization || "-",
+          duration: p.durationOfPartnership || "-",
+          contact: p.partnerContactPerson?.name || "-",
+          status: p.status || "-",
+          // Add more fields as needed
+        }));
+        setPartners(mappedPartners);
+      } catch (error) {
+        setPartners([]);
+        setFilteredPartners([]);
+        setToast({ message: "Failed to fetch partnerships", type: "error" });
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPartners();
+  }, []);
+
   useEffect(() => {
     let result = [...partners];
 
@@ -96,11 +135,11 @@ const PartnershipDashboard = () => {
 
   // Handle sorting
   const handleSort = (column, direction) => {
-    if (column === 'actions') return; // Don't sort by actions column
+    if (column === "actions") return; // Don't sort by actions column
 
     setSortConfig({
       column,
-      direction
+      direction,
     });
   };
 
@@ -109,12 +148,15 @@ const PartnershipDashboard = () => {
     setConfirmDialog({
       isOpen: true,
       title: "Delete Partner",
-      message: "Are you sure you want to delete this partner? This action cannot be undone.",
+      message:
+        "Are you sure you want to delete this partner? This action cannot be undone.",
       onConfirm: () => {
-        setPartners(prev => prev.filter(partner => partner.id !== partnerId));
+        setPartners((prev) =>
+          prev.filter((partner) => partner.id !== partnerId)
+        );
         showToast("Partner deleted successfully", "success");
         setConfirmDialog({ ...confirmDialog, isOpen: false });
-      }
+      },
     });
   };
 
@@ -135,26 +177,35 @@ const PartnershipDashboard = () => {
     setFilters({
       types: [],
       statuses: [],
-      durations: []
+      durations: [],
     });
     setSortConfig({
       column: "name",
-      direction: "asc"
+      direction: "asc",
     });
     setActiveFilterButton("name");
     showToast("All filters cleared", "info");
   };
 
   // Get paginated partners for current view
-  const paginatedPartners = paginatePartners(filteredPartners, currentPage, itemsPerPage);
+  const paginatedPartners = paginatePartners(
+    filteredPartners,
+    currentPage,
+    itemsPerPage
+  );
 
   // Check if any filters are active
-  const hasActiveFilters = searchQuery.trim() !== "" ||
+  const hasActiveFilters =
+    searchQuery.trim() !== "" ||
     filters.types.length > 0 ||
     filters.statuses.length > 0 ||
     filters.durations.length > 0;
 
-  const modifiedColumns = tableColumns.filter(col => col.key !== 'selectAll');
+  const modifiedColumns = tableColumns.filter((col) => col.key !== "selectAll");
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -204,15 +255,18 @@ const PartnershipDashboard = () => {
               </div>
               <button
                 onClick={() => setIsFilterDialogOpen(true)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${hasActiveFilters
-                  ? 'bg-[#004165] text-white'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                  }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  hasActiveFilters
+                    ? "bg-[#004165] text-white"
+                    : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
               >
                 <Filter className="h-4 w-4" />
                 {hasActiveFilters && (
                   <span className="flex items-center justify-center bg-white text-[#004165] rounded-full w-5 h-5 text-xs">
-                    {filters.types.length + filters.statuses.length + filters.durations.length}
+                    {filters.types.length +
+                      filters.statuses.length +
+                      filters.durations.length}
                   </span>
                 )}
               </button>
@@ -284,9 +338,6 @@ const PartnershipDashboard = () => {
                 />
               </div>
             </div>
-
-
-
           </div>
 
           {/* Partnership Lists */}
@@ -295,15 +346,24 @@ const PartnershipDashboard = () => {
               <h3 className="text-lg font-bold">Partnership Lists</h3>
 
               <div className="text-sm text-gray-600">
-                Showing {Math.min(filteredPartners.length, 1 + (currentPage - 1) * itemsPerPage)}-
-                {Math.min(currentPage * itemsPerPage, filteredPartners.length)} of {filteredPartners.length} partners
+                Showing{" "}
+                {Math.min(
+                  filteredPartners.length,
+                  1 + (currentPage - 1) * itemsPerPage
+                )}
+                -{Math.min(currentPage * itemsPerPage, filteredPartners.length)}{" "}
+                of {filteredPartners.length} partners
               </div>
 
               <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 className="text-[#004165] hover:bg-[#004165]/10 p-2 rounded-full transition-colors"
               >
-                {isCollapsed ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
+                {isCollapsed ? (
+                  <ChevronDown className="h-5 w-5" />
+                ) : (
+                  <ChevronUp className="h-5 w-5" />
+                )}
               </button>
             </div>
 
@@ -338,7 +398,26 @@ const PartnershipDashboard = () => {
                     partner={partner}
                     onDelete={handleDeletePartner}
                     onEdit={handleEditPartner}
-                  />
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end space-x-2">
+                        <button
+                          onClick={() =>
+                            navigate(`/edit-partnership/${partner.id}`)
+                          }
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDeletePartner(partner.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </PartnerRow>
                 ))}
 
                 {/* Pagination */}

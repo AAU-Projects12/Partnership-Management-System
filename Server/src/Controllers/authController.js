@@ -51,7 +51,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
-    generateTokenAndSetCookie(user, res);
+    const token = generateTokenAndSetCookie(user, res);
 
     res.status(200).json({
       _id: user._id,
@@ -61,6 +61,7 @@ export const login = async (req, res) => {
       role: user.role,
       campusId: user.campusId,
       status: user.status,
+      token: token,
     });
   } catch (error) {
     console.error("Error in login controller:", error.message, error.stack);
@@ -84,7 +85,9 @@ export const resetPassword = async (req, res) => {
     const { email } = req.user; // Get email from authenticated user
 
     if (!newPassword || !confirmPassword) {
-      return res.status(400).json({ error: "New password and confirmation are required" });
+      return res
+        .status(400)
+        .json({ error: "New password and confirmation are required" });
     }
 
     if (newPassword !== confirmPassword) {

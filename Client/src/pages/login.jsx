@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../api";
+import { login } from "../api.jsx";
 import { toast } from "react-hot-toast";
 import { Eye, EyeClosed } from "lucide-react";
 import { useUser } from "../context/UserContext";
@@ -46,13 +46,9 @@ export default function Login() {
     if (isEmailValid && isPasswordValid) {
       try {
         const response = await login({ email, password });
-
         const userData = response.data;
-
-        // Look for token in different locations
-        // 1. Check if token is in response.data (typical REST API pattern)
+        // Look for token in response.data (typical REST API pattern)
         let token = userData?.token;
-
         // 2. Check if token is in response headers (common in some APIs)
         if (!token) {
           token =
@@ -60,25 +56,14 @@ export default function Login() {
             response.headers?.["x-auth-token"] ||
             response.headers?.["authToken"];
         }
-
-        // 3. If still no token, but we have user data with _id, we could construct a temporary identifier
-        // This is a fallback approach - ideally, the server should send a proper JWT token
-        if (!token && userData?._id) {
-          // Note: This is NOT a real JWT token, just a placeholder. In a real app, the server should provide the token.
-          token = userData._id; // Using the user ID as a minimal token for testing
-          console.warn(
-            "Using user ID as token because no token was found in the response. This is not secure!"
-          );
-        }
-
+        // Only proceed if a real token is found
         if (token && userData) {
           loginContext(userData, token);
           toast.success("Logged in successfully!");
           navigate("/partnership");
         } else {
-          // Still couldn't find a token to use
           toast.error(
-            "Login successful, but couldn't establish a secure session. Please contact your administrator."
+            "Login failed: No authentication token received. Please contact your administrator."
           );
           console.error(
             "Login response did not include a proper token:",

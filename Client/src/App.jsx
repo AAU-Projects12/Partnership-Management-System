@@ -1,7 +1,6 @@
 import React from "react";
 import "./index.css";
 import Login from "./pages/Login.jsx";
-import Signup from "./pages/Signup.jsx";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import PartnershipDashboard from "./pages/partnership.jsx";
@@ -15,6 +14,8 @@ import NotFound from "./pages/NotFound.jsx";
 import PartnershipDetail from "./features/partnership/pages/PartnershipDetails.jsx";
 import { UserProvider } from "./context/UserContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
+import EditPartnership from "./pages/edit-partnership";
 
 export default function Main() {
   return (
@@ -33,7 +34,6 @@ export default function Main() {
       <Router>
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
           <Route
             path="/partnership"
             element={
@@ -61,7 +61,7 @@ export default function Main() {
           <Route
             path="/users"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["SuperAdmin"]}>
                 <Users />
               </ProtectedRoute>
             }
@@ -98,6 +98,8 @@ export default function Main() {
               </ProtectedRoute>
             }
           />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/edit-partnership/:id" element={<EditPartnership />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

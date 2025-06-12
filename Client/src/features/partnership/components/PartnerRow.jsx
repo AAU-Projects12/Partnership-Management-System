@@ -1,13 +1,9 @@
-import React from 'react';
-import { Trash2, Edit, Eye } from 'lucide-react';
-import { useNavigate , Link} from 'react-router-dom';
-import StatusBadge from './StatusBadge';
+import React from "react";
+import { Trash2, Edit, Eye } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import StatusBadge from "./StatusBadge";
 
-const PartnerRow = ({ 
-  partner,
-  onDelete,
-  onEdit
-}) => {
+const PartnerRow = ({ partner, onDelete, onEdit }) => {
   const navigate = useNavigate();
 
   return (
@@ -24,31 +20,37 @@ const PartnerRow = ({
           />
         </div>
       </div>
-      
-      <div className="font-medium text-[#004165] cursor-pointer"> <button onClick={() => navigate(`/partnership/${partner.id}`)} > {partner.name}</button></div>
+
+      <div className="font-medium text-[#004165] cursor-pointer">
+        {" "}
+        <button onClick={() => navigate(`/partnership/${partner.id}`)}>
+          {" "}
+          {partner.name}
+        </button>
+      </div>
       <div>{partner.type}</div>
       <div>{partner.duration}</div>
       <div>{partner.contact}</div>
       <div>
         <StatusBadge status={partner.status} />
       </div>
-      
+
       <div className="flex gap-2">
-        <button 
+        <button
           className="p-1 text-gray-500 hover:text-red-500 transition-colors"
           onClick={() => onDelete(partner.id)}
           title="Delete"
         >
           <Trash2 className="h-4 w-4" />
         </button>
-        <button 
+        <button
           className="p-1 text-gray-500 hover:text-blue-500 transition-colors"
-          onClick={() => onEdit(partner.id)}
+          onClick={() => navigate(`/edit-partnership/${partner.id}`)}
           title="Edit"
         >
           <Edit className="h-4 w-4" />
         </button>
-        <button 
+        <button
           className="p-1 text-gray-500 hover:text-green-500 transition-colors"
           onClick={() => navigate(`/partnership/${partner.id}`)}
           title="View"
@@ -60,4 +62,4 @@ const PartnerRow = ({
   );
 };
 
-export default PartnerRow
+export default PartnerRow;
