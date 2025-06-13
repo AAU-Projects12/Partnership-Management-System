@@ -164,22 +164,22 @@ const Dashboard = () => {
       <NavBar />
 
       {/* Main Content */}
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Partnership Statistics</h1>
-          <div className="flex space-x-3">
-            <div className="relative">
+      <div className="p-4 lg:p-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-800">Partnership Statistics</h1>
+          <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+            <div className="relative flex-1 sm:flex-none">
               <input
                 type="text"
                 placeholder="Search Partners"
-                className="pl-4 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full sm:w-64 pl-4 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <span className="absolute right-3 top-2.5 text-gray-400">×</span>
             </div>
             <select
               value={collegeFilter}
               onChange={(e) => setCollegeFilter(e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              className="w-full sm:w-64 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               {colleges.map((college) => (
                 <option key={college} value={college}>
@@ -189,7 +189,7 @@ const Dashboard = () => {
             </select>
             <Link
               to="/add-partnership"
-              className="bg-[#004165] hover:bg-[#00334e] text-white rounded-full px-6 py-2 flex items-center transition-colors"
+              className="bg-[#004165] hover:bg-[#00334e] text-white rounded-full px-6 py-2 flex items-center justify-center transition-colors"
             >
               + New Partner
             </Link>
@@ -197,10 +197,10 @@ const Dashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
           {/* Total Partners */}
-          <div className="bg-white p-6 rounded-xl shadow-md">
-            <h2 className="text-4xl font-bold text-gray-800">{selectedCollegeData.active + selectedCollegeData.expiringSoon + selectedCollegeData.expired + selectedCollegeData.prospect} Partners</h2>
+          <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md">
+            <h2 className="text-2xl lg:text-4xl font-bold text-gray-800">{selectedCollegeData.active + selectedCollegeData.expiringSoon + selectedCollegeData.expired + selectedCollegeData.prospect} Partners</h2>
             <p className="text-gray-600 mt-2">Units Per Status</p>
             <div className="mt-4">
               <Bar data={barData} options={barOptions} height={100} />
@@ -208,10 +208,10 @@ const Dashboard = () => {
           </div>
 
           {/* Active Partners and Pending Applications */}
-          <div className="flex flex-col space-y-6">
+          <div className="flex flex-col space-y-4 lg:space-y-6">
             {/* Active Partners */}
-            <div className="bg-white p-6 rounded-xl shadow-md">
-              <h2 className="text-3xl font-bold text-gray-800">{selectedCollegeData.active} Partners</h2>
+            <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md">
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">{selectedCollegeData.active} Partners</h2>
               <div className="flex justify-between mt-2">
                 <p className="text-gray-600">Active Partners</p>
                 <p className="text-green-500 font-semibold">+15%</p>
@@ -223,8 +223,8 @@ const Dashboard = () => {
             </div>
 
             {/* Pending Applications */}
-            <div className="bg-white p-6 rounded-xl shadow-md">
-              <h2 className="text-3xl font-bold text-gray-800">{Math.round((selectedCollegeData.expiringSoon + selectedCollegeData.prospect) * 0.5)}</h2>
+            <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md">
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">{Math.round((selectedCollegeData.expiringSoon + selectedCollegeData.prospect) * 0.5)}</h2>
               <div className="flex justify-between mt-2">
                 <p className="text-gray-600">Pending Applications</p>
                 <p className="text-red-500 font-semibold">-5%</p>
@@ -235,48 +235,13 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-
-          {/* Graph Description and Revenue Contribution */}
-          <div className="flex flex-col space-y-6">
-            {/* Graph Description */}
-            <div className="bg-white p-6 rounded-xl shadow-md">
-              <p className="text-gray-600">Graph Description</p>
-              <div className="flex flex-col space-y-2 mt-2">
-                <div className="flex items-center">
-                  <span className="w-4 h-4 bg-gray-300 rounded mr-2"></span>
-                  <span>Expired Soon</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="w-4 h-4 bg-gray-600 rounded mr-2"></span>
-                  <span>Expired</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="w-4 h-4 bg-blue-600 rounded mr-2"></span>
-                  <span>Active</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Revenue Contribution */}
-            <div className="bg-white p-6 rounded-xl shadow-md">
-              <h2 className="text-3xl font-bold text-gray-800">${Math.round((selectedCollegeData.active + selectedCollegeData.expiringSoon) * 0.75)} M</h2>
-              <div className="flex justify-between mt-2">
-                <p className="text-gray-600">Revenue Contribution</p>
-                <p className="text-green-500 font-semibold">+25%</p>
-              </div>
-              <div className="flex justify-between text-sm text-gray-500 mt-2">
-                <span>Ongoing: {Math.round(selectedCollegeData.active * 0.9)}</span>
-                <span>Closing: {Math.round(selectedCollegeData.active * 0.1)}</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Partnership Status Line Graph */}
         <div className="bg-white p-4 rounded-lg shadow-sm">
-          <div className="flex justify-between items-center mb-3">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3">
             <h2 className="text-lg font-medium text-gray-800">Partnership Status</h2>
-            <div className="flex space-x-1">
+            <div className="flex flex-wrap gap-1">
               <button
                 onClick={() => setTimeFilter('Weekly')}
                 className={`px-3 py-1 rounded-md text-sm ${timeFilter === 'Weekly' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'} cursor-pointer`}
