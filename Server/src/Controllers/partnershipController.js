@@ -43,79 +43,56 @@ export const getAllPartnerships = async (req, res) => {
 
 export const createPartnership = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    console.log("User attempting to create partnership:", {
-      userId: req.user.userId,
-      role: req.user.role,
-      campusId: req.user.campusId,
-      status: req.user.status,
-    });
-
-    if (req.user.status !== "active") {
-      console.log("User not active:", req.user.status);
-      return res.status(403).json({
-        error: `User account not active. Current status: ${req.user.status}`,
-      });
-    }
-
     const {
+      name,
+      type,
+      signedDate,
+      endDate,
+      region,
+      country,
+      college,
+      status,
+      description,
       partnerInstitution,
       aauContact,
-      potentialAreasOfCollaboration,
-      otherCollaborationArea,
-      potentialStartDate,
-      durationOfPartnership,
       partnerContactPerson,
-      partnerContactPersonSecondary,
-      aauContactPerson,
-      aauContactPersonSecondary,
-      description,
+      potentialStartDate,
+      documentLink,
     } = req.body;
 
-    if (
-      Array.isArray(potentialAreasOfCollaboration) &&
-      potentialAreasOfCollaboration.includes("Other") &&
-      !otherCollaborationArea
-    ) {
-      return res.status(400).json({
-        error: "Other collaboration area is required when 'Other' is selected",
-      });
-    }
+    // Parse JSON strings back to objects
+    const parsedPartnerInstitution = JSON.parse(partnerInstitution);
+    const parsedAauContact = JSON.parse(aauContact);
+    const parsedPartnerContactPerson = JSON.parse(partnerContactPerson);
 
-    const partnershipStatus = req.user.role === "Admin" ? "Pending" : "Active";
-
-    const partnership = new Partnership({
-      partnerInstitution,
-      aauContact,
-      potentialAreasOfCollaboration,
-      otherCollaborationArea,
-      potentialStartDate: new Date(potentialStartDate),
-      durationOfPartnership,
-      partnerContactPerson,
-      partnerContactPersonSecondary,
-      aauContactPerson,
-      aauContactPersonSecondary,
-      status: partnershipStatus,
-      campusId:
-        req.user.role === "SuperAdmin" ? "default_campus" : req.user.campusId,
-      createdBy: req.user.userId,
-      isArchived: false,
+    const partnershipData = {
+      name,
+      type,
+      signedDate,
+      endDate,
+      region,
+      country,
+      college,
+      status,
       description,
-    });
+      partnerInstitution: parsedPartnerInstitution,
+      aauContact: parsedAauContact,
+      partnerContactPerson: parsedPartnerContactPerson,
+      potentialStartDate,
+      documentLink,
+    };
 
-    await partnership.save();
-
+    const partnership = await Partnership.create(partnershipData);
     res.status(201).json({
-      message: "Partnership created successfully",
-      partnership,
+      success: true,
+      data: partnership,
     });
   } catch (error) {
-    console.error("Error creating partnership:", error.message, error.stack);
-    res.status(500).json({ error: "Server error" });
+    console.error("Partnership creation error:", error);
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
   }
 };
 
@@ -224,7 +201,15 @@ export const updatePartnership = async (req, res) => {
         ? { _id: req.params.id }
         : { _id: req.params.id, campusId: req.user.campusId };
 
-    const updateData = { ...req.body };
+    const updateData = {
+      ...req.body,
+      document: req.file
+        ? {
+            filename: req.file.filename,
+            path: req.file.path,
+          }
+        : undefined,
+    };
     if (
       Array.isArray(updateData.potentialAreasOfCollaboration) &&
       updateData.potentialAreasOfCollaboration.includes("Other") &&

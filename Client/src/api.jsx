@@ -1,30 +1,118 @@
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: "http://localhost:7004/api",
-});
+const API_URL = "http://localhost:5000/api";
 
-API.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+// Auth APIs
+export const login = async (credentials) => {
+  const response = await axios.post(`${API_URL}/auth/login`, credentials);
+  return response.data;
+};
+
+export const register = async (userData) => {
+  const response = await axios.post(`${API_URL}/auth/register`, userData);
+  return response.data;
+};
+
+export const forgotPassword = async (email) => {
+  const response = await axios.post(`${API_URL}/auth/forgot-password`, {
+    email,
+  });
+  return response.data;
+};
+
+export const resetPassword = async (token, password) => {
+  const response = await axios.post(`${API_URL}/auth/reset-password`, {
+    token,
+    password,
+  });
+  return response.data;
+};
+
+// Partnership APIs
+export const getAllPartnerships = async () => {
+  const response = await axios.get(`${API_URL}/partnership`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return response.data;
+};
+
+export const getPartnershipById = async (id) => {
+  const response = await axios.get(`${API_URL}/partnership/${id}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return response.data;
+};
+
+export const createPartnership = async (partnershipData) => {
+  const response = await axios.post(`${API_URL}/partnership`, partnershipData, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};
+
+export const updatePartnership = async (id, partnershipData) => {
+  const response = await axios.put(
+    `${API_URL}/partnership/${id}`,
+    partnershipData,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
+      },
     }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+  );
+  return response.data;
+};
 
-export const signUp = (userData) => API.post("/auth/signup", userData);
-export const login = (userData) => API.post("/auth/login", userData);
-export const logout = () => API.post("/auth/logout");
-export const createPartnership = (partnershipData) =>
-  API.post("/partnership", partnershipData);
-export const resetPassword = (data) => API.post("/auth/reset-password", data);
-export const getPartnerships = (params) => API.get("/partnership", { params });
-export const getPartnershipById = (id) => API.get(`/partnership/${id}`);
-export const updatePartnership = (id, data) =>
-  API.put(`/partnership/${id}`, data);
-export const deletePartnership = (id) => API.delete(`/partnership/${id}`);
+export const deletePartnership = async (id) => {
+  const response = await axios.delete(`${API_URL}/partnership/${id}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return response.data;
+};
+
+// User APIs
+export const getAllUsers = async () => {
+  const response = await axios.get(`${API_URL}/users`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return response.data;
+};
+
+export const createUser = async (userData) => {
+  const response = await axios.post(`${API_URL}/users`, userData, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return response.data;
+};
+
+export const updateUser = async (id, userData) => {
+  const response = await axios.put(`${API_URL}/users/${id}`, userData, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return response.data;
+};
+
+export const deleteUser = async (id) => {
+  const response = await axios.delete(`${API_URL}/users/${id}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return response.data;
+};

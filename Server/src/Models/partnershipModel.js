@@ -194,6 +194,16 @@ const partnershipSchema = new mongoose.Schema(
       trim: true,
       maxlength: [500, "Description cannot exceed 500 characters"],
     },
+    documentLink: {
+      type: String,
+      trim: true,
+      validate: {
+        validator: function (v) {
+          return !v || v.startsWith("https://drive.google.com/");
+        },
+        message: "Document link must be a valid Google Drive URL",
+      },
+    },
   },
   {
     timestamps: true,

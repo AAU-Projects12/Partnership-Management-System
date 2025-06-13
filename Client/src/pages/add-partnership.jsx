@@ -19,6 +19,8 @@ import {
   PlusCircle,
   XCircle,
   Phone,
+  Upload,
+  Link,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -49,6 +51,14 @@ function AddPartnership() {
     deliverables: [""],
     fundingAmount: "",
     reportingRequirements: "",
+    document: null,
+    documentLink: "",
+    partnerInstitution: {
+      name: "",
+      website: "",
+      address: "",
+      country: "",
+    },
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -141,109 +151,32 @@ function AddPartnership() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setErrors({}); // Clear previous errors to re-validate everything
+    setErrors({});
 
-    let formIsValid = true;
-    // FIX: Consolidated validation. This single loop now handles all required fields, including description.
-    for (const [key, value] of Object.entries(formData)) {
-      if (!Array.isArray(value)) {
-        if (!validateField(key, value)) {
-          formIsValid = false;
-        }
-      }
-    }
+    // Validate all fields
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      const error = validateField(key, formData[key]);
+      if (error) newErrors[key] = error;
+    });
 
-    if (!formIsValid) {
-      toast.error("Please correct the errors in the form.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Additional specific format validations after checking for presence
-    const e164Regex = /^\+\d{10,15}$/;
-    if (formData.contactPhone && !e164Regex.test(formData.contactPhone)) {
-      setErrors((prev) => ({
-        ...prev,
-        contactPhone: "Phone must be in E.164 format (e.g. +251911234567)",
-      }));
-      formIsValid = false;
-    }
-    if (formData.aauContactPhone && !e164Regex.test(formData.aauContactPhone)) {
-      setErrors((prev) => ({
-        ...prev,
-        aauContactPhone: "Phone must be in E.164 format (e.g. +251911234567)",
-      }));
-      formIsValid = false;
-    }
-
-    const startDate = new Date(formData.signedDate);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0); // Set time to the beginning of the day for accurate comparison
-    if (startDate < now) {
-      setErrors((prev) => ({
-        ...prev,
-        signedDate: "Start date cannot be in the past.",
-      }));
-      formIsValid = false;
-    }
-
-    if (!formIsValid) {
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       toast.error("Please correct the validation errors.");
       setIsSubmitting(false);
       return;
     }
 
-    // Payload construction remains the same
-    const payload = {
-      partnerInstitution: {
-        name: formData.name,
-        address: formData.region,
-        country: formData.country,
-        typeOfOrganization: formData.type,
-      },
-      aauContact: {
-        interestedCollegeOrDepartment: formData.college,
-      },
-      potentialAreasOfCollaboration: formData.objectives,
-      otherCollaborationArea: formData.objectives.includes("Other")
-        ? formData.scope
-        : undefined,
-      potentialStartDate: formData.signedDate,
-      durationOfPartnership: formData.endDate,
-      partnerContactPerson: {
-        name: formData.contactPerson,
-        title: formData.contactTitle,
-        institutionalEmail: formData.contactEmail,
-        phoneNumber: formData.contactPhone,
-        address: formData.contactAddress,
-      },
-      aauContactPerson: {
-        name: formData.aauContactName,
-        college: formData.aauContactCollege,
-        schoolDepartmentUnit: formData.aauContactSchoolDepartmentUnit,
-        institutionalEmail: formData.aauContactEmail,
-        phoneNumber: formData.aauContactPhone,
-      },
-      description: formData.description.trim(),
-    };
-
-    // This part for removing empty optional fields is fine, but make sure your `requiredFields` list is accurate.
-    // We will keep it as is, assuming the logic matches backend expectations.
-
     try {
-      await createPartnership(payload);
-      toast.success("Partnership created successfully!");
+      // Send the form data directly as JSON
+      await createPartnership(formData);
+      toast.success("Partnership created successfully");
       navigate("/partnership");
       setFormData(initialFormData);
-    } catch (error) {
-      console.error("Failed to create partnership:", error);
-      const errorMsg =
-        error.response?.data?.message ||
-        "Failed to create partnership. Please try again.";
-      toast.error(errorMsg);
-      if (error.response?.data?.errors) {
-        setErrors((prev) => ({ ...prev, ...error.response.data.errors }));
-      }
+    } catch (err) {
+      console.error("Error creating partnership:", err);
+      setErrors({});
+      toast.error(err.response?.data?.error || "Failed to create partnership");
     } finally {
       setIsSubmitting(false);
     }
@@ -1153,6 +1086,37 @@ function AddPartnership() {
                   {errors.deliverables}
                 </p>
               )}
+            </div>
+
+            {/* Partnership Document */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Partnership Document
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Google Drive Document Link
+                  </label>
+                  <div className="mt-1 flex rounded-md shadow-sm">
+                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                      <Link className="h-5 w-5" />
+                    </span>
+                    <input
+                      type="url"
+                      name="documentLink"
+                      value={formData.documentLink}
+                      onChange={handleChange}
+                      placeholder="https://drive.google.com/..."
+                      className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300"
+                    />
+                  </div>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Paste the Google Drive link to your partnership document
+                    (MOU/MOA)
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Submit Button */}
