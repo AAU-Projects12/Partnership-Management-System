@@ -36,7 +36,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    console.log("Login attempt:", { email, passwordLength: password.length });
+    console.log("Login attempt:", { email, password });
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -95,7 +95,11 @@ export const resetPassword = async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    user.password = newPassword;
+
+    // THIS IS THE FIX: HASH THE NEW PASSWORD BEFORE SAVING
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
     await user.save();
 
     res.status(200).json({ message: "Password reset successfully" });

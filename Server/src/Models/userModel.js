@@ -19,18 +19,18 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      minlength: 8, // Updated to enforce 8 characters
+      minlength: 8,
     },
     role: {
       type: String,
-      enum: ["SuperAdmin", "Admin"], // Removed "User"
+      enum: ["Admin", "User"], // Removed "SuperAdmin"
       required: true,
-      default: "Admin",
+      default: "User", // Default to "User"
     },
     campusId: {
       type: String,
       required: function () {
-        return this.role !== "SuperAdmin";
+        return true; // Required for both Admin and User since no SuperAdmin
       },
     },
     status: {
@@ -44,8 +44,9 @@ const userSchema = new mongoose.Schema(
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 12); // Changed to 12
+  // Skip hashing if password is already hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)
+  if (!this.isModified("password") || this.password.match(/^\$2[aby]\$/)) return next();
+  this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
