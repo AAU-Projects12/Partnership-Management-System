@@ -23,19 +23,19 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["SuperAdmin", "Admin", "User"], // Added "User"
+      enum: ["Admin", "User"], // Removed "SuperAdmin"
       required: true,
-      default: "User", // Changed default to "User" to match common use case
+      default: "User", // Default to "User"
     },
     campusId: {
       type: String,
       required: function () {
-        return this.role !== "SuperAdmin"; // Required for Admin and User
+        return true; // Required for both Admin and User since no SuperAdmin
       },
     },
     status: {
       type: String,
-      enum: ["pending", "active", "inactive"], // Keep as is, but handle case sensitivity
+      enum: ["pending", "active", "inactive"],
       default: "pending",
     },
   },
@@ -44,7 +44,8 @@ const userSchema = new mongoose.Schema(
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+  // Skip hashing if password is already hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)
+  if (!this.isModified("password") || this.password.match(/^\$2[aby]\$/)) return next();
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
