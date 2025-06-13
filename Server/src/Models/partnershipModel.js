@@ -5,13 +5,13 @@ const contactPersonSchema = new mongoose.Schema({
     type: String,
     required: [true, "Contact person name is required"],
     trim: true,
-    maxlength: [100, "Name cannot exceed 100 characters"]
+    maxlength: [100, "Name cannot exceed 100 characters"],
   },
   title: {
     type: String,
     required: [true, "Contact person title is required"],
     trim: true,
-    maxlength: [100, "Title cannot exceed 100 characters"]
+    maxlength: [100, "Title cannot exceed 100 characters"],
   },
   institutionalEmail: {
     type: String,
@@ -19,19 +19,22 @@ const contactPersonSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
     match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
-    maxlength: [100, "Email cannot exceed 100 characters"]
+    maxlength: [100, "Email cannot exceed 100 characters"],
   },
   phoneNumber: {
     type: String,
     required: [true, "Phone number is required"],
-    match: [/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number (E.164 format)"],
-    maxlength: [20, "Phone number cannot exceed 20 characters"]
+    match: [
+      /^\+?[1-9]\d{1,14}$/,
+      "Please enter a valid phone number (E.164 format)",
+    ],
+    maxlength: [20, "Phone number cannot exceed 20 characters"],
   },
   address: {
     type: String,
     required: [true, "Address is required"],
     trim: true,
-    maxlength: [200, "Address cannot exceed 200 characters"]
+    maxlength: [200, "Address cannot exceed 200 characters"],
   },
 });
 
@@ -40,7 +43,7 @@ const aauContactPersonSchema = new mongoose.Schema({
     type: String,
     required: [true, "Contact person name is required"],
     trim: true,
-    maxlength: [100, "Name cannot exceed 100 characters"]
+    maxlength: [100, "Name cannot exceed 100 characters"],
   },
   college: {
     type: String,
@@ -60,7 +63,7 @@ const aauContactPersonSchema = new mongoose.Schema({
     type: String,
     required: [true, "School or department unit is required"],
     trim: true,
-    maxlength: [100, "Department name cannot exceed 100 characters"]
+    maxlength: [100, "Department name cannot exceed 100 characters"],
   },
   institutionalEmail: {
     type: String,
@@ -68,136 +71,136 @@ const aauContactPersonSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
     match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
-    maxlength: [100, "Email cannot exceed 100 characters"]
+    maxlength: [100, "Email cannot exceed 100 characters"],
   },
   phoneNumber: {
     type: String,
     required: [true, "Phone number is required"],
-    match: [/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number (E.164 format)"],
-    maxlength: [20, "Phone number cannot exceed 20 characters"]
+    match: [
+      /^\+?[1-9]\d{1,14}$/,
+      "Please enter a valid phone number (E.164 format)",
+    ],
+    maxlength: [20, "Phone number cannot exceed 20 characters"],
   },
 });
 
-const partnershipSchema = new mongoose.Schema({
-  partnerInstitution: {
-    name: {
-      type: String,
-      required: [true, "Partner institution name is required"],
-      trim: true,
-      maxlength: [200, "Institution name cannot exceed 200 characters"]
-    },
-    address: {
-      type: String,
-      required: [true, "Partner institution address is required"],
-      trim: true,
-      maxlength: [200, "Address cannot exceed 200 characters"]
-    },
-    country: {
-      type: String,
-      required: [true, "Partner institution country is required"],
-      trim: true,
-      maxlength: [100, "Country name cannot exceed 100 characters"]
-    },
-    typeOfOrganization: {
-      type: String,
-      required: [true, "Type of organization is required"],
-      enum: ["Academic", "Research", "NGO", "INGO", "Government", "Private", "Other"],
-    },
-  },
-  aauContact: {
-    interestedCollegeOrDepartment: {
-      type: String,
-      required: [true, "Interested college or department is required"],
-      trim: true,
-      maxlength: [100, "Department name cannot exceed 100 characters"]
-    },
-  },
-  potentialAreasOfCollaboration: {
-    type: [String],
-    required: [true, "At least one area of collaboration is required"],
-    validate: {
-      validator: function(arr) {
-        return arr.length > 0;
+const partnershipSchema = new mongoose.Schema(
+  {
+    partnerInstitution: {
+      name: {
+        type: String,
+        required: [true, "Partner institution name is required"],
+        trim: true,
+        maxlength: [200, "Institution name cannot exceed 200 characters"],
       },
-      message: "At least one area of collaboration is required"
-    },
-    enum: [
-      "Research/Technology Transfer",
-      "Student/Staff/Researcher Mobility",
-      "Funding Grant/Resource Mobilization",
-      "Joint Courses/Programs",
-      "University-Industry Linkage",
-      "Consultancy",
-      "Joint Training/Seminars/Workshops",
-      "Other",
-    ],
-  },
-  otherCollaborationArea: {
-    type: String,
-    trim: true,
-    maxlength: [200, "Description cannot exceed 200 characters"],
-    required: function() {
-      return this.potentialAreasOfCollaboration.includes("Other");
-    },
-  },
-  potentialStartDate: {
-    type: Date,
-    required: [true, "Potential start date is required"],
-    validate: {
-      validator: function(date) {
-        return date > new Date();
+      address: {
+        type: String,
+        required: [true, "Partner institution address is required"],
+        trim: true,
+        maxlength: [200, "Address cannot exceed 200 characters"],
       },
-      message: "Start date must be in the future"
-    }
+      country: {
+        type: String,
+        required: [true, "Partner institution country is required"],
+        trim: true,
+        maxlength: [100, "Country name cannot exceed 100 characters"],
+      },
+      typeOfOrganization: {
+        type: String,
+        required: [true, "Type of organization is required"],
+        enum: [
+          "Academic",
+          "Research",
+          "NGO",
+          "INGO",
+          "Government",
+          "Private",
+          "Other",
+        ],
+      },
+    },
+    aauContact: {
+      interestedCollegeOrDepartment: {
+        type: String,
+        required: [true, "Interested college or department is required"],
+        trim: true,
+        maxlength: [100, "Department name cannot exceed 100 characters"],
+      },
+    },
+    potentialAreasOfCollaboration: {
+      type: [String],
+    },
+    otherCollaborationArea: {
+      type: String,
+      trim: true,
+      maxlength: [200, "Description cannot exceed 200 characters"],
+    },
+    potentialStartDate: {
+      type: Date,
+      required: [true, "Potential start date is required"],
+      validate: {
+        validator: function (date) {
+          return date > new Date();
+        },
+        message: "Start date must be in the future",
+      },
+    },
+    durationOfPartnership: {
+      type: String,
+      required: [true, "Duration of partnership is required"],
+      enum: ["1 year", "2 years", "3 years", "4 years", "5 years"],
+    },
+    partnerContactPerson: {
+      type: contactPersonSchema,
+      required: true,
+    },
+    partnerContactPersonSecondary: {
+      type: contactPersonSchema,
+      required: false,
+    },
+    aauContactPerson: {
+      type: aauContactPersonSchema,
+      required: true,
+    },
+    aauContactPersonSecondary: {
+      type: aauContactPersonSchema,
+      required: false,
+    },
+    status: {
+      type: String,
+      enum: ["Pending", "Active", "Rejected"],
+      default: "Pending",
+    },
+    campusId: {
+      type: String,
+      required: [true, "Campus ID is required"],
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Created by user ID is required"],
+    },
+    isArchived: {
+      type: Boolean,
+      default: false,
+    },
+    mouFileUrl: {
+      type: String,
+      required: false,
+    },
+    description: {
+      type: String,
+      required: [true, "Description is required"],
+      trim: true,
+      maxlength: [500, "Description cannot exceed 500 characters"],
+    },
   },
-  durationOfPartnership: {
-    type: String,
-    required: [true, "Duration of partnership is required"],
-    enum: ["1 year", "2 years", "3 years", "4 years", "5 years"],
-  },
-  partnerContactPerson: {
-    type: contactPersonSchema,
-    required: true
-  },
-  partnerContactPersonSecondary: {
-    type: contactPersonSchema,
-    required: false
-  },
-  aauContactPerson: {
-    type: aauContactPersonSchema,
-    required: true
-  },
-  aauContactPersonSecondary: {
-    type: aauContactPersonSchema,
-    required: false
-  },
-  status: {
-    type: String,
-    enum: ["Pending", "Active", "Rejected"],
-    default: "Pending",
-  },
-  campusId: {
-    type: String,
-    required: [true, "Campus ID is required"],
-  },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: [true, "Created by user ID is required"],
-  },
-  isArchived: {
-    type: Boolean,
-    default: false,
-  },
-  mouFileUrl: {
-    type: String,
-    required: false
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
-}, { 
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true } 
-});
+);
 
 // Add indexes for better query performance
 partnershipSchema.index({ campusId: 1 });
@@ -205,7 +208,7 @@ partnershipSchema.index({ status: 1 });
 partnershipSchema.index({ "partnerInstitution.name": "text" });
 
 // Add virtual for expiration date
-partnershipSchema.virtual('expirationDate').get(function() {
+partnershipSchema.virtual("expirationDate").get(function () {
   const durationYears = parseInt(this.durationOfPartnership);
   const expiration = new Date(this.potentialStartDate);
   expiration.setFullYear(expiration.getFullYear() + durationYears);
