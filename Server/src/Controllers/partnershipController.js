@@ -74,6 +74,7 @@ export const createPartnership = async (req, res) => {
       aauContactPerson,
       aauContactPersonSecondary,
       description,
+      mouFileUrl,
     } = req.body;
 
     if (
@@ -105,6 +106,7 @@ export const createPartnership = async (req, res) => {
       createdBy: req.user.userId,
       isArchived: false,
       description,
+      mouFileUrl,
     });
 
     await partnership.save();

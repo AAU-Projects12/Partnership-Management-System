@@ -19,6 +19,7 @@ import {
   PlusCircle,
   XCircle,
   Phone,
+  Link,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -34,6 +35,7 @@ function AddPartnership() {
     schoolDepartmentUnit: "",
     status: "Active",
     description: "",
+    mouFileUrl: "",
     contactPerson: "",
     contactEmail: "",
     contactPhone: "",
@@ -225,6 +227,7 @@ function AddPartnership() {
         phoneNumber: formData.aauContactPhone,
       },
       description: formData.description.trim(),
+      ...(formData.mouFileUrl && { mouFileUrl: formData.mouFileUrl.trim() }),
     };
 
     // This part for removing empty optional fields is fine, but make sure your `requiredFields` list is accurate.
@@ -249,7 +252,6 @@ function AddPartnership() {
     }
   };
 
-  //... (rest of the component JSX is unchanged)
   const typeOfOrganizationOptions = [
     "Academic",
     "Research",
@@ -333,9 +335,8 @@ function AddPartnership() {
                   placeholder="e.g. Collaborative Research Initiative"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.name ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.name ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.institution}
                   required
                 />
@@ -362,9 +363,8 @@ function AddPartnership() {
                     name="type"
                     value={formData.type}
                     onChange={handleChange}
-                    className={`w-full p-2 border ${
-                      errors.type ? "border-red-500" : "border-gray-300"
-                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
+                    className={`w-full p-2 border ${errors.type ? "border-red-500" : "border-gray-300"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
                     required
                   >
                     <option value="" disabled>
@@ -409,9 +409,8 @@ function AddPartnership() {
                   name="signedDate"
                   value={formData.signedDate}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.signedDate ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-colors`}
+                  className={`w-full p-2 border ${errors.signedDate ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-colors`}
                   min={new Date().toISOString().split("T")[0]}
                   required
                 />
@@ -440,9 +439,8 @@ function AddPartnership() {
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleChange}
-                    className={`w-full p-2 border ${
-                      errors.endDate ? "border-red-500" : "border-gray-300"
-                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
+                    className={`w-full p-2 border ${errors.endDate ? "border-red-500" : "border-gray-300"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
                     required
                   >
                     <option value="">Select duration</option>
@@ -486,9 +484,8 @@ function AddPartnership() {
                   placeholder="e.g. National, Addis Ababa"
                   value={formData.region}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.region ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.region ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.address}
                   required
                 />
@@ -516,9 +513,8 @@ function AddPartnership() {
                   placeholder="Partner Country"
                   value={formData.country}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.country ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.country ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.country}
                   required
                 />
@@ -545,9 +541,8 @@ function AddPartnership() {
                     name="college"
                     value={formData.college}
                     onChange={handleChange}
-                    className={`w-full p-2 border ${
-                      errors.college ? "border-red-500" : "border-gray-300"
-                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
+                    className={`w-full p-2 border ${errors.college ? "border-red-500" : "border-gray-300"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
                     maxLength={maxLengths.department}
                     required
                   >
@@ -593,9 +588,8 @@ function AddPartnership() {
                     name="status"
                     value={formData.status}
                     onChange={handleChange}
-                    className={`w-full p-2 border ${
-                      errors.status ? "border-red-500" : "border-gray-300"
-                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
+                    className={`w-full p-2 border ${errors.status ? "border-red-500" : "border-gray-300"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
                   >
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
@@ -635,9 +629,8 @@ function AddPartnership() {
                   placeholder="e.g. Dr. Jane Doe"
                   value={formData.contactPerson}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.contactPerson ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.contactPerson ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.name}
                 />
                 {errors.contactPerson && (
@@ -665,9 +658,8 @@ function AddPartnership() {
                   placeholder="e.g. jane.doe@example.com"
                   value={formData.contactEmail}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.contactEmail ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.contactEmail ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.email}
                 />
                 {errors.contactEmail && (
@@ -696,9 +688,8 @@ function AddPartnership() {
                   placeholder="+251911234567"
                   value={formData.contactPhone}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.contactPhone ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.contactPhone ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.phone}
                   required
                 />
@@ -728,9 +719,8 @@ function AddPartnership() {
                   placeholder="e.g., Project Manager"
                   value={formData.contactTitle}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.contactTitle ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.contactTitle ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.title}
                   required
                 />
@@ -760,9 +750,8 @@ function AddPartnership() {
                   placeholder="e.g., 123 Innovation Dr, Addis Ababa"
                   value={formData.contactAddress}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.contactAddress ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.contactAddress ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.address}
                   required
                 />
@@ -792,9 +781,8 @@ function AddPartnership() {
                   placeholder="e.g., Prof. John Smith"
                   value={formData.aauContactName}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.aauContactName ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.aauContactName ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.name}
                   required
                 />
@@ -823,11 +811,10 @@ function AddPartnership() {
                   placeholder="e.g., john.smith@aau.edu.et"
                   value={formData.aauContactEmail}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.aauContactEmail
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.aauContactEmail
+                    ? "border-red-500"
+                    : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.email}
                   required
                 />
@@ -856,11 +843,10 @@ function AddPartnership() {
                   placeholder="+251912345678"
                   value={formData.aauContactPhone}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.aauContactPhone
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.aauContactPhone
+                    ? "border-red-500"
+                    : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.phone}
                   required
                 />
@@ -888,11 +874,10 @@ function AddPartnership() {
                     name="aauContactCollege"
                     value={formData.aauContactCollege}
                     onChange={handleChange}
-                    className={`w-full p-2 border ${
-                      errors.aauContactCollege
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
+                    className={`w-full p-2 border ${errors.aauContactCollege
+                      ? "border-red-500"
+                      : "border-gray-300"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
                     required
                   >
                     <option value="" disabled>
@@ -939,11 +924,10 @@ function AddPartnership() {
                   placeholder="e.g., School of Information Science"
                   value={formData.aauContactSchoolDepartmentUnit}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.aauContactSchoolDepartmentUnit
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.aauContactSchoolDepartmentUnit
+                    ? "border-red-500"
+                    : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.department}
                   required
                 />
@@ -972,9 +956,8 @@ function AddPartnership() {
                   placeholder="e.g. 50000"
                   value={formData.fundingAmount}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.fundingAmount ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  className={`w-full p-2 border ${errors.fundingAmount ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                 />
                 {errors.fundingAmount && (
                   <p className="text-red-500 text-xs mt-1">
@@ -1005,9 +988,8 @@ function AddPartnership() {
                 required
                 maxLength={500}
                 onChange={handleChange}
-                className={`w-full p-2 border ${
-                  errors.description ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                className={`w-full p-2 border ${errors.description ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
               ></textarea>
               {errors.description && (
                 <p className="text-red-500 text-xs mt-1">
@@ -1034,9 +1016,8 @@ function AddPartnership() {
                 placeholder="Define the scope of the partnership..."
                 value={formData.scope}
                 onChange={handleChange}
-                className={`w-full p-2 border ${
-                  errors.scope ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                className={`w-full p-2 border ${errors.scope ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
               ></textarea>
               {errors.scope && (
                 <p className="text-red-500 text-xs mt-1">{errors.scope}</p>
@@ -1061,11 +1042,10 @@ function AddPartnership() {
                 placeholder="Detail any reporting requirements..."
                 value={formData.reportingRequirements}
                 onChange={handleChange}
-                className={`w-full p-2 border ${
-                  errors.reportingRequirements
-                    ? "border-red-500"
-                    : "border-gray-300"
-                } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                className={`w-full p-2 border ${errors.reportingRequirements
+                  ? "border-red-500"
+                  : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
               ></textarea>
               {errors.reportingRequirements && (
                 <p className="text-red-500 text-xs mt-1">
@@ -1153,6 +1133,43 @@ function AddPartnership() {
                   {errors.deliverables}
                 </p>
               )}
+            </div>
+            {/* <input
+              type="url"
+              name="mouFileUrl"
+              placeholder="Google Drive MOU Link"
+              value={formData.mouFileUrl || ''}
+              onChange={(e) => setFormData({ ...formData, mouFileUrl: e.target.value })}
+            />
+            {errors.mouFileUrl && <span className="error">{errors.mouFileUrl}</span>} */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Partnership Document
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Google Drive Document Link
+                  </label>
+                  <div className="mt-1 flex rounded-md shadow-sm">
+                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                      <Link className="h-5 w-5" />
+                    </span>
+                    <input
+                      type="url"
+                      name="mouFileUrl"
+                      value={formData.mouFileUrl}
+                      onChange={(e) => setFormData({ ...formData, mouFileUrl: e.target.value })}
+                      placeholder="https://drive.google.com/..."
+                      className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300"
+                    />
+                  </div>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Paste the Google Drive link to your partnership document
+                    (MOU/MOA)
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Submit Button */}

@@ -187,6 +187,7 @@ const partnershipSchema = new mongoose.Schema(
     mouFileUrl: {
       type: String,
       required: false,
+      trim:true,
     },
     description: {
       type: String,
