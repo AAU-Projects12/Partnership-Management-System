@@ -1,3 +1,4 @@
+// api.jsx
 import axios from "axios";
 
 const API = axios.create({
@@ -28,3 +29,10 @@ export const getPartnershipById = (id) => API.get(`/partnership/${id}`);
 export const updatePartnership = (id, data) =>
   API.put(`/partnership/${id}`, data);
 export const deletePartnership = (id) => API.delete(`/partnership/${id}`);
+
+export const getUsers = () => API.get("/users");
+
+export const addUser = (userData) => API.post("/superadmin/assign-admin", userData); // Fixed endpoint
+export const updateUser = (userId, userData) =>
+  API.put(`/superadmin/users/${userId}`, userData);
+export const deleteUser = (userId) => API.delete(`/superadmin/users/${userId}`);

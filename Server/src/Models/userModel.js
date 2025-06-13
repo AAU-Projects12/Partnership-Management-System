@@ -1,3 +1,4 @@
+// Models/userModel.js
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
@@ -19,11 +20,11 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      minlength: 8, // Updated to enforce 8 characters
+      minlength: 8,
     },
     role: {
       type: String,
-      enum: ["SuperAdmin", "Admin"], // Removed "User"
+      enum: ["SuperAdmin", "Admin"], // Kept as provided
       required: true,
       default: "Admin",
     },
@@ -42,10 +43,14 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash password before saving
+// Hash password before saving, but skip if already hashed
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 12); // Changed to 12
+  // Check if password is already hashed (starts with $2a$, $2b$, or $2y$)
+  if (this.password && this.password.startsWith("$2")) {
+    return next();
+  }
+  this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
