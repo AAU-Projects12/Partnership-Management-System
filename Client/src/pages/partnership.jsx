@@ -38,7 +38,7 @@ import {
   paginatePartners,
 } from "../features/partnership/utils/partnershipUtils";
 import useLocalStorage from "../features/partnership/hooks/useLocalStorage";
-import { getPartnerships } from "../api.jsx";
+import { getPartnerships, deletePartnership } from "../api.jsx";
 
 const PartnershipDashboard = () => {
   // State for search and filters
@@ -150,12 +150,18 @@ const PartnershipDashboard = () => {
       title: "Delete Partner",
       message:
         "Are you sure you want to delete this partner? This action cannot be undone.",
-      onConfirm: () => {
-        setPartners((prev) =>
-          prev.filter((partner) => partner.id !== partnerId)
-        );
-        showToast("Partner deleted successfully", "success");
-        setConfirmDialog({ ...confirmDialog, isOpen: false });
+      onConfirm: async () => {
+        try {
+          await deletePartnership(partnerId);
+          setPartners((prev) =>
+            prev.filter((partner) => partner.id !== partnerId)
+          );
+          showToast("Partner deleted successfully", "success");
+        } catch (error) {
+          showToast(error.response?.data?.message || "Failed to delete partner", "error");
+        } finally {
+          setConfirmDialog({ ...confirmDialog, isOpen: false });
+        }
       },
     });
   };
