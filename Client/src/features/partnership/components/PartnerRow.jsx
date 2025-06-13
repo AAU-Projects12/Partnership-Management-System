@@ -6,9 +6,31 @@ import StatusBadge from "./StatusBadge";
 const PartnerRow = ({ partner, onDelete, onEdit }) => {
   const navigate = useNavigate();
 
+  const getColumnWidth = (key) => {
+    switch (key) {
+      case 'logo':
+        return 'w-20'; // 80px
+      case 'name':
+        return 'w-48'; // 192px
+      case 'type':
+        return 'w-32'; // 128px
+      case 'duration':
+        return 'w-32'; // 128px
+      case 'contact':
+        return 'w-40'; // 160px
+      case 'status':
+        return 'w-32'; // 128px
+      case 'actions':
+        return 'w-32'; // 128px
+      default:
+        return 'w-auto';
+    }
+  };
+
   return (
     <div className="grid grid-cols-7 gap-4 p-4 border-b border-[#D9D9D9] items-center text-sm hover:bg-gray-50 transition-colors duration-150">
-      <div className="flex justify-center">
+      {/* Logo */}
+      <div className={`${getColumnWidth('logo')} flex justify-center`}>
         <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-200">
           <img
             src={partner.logo || "/placeholder.svg"}
@@ -21,21 +43,29 @@ const PartnerRow = ({ partner, onDelete, onEdit }) => {
         </div>
       </div>
 
-      <div className="font-medium text-[#004165] cursor-pointer">
-        {" "}
+      {/* Name */}
+      <div className={`${getColumnWidth('name')} font-medium text-[#004165] cursor-pointer truncate`}>
         <button onClick={() => navigate(`/partnership/${partner.id}`)}>
-          {" "}
           {partner.name}
         </button>
       </div>
-      <div>{partner.type}</div>
-      <div>{partner.duration}</div>
-      <div>{partner.contact}</div>
-      <div>
+
+      {/* Type */}
+      <div className={`${getColumnWidth('type')} truncate`}>{partner.type}</div>
+
+      {/* Duration */}
+      <div className={`${getColumnWidth('duration')} truncate`}>{partner.duration}</div>
+
+      {/* Contact */}
+      <div className={`${getColumnWidth('contact')} truncate`}>{partner.contact}</div>
+
+      {/* Status */}
+      <div className={`${getColumnWidth('status')}`}>
         <StatusBadge status={partner.status} />
       </div>
 
-      <div className="flex gap-2">
+      {/* Actions */}
+      <div className={`${getColumnWidth('actions')} flex gap-2 justify-end`}>
         <button
           className="p-1 text-gray-500 hover:text-red-500 transition-colors"
           onClick={() => onDelete(partner.id)}

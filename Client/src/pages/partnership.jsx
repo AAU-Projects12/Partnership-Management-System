@@ -375,56 +375,42 @@ const PartnershipDashboard = () => {
 
             {!isCollapsed && (
               <div className="bg-white rounded-b-3xl overflow-hidden">
-                {/* Table Header */}
-                <TableHeader
-                  columns={modifiedColumns}
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                />
+                {/* Table Container with Horizontal Scroll */}
+                <div className="overflow-x-auto">
+                  <div className="min-w-[800px]">
+                    {/* Table Header */}
+                    <TableHeader
+                      columns={modifiedColumns}
+                      sortConfig={sortConfig}
+                      onSort={handleSort}
+                    />
 
-                {/* No Results */}
-                {paginatedPartners.length === 0 && (
-                  <div className="p-8 text-center text-gray-500">
-                    <p>No partners found matching your criteria.</p>
-                    {hasActiveFilters && (
-                      <button
-                        onClick={clearAllFilters}
-                        className="mt-2 text-[#004165] hover:underline"
-                      >
-                        Clear all filters
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* Table Rows */}
-                {paginatedPartners.map((partner) => (
-                  <PartnerRow
-                    key={partner.id}
-                    partner={partner}
-                    onDelete={handleDeletePartner}
-                    onEdit={handleEditPartner}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2">
-                        <button
-                          onClick={() =>
-                            navigate(`/edit-partnership/${partner.id}`)
-                          }
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDeletePartner(partner.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                    {/* No Results */}
+                    {paginatedPartners.length === 0 && (
+                      <div className="p-8 text-center text-gray-500">
+                        <p>No partners found matching your criteria.</p>
+                        {hasActiveFilters && (
+                          <button
+                            onClick={clearAllFilters}
+                            className="mt-2 text-[#004165] hover:underline"
+                          >
+                            Clear all filters
+                          </button>
+                        )}
                       </div>
-                    </td>
-                  </PartnerRow>
-                ))}
+                    )}
+
+                    {/* Table Rows */}
+                    {paginatedPartners.map((partner) => (
+                      <PartnerRow
+                        key={partner.id}
+                        partner={partner}
+                        onDelete={handleDeletePartner}
+                        onEdit={handleEditPartner}
+                      />
+                    ))}
+                  </div>
+                </div>
 
                 {/* Pagination */}
                 <Pagination
