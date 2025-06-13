@@ -17,6 +17,7 @@ export const authenticateToken = async (req, res, next) => {
     console.log("No token provided");
     return res.status(401).json({ error: "Access token required" });
   }
+
   try {
     const decoded = jwt.verify(
       token,
@@ -39,7 +40,6 @@ export const authenticateToken = async (req, res, next) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Verify role consistency
     if (decoded.role !== user.role) {
       console.log(
         `Role mismatch: JWT role=${decoded.role}, DB role=${user.role}`
@@ -51,7 +51,7 @@ export const authenticateToken = async (req, res, next) => {
       userId: decoded.id,
       email: user.email, // Add email to req.user for password reset verification
       role: decoded.role,
-      campusId: decoded.campusId || user.campusId,
+      campusId: user.campusId,
       status: user.status,
     };
     console.log("req.user set to:", req.user);
@@ -84,7 +84,6 @@ export const authorizeRoles = (...roles) => {
   };
 };
 
-// New middleware to verify user can only reset their own password
 export const verifyOwnership = (req, res, next) => {
   const requestedEmail = req.body.email;
   const loggedInUserEmail = req.user.email;
