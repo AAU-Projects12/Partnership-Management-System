@@ -13,7 +13,8 @@ export const getAllPartnerships = async (req, res) => {
 
     const query = {};
     if (status) query.status = status;
-    if (typeOfOrganization) query["partnerInstitution.typeOfOrganization"] = typeOfOrganization;
+    if (typeOfOrganization)
+      query["partnerInstitution.typeOfOrganization"] = typeOfOrganization;
     query.isArchived = false;
 
     if (req.user.role !== "SuperAdmin") {
@@ -42,68 +43,56 @@ export const getAllPartnerships = async (req, res) => {
 
 export const createPartnership = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    console.log("User attempting to create partnership:", {
-      userId: req.user.userId,
-      role: req.user.role,
-      campusId: req.user.campusId,
-      status: req.user.status,
-    });
-
-    if (req.user.status !== "active") {
-      console.log("User not active:", req.user.status);
-      return res.status(403).json({ error: `User account not active. Current status: ${req.user.status}` });
-    }
-
     const {
+      name,
+      type,
+      signedDate,
+      endDate,
+      region,
+      country,
+      college,
+      status,
+      description,
       partnerInstitution,
       aauContact,
-      potentialAreasOfCollaboration,
-      otherCollaborationArea,
-      potentialStartDate,
-      durationOfPartnership,
       partnerContactPerson,
-      partnerContactPersonSecondary,
-      aauContactPerson,
-      aauContactPersonSecondary,
+      potentialStartDate,
+      documentLink,
     } = req.body;
 
-    if (potentialAreasOfCollaboration.includes("Other") && !otherCollaborationArea) {
-      return res.status(400).json({ error: "Other collaboration area is required when 'Other' is selected" });
-    }
+    // Parse JSON strings back to objects
+    const parsedPartnerInstitution = JSON.parse(partnerInstitution);
+    const parsedAauContact = JSON.parse(aauContact);
+    const parsedPartnerContactPerson = JSON.parse(partnerContactPerson);
 
-    const partnershipStatus = req.user.role === "Admin" ? "Pending" : "Active";
+    const partnershipData = {
+      name,
+      type,
+      signedDate,
+      endDate,
+      region,
+      country,
+      college,
+      status,
+      description,
+      partnerInstitution: parsedPartnerInstitution,
+      aauContact: parsedAauContact,
+      partnerContactPerson: parsedPartnerContactPerson,
+      potentialStartDate,
+      documentLink,
+    };
 
-    const partnership = new Partnership({
-      partnerInstitution,
-      aauContact,
-      potentialAreasOfCollaboration,
-      otherCollaborationArea,
-      potentialStartDate: new Date(potentialStartDate),
-      durationOfPartnership,
-      partnerContactPerson,
-      partnerContactPersonSecondary,
-      aauContactPerson,
-      aauContactPersonSecondary,
-      status: partnershipStatus,
-      campusId: req.user.role === "SuperAdmin" ? "default_campus" : req.user.campusId,
-      createdBy: req.user.userId,
-      isArchived: false,
-    });
-
-    await partnership.save();
-
+    const partnership = await Partnership.create(partnershipData);
     res.status(201).json({
-      message: "Partnership created successfully",
-      partnership,
+      success: true,
+      data: partnership,
     });
   } catch (error) {
-    console.error("Error creating partnership:", error.message, error.stack);
-    res.status(500).json({ error: "Server error" });
+    console.error("Partnership creation error:", error);
+    res.status(400).json({
+      success: false,
+      error: error.message,
+    });
   }
 };
 
@@ -114,16 +103,29 @@ export const getPartnerships = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { status, typeOfOrganization, potentialStartDate, durationOfPartnership, archived, limit = 10, page = 1 } = req.query;
-    let filter = req.user.role === "SuperAdmin" ? {} : { campusId: req.user.campusId };
+    const {
+      status,
+      typeOfOrganization,
+      potentialStartDate,
+      durationOfPartnership,
+      archived,
+      limit = 10,
+      page = 1,
+    } = req.query;
+    let filter =
+      req.user.role === "SuperAdmin" ? {} : { campusId: req.user.campusId };
 
     if (status) filter.status = status;
-    if (typeOfOrganization) filter["partnerInstitution.typeOfOrganization"] = typeOfOrganization;
-    if (durationOfPartnership) filter.durationOfPartnership = durationOfPartnership;
+    if (typeOfOrganization)
+      filter["partnerInstitution.typeOfOrganization"] = typeOfOrganization;
+    if (durationOfPartnership)
+      filter.durationOfPartnership = durationOfPartnership;
 
     if (potentialStartDate) {
       if (!isValidDate(potentialStartDate)) {
-        return res.status(400).json({ error: "Invalid potential start date format" });
+        return res
+          .status(400)
+          .json({ error: "Invalid potential start date format" });
       }
       filter.potentialStartDate = { $gte: new Date(potentialStartDate) };
     }
@@ -133,7 +135,9 @@ export const getPartnerships = async (req, res) => {
     const parsedLimit = parseInt(limit);
     const parsedPage = parseInt(page);
     if (parsedLimit < 1 || parsedPage < 1) {
-      return res.status(400).json({ error: "Limit and page must be positive integers" });
+      return res
+        .status(400)
+        .json({ error: "Limit and page must be positive integers" });
     }
     if (parsedLimit > 100) {
       return res.status(400).json({ error: "Limit cannot exceed 100" });
@@ -167,13 +171,16 @@ export const getPartnershipById = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter = req.user.role === "SuperAdmin"
-      ? { _id: req.params.id }
-      : { _id: req.params.id, campusId: req.user.campusId };
+    const filter =
+      req.user.role === "SuperAdmin"
+        ? { _id: req.params.id }
+        : { _id: req.params.id, campusId: req.user.campusId };
     const partnership = await Partnership.findOne(filter);
 
     if (!partnership) {
-      return res.status(404).json({ message: "Partnership not found or not in your campus" });
+      return res
+        .status(404)
+        .json({ message: "Partnership not found or not in your campus" });
     }
     res.status(200).json(partnership);
   } catch (error) {
@@ -189,13 +196,28 @@ export const updatePartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter = req.user.role === "SuperAdmin"
-      ? { _id: req.params.id }
-      : { _id: req.params.id, campusId: req.user.campusId };
+    const filter =
+      req.user.role === "SuperAdmin"
+        ? { _id: req.params.id }
+        : { _id: req.params.id, campusId: req.user.campusId };
 
-    const updateData = { ...req.body };
-    if (updateData.potentialAreasOfCollaboration && updateData.potentialAreasOfCollaboration.includes("Other") && !updateData.otherCollaborationArea) {
-      return res.status(400).json({ error: "Other collaboration area is required when 'Other' is selected" });
+    const updateData = {
+      ...req.body,
+      document: req.file
+        ? {
+            filename: req.file.filename,
+            path: req.file.path,
+          }
+        : undefined,
+    };
+    if (
+      Array.isArray(updateData.potentialAreasOfCollaboration) &&
+      updateData.potentialAreasOfCollaboration.includes("Other") &&
+      !updateData.otherCollaborationArea
+    ) {
+      return res.status(400).json({
+        error: "Other collaboration area is required when 'Other' is selected",
+      });
     }
 
     const updatedPartnership = await Partnership.findOneAndUpdate(
@@ -205,7 +227,9 @@ export const updatePartnership = async (req, res) => {
     );
 
     if (!updatedPartnership) {
-      return res.status(404).json({ message: "Partnership not found or not in your campus" });
+      return res
+        .status(404)
+        .json({ message: "Partnership not found or not in your campus" });
     }
 
     res.status(200).json({
@@ -225,13 +249,16 @@ export const deletePartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter = req.user.role === "SuperAdmin"
-      ? { _id: req.params.id }
-      : { _id: req.params.id, campusId: req.user.campusId };
+    const filter =
+      req.user.role === "SuperAdmin"
+        ? { _id: req.params.id }
+        : { _id: req.params.id, campusId: req.user.campusId };
     const deletedPartnership = await Partnership.findOneAndDelete(filter);
 
     if (!deletedPartnership) {
-      return res.status(404).json({ message: "Partnership not found or not in your campus" });
+      return res
+        .status(404)
+        .json({ message: "Partnership not found or not in your campus" });
     }
 
     res.status(200).json({ message: "Partnership deleted successfully" });
@@ -248,13 +275,16 @@ export const renewPartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter = req.user.role === "SuperAdmin"
-      ? { _id: req.params.id }
-      : { _id: req.params.id, campusId: req.user.campusId };
+    const filter =
+      req.user.role === "SuperAdmin"
+        ? { _id: req.params.id }
+        : { _id: req.params.id, campusId: req.user.campusId };
     const partnership = await Partnership.findOne(filter);
 
     if (!partnership) {
-      return res.status(404).json({ message: "Partnership not found or not in your campus" });
+      return res
+        .status(404)
+        .json({ message: "Partnership not found or not in your campus" });
     }
 
     partnership.potentialStartDate = new Date(req.body.potentialStartDate);
@@ -278,9 +308,8 @@ export const exportPartnerships = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter = req.user.role === "SuperAdmin"
-      ? {}
-      : { campusId: req.user.campusId };
+    const filter =
+      req.user.role === "SuperAdmin" ? {} : { campusId: req.user.campusId };
     const partnerships = await Partnership.find(filter);
 
     res.status(200).json(partnerships);
@@ -304,20 +333,27 @@ export const approvePartnership = async (req, res) => {
     }
 
     if (!["Admin", "SuperAdmin"].includes(req.user.role)) {
-      return res.status(403).json({ error: "Only Admins or SuperAdmins can approve partnerships" });
+      return res
+        .status(403)
+        .json({ error: "Only Admins or SuperAdmins can approve partnerships" });
     }
 
-    const filter = req.user.role === "SuperAdmin"
-      ? { _id: id }
-      : { _id: id, campusId: req.user.campusId };
+    const filter =
+      req.user.role === "SuperAdmin"
+        ? { _id: id }
+        : { _id: id, campusId: req.user.campusId };
 
     const partnership = await Partnership.findOne(filter);
     if (!partnership) {
-      return res.status(404).json({ error: "Partnership not found or not in your campus" });
+      return res
+        .status(404)
+        .json({ error: "Partnership not found or not in your campus" });
     }
 
     if (partnership.status !== "Pending") {
-      return res.status(400).json({ error: "Only pending partnerships can be approved" });
+      return res
+        .status(400)
+        .json({ error: "Only pending partnerships can be approved" });
     }
 
     partnership.status = "Active";
@@ -347,20 +383,27 @@ export const rejectPartnership = async (req, res) => {
     }
 
     if (!["Admin", "SuperAdmin"].includes(req.user.role)) {
-      return res.status(403).json({ error: "Only Admins or SuperAdmins can reject partnerships" });
+      return res
+        .status(403)
+        .json({ error: "Only Admins or SuperAdmins can reject partnerships" });
     }
 
-    const filter = req.user.role === "SuperAdmin"
-      ? { _id: id }
-      : { _id: id, campusId: req.user.campusId };
+    const filter =
+      req.user.role === "SuperAdmin"
+        ? { _id: id }
+        : { _id: id, campusId: req.user.campusId };
 
     const partnership = await Partnership.findOne(filter);
     if (!partnership) {
-      return res.status(404).json({ error: "Partnership not found or not in your campus" });
+      return res
+        .status(404)
+        .json({ error: "Partnership not found or not in your campus" });
     }
 
     if (partnership.status !== "Pending") {
-      return res.status(400).json({ error: "Only pending partnerships can be rejected" });
+      return res
+        .status(400)
+        .json({ error: "Only pending partnerships can be rejected" });
     }
 
     partnership.status = "Rejected";
@@ -389,13 +432,16 @@ export const archivePartnership = async (req, res) => {
       return res.status(400).json({ error: "Invalid partnership ID" });
     }
 
-    const filter = req.user.role === "SuperAdmin"
-      ? { _id: id }
-      : { _id: id, campusId: req.user.campusId };
+    const filter =
+      req.user.role === "SuperAdmin"
+        ? { _id: id }
+        : { _id: id, campusId: req.user.campusId };
 
     const partnership = await Partnership.findOne(filter);
     if (!partnership) {
-      return res.status(404).json({ error: "Partnership not found or not in your campus" });
+      return res
+        .status(404)
+        .json({ error: "Partnership not found or not in your campus" });
     }
 
     if (partnership.isArchived) {
