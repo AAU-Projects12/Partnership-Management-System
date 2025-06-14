@@ -138,12 +138,6 @@ const partnershipSchema = new mongoose.Schema(
     potentialStartDate: {
       type: Date,
       required: [true, "Potential start date is required"],
-      validate: {
-        validator: function (date) {
-          return date > new Date();
-        },
-        message: "Start date must be in the future",
-      },
     },
     durationOfPartnership: {
       type: String,
@@ -187,7 +181,7 @@ const partnershipSchema = new mongoose.Schema(
     mouFileUrl: {
       type: String,
       required: false,
-      trim:true,
+      trim: true,
     },
     description: {
       type: String,
