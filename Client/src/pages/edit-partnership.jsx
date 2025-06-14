@@ -20,6 +20,7 @@ const EditPartnership = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [originalData, setOriginalData] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     type: "",
@@ -57,7 +58,7 @@ const EditPartnership = () => {
     const fetchPartnership = async () => {
       try {
         const data = await getPartnershipById(id);
-        setFormData({
+        const formattedData = {
           name: data.name || "",
           type: data.type || "",
           signedDate: data.signedDate
@@ -94,7 +95,9 @@ const EditPartnership = () => {
           potentialStartDate: data.potentialStartDate
             ? new Date(data.potentialStartDate).toISOString().split("T")[0]
             : "",
-        });
+        };
+        setFormData(formattedData);
+        setOriginalData(formattedData);
       } catch (err) {
         setError(err.message);
         toast.error("Failed to load partnership details");
@@ -125,13 +128,48 @@ const EditPartnership = () => {
     }
   };
 
+  const getChangedFields = () => {
+    const changes = {};
+
+    // Helper function to compare objects
+    const compareObjects = (obj1, obj2, path = "") => {
+      for (const key in obj1) {
+        const currentPath = path ? `${path}.${key}` : key;
+        if (typeof obj1[key] === "object" && obj1[key] !== null) {
+          compareObjects(obj1[key], obj2[key], currentPath);
+        } else if (obj1[key] !== obj2[key]) {
+          // If the value has changed, add it to changes
+          if (currentPath.includes(".")) {
+            const [section, field] = currentPath.split(".");
+            if (!changes[section]) changes[section] = {};
+            changes[section][field] = obj1[key];
+          } else {
+            changes[key] = obj1[key];
+          }
+        }
+      }
+    };
+
+    compareObjects(formData, originalData);
+    return changes;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
 
     try {
-      await updatePartnership(id, formData);
+      const changedFields = getChangedFields();
+
+      // If no fields have changed, show a message and return
+      if (Object.keys(changedFields).length === 0) {
+        toast.info("No changes to save");
+        setSubmitting(false);
+        return;
+      }
+
+      await updatePartnership(id, changedFields);
       toast.success("Partnership updated successfully");
       navigate("/partnership");
     } catch (err) {
@@ -230,9 +268,8 @@ const EditPartnership = () => {
                   >
                     <option value="">Select Status</option>
                     <option value="Active">Active</option>
-                    <option value="Expired">Expired</option>
+                    <option value="Rejected">Rejected</option>
                     <option value="Pending">Pending</option>
-                    <option value="Terminated">Terminated</option>
                   </select>
                 </div>
                 <div>

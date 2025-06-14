@@ -33,7 +33,7 @@ function AddPartnership() {
     country: "",
     college: "",
     schoolDepartmentUnit: "",
-    status: "Active",
+    status: "",
     description: "",
     mouFileUrl: "",
     contactPerson: "",
@@ -96,10 +96,6 @@ function AddPartnership() {
     } else if (name === "fundingAmount" && value && isNaN(Number(value))) {
       errorMsg = "Funding amount must be a number.";
     }
-    // FIX: Removed the faulty endDate validation. The comparison was between a date and a string like "1 year".
-    // else if (name === "endDate" && formData.signedDate && String(value) < formData.signedDate) {
-    //   errorMsg = "End date cannot be earlier than signed date.";
-    // }
 
     setErrors((prev) => ({ ...prev, [name]: errorMsg }));
     return !errorMsg;
@@ -111,7 +107,7 @@ function AddPartnership() {
       ...prev,
       [name]: value,
     }));
-    // Validate on change for better user experience
+
     validateField(name, value);
   };
 
@@ -143,7 +139,7 @@ function AddPartnership() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setErrors({}); // Clear previous errors to re-validate everything
+    setErrors({});
 
     let formIsValid = true;
     // FIX: Consolidated validation. This single loop now handles all required fields, including description.
@@ -180,7 +176,7 @@ function AddPartnership() {
 
     const startDate = new Date(formData.signedDate);
     const now = new Date();
-    now.setHours(0, 0, 0, 0); // Set time to the beginning of the day for accurate comparison
+    now.setHours(0, 0, 0, 0);
     if (startDate < now) {
       setErrors((prev) => ({
         ...prev,
@@ -227,6 +223,7 @@ function AddPartnership() {
         phoneNumber: formData.aauContactPhone,
       },
       description: formData.description.trim(),
+      status: formData.status,
       ...(formData.mouFileUrl && { mouFileUrl: formData.mouFileUrl.trim() }),
     };
 
@@ -589,31 +586,17 @@ function AddPartnership() {
                     <span className="text-red-500">*</span>
                   </div>
                 </label>
-                <div className="relative">
-                  <select
-                    id="status"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className={`w-full p-2 border ${
-                      errors.status ? "border-red-500" : "border-gray-300"
-                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Expired">Expired</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                    <svg
-                      className="fill-current h-4 w-4"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5.516 7.548l4.484 4.484 4.484-4.484L16 9l-6 6-6-6z" />
-                    </svg>
-                  </div>
-                </div>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="">Select Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Rejected">Rejected</option>
+                  <option value="Pending">Pending</option>
+                </select>
                 {errors.status && (
                   <p className="text-red-500 text-xs mt-1">{errors.status}</p>
                 )}

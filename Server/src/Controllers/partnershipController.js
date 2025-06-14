@@ -75,6 +75,7 @@ export const createPartnership = async (req, res) => {
       aauContactPersonSecondary,
       description,
       mouFileUrl,
+      status,
     } = req.body;
 
     if (
@@ -87,7 +88,12 @@ export const createPartnership = async (req, res) => {
       });
     }
 
-    const partnershipStatus = req.user.role === "Admin" ? "Pending" : "Active";
+    // Validate status if provided
+    if (status && !["Active", "Rejected", "Pending"].includes(status)) {
+      return res.status(400).json({
+        error: "Invalid status. Must be one of: Active, Rejected, or Pending",
+      });
+    }
 
     const partnership = new Partnership({
       partnerInstitution,
@@ -100,7 +106,7 @@ export const createPartnership = async (req, res) => {
       partnerContactPersonSecondary,
       aauContactPerson,
       aauContactPersonSecondary,
-      status: partnershipStatus,
+      status: status,
       campusId:
         req.user.role === "SuperAdmin" ? "default_campus" : req.user.campusId,
       createdBy: req.user.userId,
