@@ -59,7 +59,7 @@ const NavBar = () => {
 
           {/* Hamburger Menu Button */}
           <button
-            className="lg:hidden text-white hover:text-[#04B09E] focus:outline-none"
+            className="lg:hidden text-white hover:text-gray-400 focus:outline-none"
             onClick={toggleMenu}
           >
             {isMenuOpen ? (
@@ -76,8 +76,8 @@ const NavBar = () => {
                 to="/dashboard"
                 className={`${
                   isActive("/dashboard")
-                    ? "text-[#04B09E] font-semibold"
-                    : "text-white hover:text-[#04B09E]"
+                    ? "text-gray-400 font-semibold"
+                    : "text-white hover:text-gray-400"
                 } flex items-center space-x-1 cursor-pointer`}
               >
                 <Bars3Icon className="w-5 h-5" />
@@ -87,8 +87,8 @@ const NavBar = () => {
                 to="/partnership"
                 className={`${
                   isActive("/partnership")
-                    ? "text-[#04B09E] font-semibold"
-                    : "text-white hover:text-[#04B09E]"
+                    ? "text-gray-400 font-semibold"
+                    : "text-white hover:text-gray-400"
                 } flex items-center space-x-1 cursor-pointer`}
               >
                 <UsersIcon className="w-5 h-5" />
@@ -98,8 +98,8 @@ const NavBar = () => {
                 to="/users"
                 className={`${
                   isActive("/users")
-                    ? "text-[#04B09E] font-semibold"
-                    : "text-white hover:text-[#04B09E]"
+                    ? "text-gray-400 font-semibold"
+                    : "text-white hover:text-gray-400"
                 } flex items-center space-x-1 cursor-pointer`}
               >
                 <UsersIcon className="w-5 h-5" />
@@ -109,8 +109,8 @@ const NavBar = () => {
                 to="/settings"
                 className={`${
                   isActive("/settings")
-                    ? "text-[#04B09E] font-semibold"
-                    : "text-white hover:text-[#04B09E]"
+                    ? "text-gray-400 font-semibold"
+                    : "text-white hover:text-gray-400"
                 } flex items-center space-x-1 cursor-pointer`}
               >
                 <Cog6ToothIcon className="w-5 h-5" />
@@ -120,8 +120,8 @@ const NavBar = () => {
                 to="/profile"
                 className={`${
                   isActive("/profile")
-                    ? "text-[#04B09E] font-semibold"
-                    : "text-white hover:text-[#04B09E]"
+                    ? "text-gray-400 font-semibold"
+                    : "text-white hover:text-gray-400"
                 } flex items-center space-x-1 cursor-pointer`}
               >
                 <UserIcon className="w-5 h-5" />
@@ -132,8 +132,8 @@ const NavBar = () => {
                   to="/notifications"
                   className={`${
                     isActive("/notifications")
-                      ? "text-[#04B09E] font-semibold"
-                      : "text-white hover:text-[#04B09E]"
+                      ? "text-gray-400 font-semibold"
+                      : "text-white hover:text-gray-400"
                   } flex items-center space-x-1 relative cursor-pointer`}
                 >
                   <BellIcon className="w-5 h-5" />
@@ -160,8 +160,8 @@ const NavBar = () => {
               to="/dashboard"
               className={`${
                 isActive("/dashboard")
-                  ? "text-[#04B09E] font-semibold"
-                  : "text-white hover:text-[#04B09E]"
+                  ? "text-gray-400 font-semibold"
+                  : "text-white hover:text-gray-400"
               } flex items-center space-x-2 py-3 text-lg`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -172,8 +172,8 @@ const NavBar = () => {
               to="/partnership"
               className={`${
                 isActive("/partnership")
-                  ? "text-[#04B09E] font-semibold"
-                  : "text-white hover:text-[#04B09E]"
+                  ? "text-gray-400 font-semibold"
+                  : "text-white hover:text-gray-400"
               } flex items-center space-x-2 py-3 text-lg`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -184,8 +184,8 @@ const NavBar = () => {
               to="/users"
               className={`${
                 isActive("/users")
-                  ? "text-[#04B09E] font-semibold"
-                  : "text-white hover:text-[#04B09E]"
+                  ? "text-gray-400 font-semibold"
+                  : "text-white hover:text-gray-400"
               } flex items-center space-x-2 py-3 text-lg`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -196,8 +196,8 @@ const NavBar = () => {
               to="/settings"
               className={`${
                 isActive("/settings")
-                  ? "text-[#04B09E] font-semibold"
-                  : "text-white hover:text-[#04B09E]"
+                  ? "text-gray-400 font-semibold"
+                  : "text-white hover:text-gray-400"
               } flex items-center space-x-2 py-3 text-lg`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -208,8 +208,8 @@ const NavBar = () => {
               to="/profile"
               className={`${
                 isActive("/profile")
-                  ? "text-[#04B09E] font-semibold"
-                  : "text-white hover:text-[#04B09E]"
+                  ? "text-gray-400 font-semibold"
+                  : "text-white hover:text-gray-400"
               } flex items-center space-x-2 py-3 text-lg`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -220,8 +220,8 @@ const NavBar = () => {
               to="/notifications"
               className={`${
                 isActive("/notifications")
-                  ? "text-[#04B09E] font-semibold"
-                  : "text-white hover:text-[#04B09E]"
+                  ? "text-gray-400 font-semibold"
+                  : "text-white hover:text-gray-400"
               } flex items-center space-x-2 py-3 text-lg relative`}
               onClick={() => setIsMenuOpen(false)}
             >

@@ -158,7 +158,10 @@ const PartnershipDashboard = () => {
           );
           showToast("Partner deleted successfully", "success");
         } catch (error) {
-          showToast(error.response?.data?.message || "Failed to delete partner", "error");
+          showToast(
+            error.response?.data?.message || "Failed to delete partner",
+            "error"
+          );
         } finally {
           setConfirmDialog({ ...confirmDialog, isOpen: false });
         }
@@ -377,7 +380,7 @@ const PartnershipDashboard = () => {
               <div className="bg-white rounded-b-3xl overflow-hidden">
                 {/* Table Container with Horizontal Scroll */}
                 <div className="overflow-x-auto">
-                  <div className="min-w-[800px]">
+                  <div className="min-w-[600px] sm:min-w-[800px]">
                     {/* Table Header */}
                     <TableHeader
                       columns={modifiedColumns}
@@ -387,7 +390,7 @@ const PartnershipDashboard = () => {
 
                     {/* No Results */}
                     {paginatedPartners.length === 0 && (
-                      <div className="p-8 text-center text-gray-500">
+                      <div className="p-4 sm:p-8 text-center text-gray-500">
                         <p>No partners found matching your criteria.</p>
                         {hasActiveFilters && (
                           <button
@@ -413,13 +416,15 @@ const PartnershipDashboard = () => {
                 </div>
 
                 {/* Pagination */}
-                <Pagination
-                  totalItems={filteredPartners.length}
-                  itemsPerPage={itemsPerPage}
-                  currentPage={currentPage}
-                  onPageChange={setCurrentPage}
-                  onItemsPerPageChange={setItemsPerPage}
-                />
+                <div className="px-2 sm:px-4">
+                  <Pagination
+                    totalItems={filteredPartners.length}
+                    itemsPerPage={itemsPerPage}
+                    currentPage={currentPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                  />
+                </div>
               </div>
             )}
           </div>

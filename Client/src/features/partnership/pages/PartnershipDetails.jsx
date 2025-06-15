@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Calendar, Users, Building2, Clock,FileText, ExternalLink } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Users,
+  Building2,
+  Clock,
+  FileText,
+  ExternalLink,
+} from "lucide-react";
 import NavBar from "../../../components/NavBar";
 import StatusBadge from "../components/StatusBadge";
 import { getPartnershipById } from "../../../api.jsx";
@@ -103,7 +111,7 @@ const PartnershipDetail = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <Building2 className="h-5 w-5 text-gray-400" />
+                    <Building2 className="h-5 w-5 text-gray-800" />
                     <div>
                       <p className="text-sm text-gray-500">Type</p>
                       <p className="font-medium">
@@ -112,7 +120,7 @@ const PartnershipDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="h-5 w-5 text-gray-400">🏢</span>
+                    <span className="h-5 w-5 text-gray-800">🏢</span>
                     <div>
                       <p className="text-sm text-gray-500">Address</p>
                       <p className="font-medium">
@@ -121,7 +129,7 @@ const PartnershipDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="h-5 w-5 text-gray-400">🌍</span>
+                    <span className="h-5 w-5 text-gray-800">🌍</span>
                     <div>
                       <p className="text-sm text-gray-500">Country</p>
                       <p className="font-medium">
@@ -130,7 +138,7 @@ const PartnershipDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Clock className="h-5 w-5 text-gray-400" />
+                    <Clock className="h-5 w-5 text-gray-800" />
                     <div>
                       <p className="text-sm text-gray-500">Duration</p>
                       <p className="font-medium">
@@ -139,20 +147,20 @@ const PartnershipDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5 text-gray-400" />
+                    <Calendar className="h-5 w-5 text-gray-800" />
                     <div>
                       <p className="text-sm text-gray-500">Start Date</p>
                       <p className="font-medium">
                         {partner.potentialStartDate
                           ? new Date(
-                            partner.potentialStartDate
-                          ).toLocaleDateString()
+                              partner.potentialStartDate
+                            ).toLocaleDateString()
                           : "-"}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="h-5 w-5 text-gray-400">🏫</span>
+                    <span className="h-5 w-5 text-gray-800">🏫</span>
                     <div>
                       <p className="text-sm text-gray-500">AAU Department</p>
                       <p className="font-medium">
@@ -161,7 +169,7 @@ const PartnershipDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="h-5 w-5 text-gray-400">🔖</span>
+                    <span className="h-5 w-5 text-gray-800">🔖</span>
                     <div>
                       <p className="text-sm text-gray-500">
                         Areas of Collaboration
@@ -173,7 +181,7 @@ const PartnershipDetail = () => {
                   </div>
                   {partner.otherCollaborationArea && (
                     <div className="flex items-center gap-3">
-                      <span className="h-5 w-5 text-gray-400">📝</span>
+                      <span className="h-5 w-5 text-gray-800">📝</span>
                       <div>
                         <p className="text-sm text-gray-500">
                           Other Collaboration Area
@@ -275,7 +283,7 @@ const PartnershipDetail = () => {
                           </p>
                         </div>
                         <div className="flex-shrink-0">
-                          <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors duration-200" />
+                          <ExternalLink className="w-4 h-4 text-gray-800 group-hover:text-blue-600 transition-colors duration-200" />
                         </div>
                       </a>
                     </div>
