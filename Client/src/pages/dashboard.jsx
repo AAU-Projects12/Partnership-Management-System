@@ -479,8 +479,31 @@ const Dashboard = () => {
                 <h2 className="text-lg font-medium text-gray-800 mb-2">
                   College Distribution
                 </h2>
-                <div className="h-40">
-                  <Pie data={pieData} options={pieOptions} />
+                <div className="h-40 flex items-center justify-center">
+                  {pieData && pieData.labels && pieData.labels.length > 0 ? (
+                    <Pie
+                      data={pieData}
+                      options={{
+                        ...pieOptions,
+                        plugins: {
+                          ...pieOptions.plugins,
+                          tooltip: {
+                            callbacks: {
+                              label: function (context) {
+                                const label = context.label || "";
+                                const value = context.parsed || 0;
+                                return `${label}: ${value}`;
+                              },
+                            },
+                          },
+                        },
+                      }}
+                    />
+                  ) : (
+                    <span className="text-gray-400 text-sm">
+                      No data available
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

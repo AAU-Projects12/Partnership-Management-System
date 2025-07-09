@@ -534,7 +534,7 @@ function AddPartnership() {
                 >
                   <div className="flex items-center gap-2">
                     <GraduationCap size={16} />
-                    <span>College</span>
+                    <span>College/Institution</span>
                     <span className="text-red-500">*</span>
                   </div>
                 </label>
@@ -610,7 +610,7 @@ function AddPartnership() {
                 >
                   <div className="flex items-center gap-2">
                     <User size={16} />
-                    <span>Contact Person</span>
+                    <span>Partner Contact Person</span>
                   </div>
                 </label>
                 <input
@@ -640,7 +640,7 @@ function AddPartnership() {
                 >
                   <div className="flex items-center gap-2">
                     <Mail size={16} />
-                    <span>Contact Email</span>
+                    <span>Partner Contact Email</span>
                   </div>
                 </label>
                 <input
@@ -702,7 +702,7 @@ function AddPartnership() {
                 >
                   <div className="flex items-center gap-2">
                     <User size={16} />
-                    <span>Contact Person Title</span>
+                    <span>Partner Contact Person Title</span>
                     <span className="text-red-500">*</span>
                   </div>
                 </label>
@@ -734,7 +734,7 @@ function AddPartnership() {
                 >
                   <div className="flex items-center gap-2">
                     <MapPin size={16} />
-                    <span>Contact Person Address</span>
+                    <span>Partner Contact Person Address</span>
                     <span className="text-red-500">*</span>
                   </div>
                 </label>
@@ -1001,6 +1001,50 @@ function AddPartnership() {
               )}
             </div>
 
+            {/* Potential Areas of Collaboration (Objectives) */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="flex items-center gap-2">
+                  <ListChecks size={16} />
+                  <span>Potential Areas of Collaboration</span>
+                  <span className="text-red-500">*</span>
+                </div>
+              </label>
+              <div className="flex flex-wrap gap-2"></div>
+              {collaborationOptions.map((option) => (
+                <label
+                  key={option}
+                  className={`flex items-center px-3 py-1 rounded-full border cursor-pointer transition-colors ${
+                    formData.objectives.includes(option)
+                      ? "bg-blue-100 border-blue-500 text-blue-700"
+                      : "bg-white border-gray-300 text-gray-700"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    name="objectives"
+                    value={option}
+                    checked={formData.objectives.includes(option)}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setFormData((prev) => ({
+                        ...prev,
+                        objectives: checked
+                          ? [...prev.objectives, option]
+                          : prev.objectives.filter((obj) => obj !== option),
+                      }));
+                      setErrors((prev) => ({ ...prev, objectives: "" }));
+                    }}
+                    className="mr-2"
+                  />
+                  {option}
+                </label>
+              ))}
+            </div>
+            {errors.objectives && (
+              <p className="text-red-500 text-xs mt-1">{errors.objectives}</p>
+            )}
+
             {/* Scope (Optional) */}
             <div className="mb-6">
               <label
@@ -1059,41 +1103,6 @@ function AddPartnership() {
               )}
             </div>
 
-            {/* Objectives (Optional) */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                <div className="flex items-center gap-2">
-                  <ListChecks size={16} />
-                  <span>Objectives (Optional)</span>
-                </div>
-              </label>
-              <select
-                name="objectives"
-                multiple
-                value={formData.objectives}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    objectives: Array.from(
-                      e.target.selectedOptions,
-                      (option) => option.value
-                    ),
-                  }))
-                }
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                size={8}
-              >
-                {collaborationOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-              {errors.objectives && (
-                <p className="text-red-500 text-xs mt-1">{errors.objectives}</p>
-              )}
-            </div>
-
             {/* Deliverables (Optional) */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1139,14 +1148,6 @@ function AddPartnership() {
                 </p>
               )}
             </div>
-            {/* <input
-              type="url"
-              name="mouFileUrl"
-              placeholder="Google Drive MOU Link"
-              value={formData.mouFileUrl || ''}
-              onChange={(e) => setFormData({ ...formData, mouFileUrl: e.target.value })}
-            />
-            {errors.mouFileUrl && <span className="error">{errors.mouFileUrl}</span>} */}
             <div className="bg-white shadow rounded-lg p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4">
                 Partnership Document
@@ -1173,7 +1174,7 @@ function AddPartnership() {
                   </div>
                   <p className="mt-2 text-sm text-gray-500">
                     Paste the Google Drive link to your partnership document
-                    (MOU/MOA)
+                    (MOU)
                   </p>
                 </div>
               </div>
