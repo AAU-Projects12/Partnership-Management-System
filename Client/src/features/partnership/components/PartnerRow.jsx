@@ -1,6 +1,6 @@
 import React from "react";
 import { Trash2, Edit, Eye } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import StatusBadge from "./StatusBadge";
 
 const PartnerRow = ({ partner, onDelete, onEdit }) => {
@@ -9,19 +9,19 @@ const PartnerRow = ({ partner, onDelete, onEdit }) => {
   const getColumnWidth = (key) => {
     switch (key) {
       case "logo":
-        return "w-12 sm:w-16 md:w-20"; // Responsive width for logo
+        return "w-12 sm:w-16 md:w-20";
       case "name":
-        return "w-28 sm:w-40 md:w-48 lg:w-64"; // Responsive width for name
+        return "w-28 sm:w-40 md:w-48 lg:w-64"; // We'll override with max-width
       case "type":
-        return "w-20 sm:w-28 md:w-32"; // Responsive width for type
+        return "w-20 sm:w-28 md:w-32";
       case "duration":
-        return "w-20 sm:w-28 md:w-32"; // Responsive width for duration
+        return "w-20 sm:w-28 md:w-32";
       case "contact":
-        return "w-24 sm:w-32 md:w-40"; // Responsive width for contact
+        return "w-24 sm:w-32 md:w-40";
       case "status":
-        return "w-20 sm:w-28 md:w-32"; // Responsive width for status
+        return "w-20 sm:w-28 md:w-32";
       case "actions":
-        return "w-24 sm:w-32 md:w-40"; // Responsive width for actions
+        return "w-24 sm:w-32 md:w-40";
       default:
         return "w-auto";
     }
@@ -47,11 +47,13 @@ const PartnerRow = ({ partner, onDelete, onEdit }) => {
       <div
         className={`${getColumnWidth(
           "name"
-        )} font-medium text-[#004165] cursor-pointer`}
+        )} overflow-hidden whitespace-nowrap`}
+        style={{ maxWidth: "10rem" }} // force proper clipping of long names
       >
         <button
           onClick={() => navigate(`/partnership/${partner.id}`)}
-          className="truncate block w-full text-left hover:underline"
+          className="truncate w-full text-left font-medium text-[#004165] hover:underline"
+          title={partner.name}
         >
           {partner.name}
         </button>
