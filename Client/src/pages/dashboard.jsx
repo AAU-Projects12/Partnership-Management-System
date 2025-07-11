@@ -62,7 +62,7 @@ const Dashboard = () => {
         const data = Array.isArray(response.data.partnerships)
           ? response.data.partnerships
           : [];
-        console.log("Fetched partnerships:", data); // Debug
+
         setPartnerships(data);
         setLoading(false);
       } catch (error) {

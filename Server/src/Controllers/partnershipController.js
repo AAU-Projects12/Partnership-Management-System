@@ -1,6 +1,17 @@
 import { validationResult } from "express-validator";
 import Partnership from "../Models/partnershipModel.js";
 import mongoose from "mongoose";
+import path from "path";
+import fs from "fs";
+
+const ALLOWED_MIME_TYPES = [
+  "application/pdf",
+  "image/png",
+  "image/jpg",
+  "image/jpeg"
+];
+
+const UPLOADS_DIR = path.join(process.cwd(), "Partnership-Management-System", "Server", "uploads");
 
 export const getAllPartnerships = async (req, res) => {
   try {
@@ -48,6 +59,30 @@ export const createPartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
+    // Handle file upload (mouFile)
+    let mouFileUrl = null;
+    if (req.files && req.files.mouFile) {
+      const file = req.files.mouFile;
+      // Validate file type
+      if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+        return res.status(400).json({ error: "Invalid file type. Only PDF, PNG, JPG, and JPEG are allowed." });
+      }
+      // Validate file size (already enforced by express-fileupload, but double-check)
+      if (file.size > 10 * 1024 * 1024) {
+        return res.status(400).json({ error: "File size exceeds 10MB limit." });
+      }
+      // Sanitize file name
+      const ext = path.extname(file.name);
+      const base = path.basename(file.name, ext).replace(/[^a-zA-Z0-9.\-_]/g, "_");
+      const fileName = `${base}-${Date.now()}${ext}`;
+      const savePath = path.join(UPLOADS_DIR, fileName);
+      // Ensure uploads directory exists
+      fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+      // Move file
+      await file.mv(savePath);
+      mouFileUrl = `/uploads/${fileName}`;
+    }
+
     console.log("User attempting to create partnership:", {
       userId: req.user.userId,
       role: req.user.role,
@@ -74,7 +109,6 @@ export const createPartnership = async (req, res) => {
       aauContactPerson,
       aauContactPersonSecondary,
       description,
-      mouFileUrl,
       status,
     } = req.body;
 

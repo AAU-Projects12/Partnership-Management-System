@@ -39,6 +39,19 @@ const userSchema = new mongoose.Schema(
       enum: ["pending", "active", "inactive"],
       default: "pending",
     },
+    // Login attempt tracking
+    failedLoginAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lastFailedLogin: {
+      type: Date,
+      default: null,
+    },
+    accountLockedUntil: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
@@ -53,6 +66,42 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
+
+// Method to check if account is locked
+userSchema.methods.isAccountLocked = function() {
+  if (!this.accountLockedUntil) return false;
+  return new Date() < this.accountLockedUntil;
+};
+
+// Method to increment failed login attempts
+userSchema.methods.incrementFailedAttempts = function() {
+  const now = new Date();
+  const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+  
+  // Reset attempts if more than 10 minutes have passed
+  if (!this.lastFailedLogin || this.lastFailedLogin < tenMinutesAgo) {
+    this.failedLoginAttempts = 1;
+  } else {
+    this.failedLoginAttempts += 1;
+  }
+  
+  this.lastFailedLogin = now;
+  
+  // Lock account if 5 or more failed attempts
+  if (this.failedLoginAttempts >= 5) {
+    this.accountLockedUntil = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes
+  }
+  
+  return this.save();
+};
+
+// Method to reset failed login attempts
+userSchema.methods.resetFailedAttempts = function() {
+  this.failedLoginAttempts = 0;
+  this.lastFailedLogin = null;
+  this.accountLockedUntil = null;
+  return this.save();
+};
 
 const User = mongoose.model("User", userSchema);
 

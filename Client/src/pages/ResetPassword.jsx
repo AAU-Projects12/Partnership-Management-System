@@ -1,85 +1,111 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { resetPassword } from "../api.jsx";
-import { toast } from "react-hot-toast";
+import toast from "react-hot-toast";
+import NavBar from "../components/NavBar";
+import { useNavigate } from "react-router-dom";
 
-export default function ResetPassword() {
-  const [email, setEmail] = useState("");
+const isStrongPassword = (password) => {
+  // At least 8 characters, one uppercase, one lowercase, one digit, one special character
+  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(password);
+};
+
+const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !newPassword || !confirmPassword) {
-      toast.error("All fields are required");
-      return;
-    }
-    if (newPassword.length < 8 || newPassword.length > 12) {
-      toast.error("Password must be 8-12 characters");
+    setError("");
+
+    if (!newPassword || !confirmPassword) {
+      setError("Both fields are required.");
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
+      setError("Passwords do not match.");
       return;
     }
-    setLoading(true);
+    if (!isStrongPassword(newPassword)) {
+      setError(
+        "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character."
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      await resetPassword({ email, newPassword, confirmPassword });
-      toast.success("Password reset successfully. Please login.");
-      navigate("/");
-    } catch (error) {
-      if (error.response && error.response.data && error.response.data.error) {
-        toast.error(error.response.data.error);
-      } else {
-        toast.error("Failed to reset password");
-      }
+      await resetPassword({ newPassword, confirmPassword });
+      toast.success("Password reset successfully!");
+      setNewPassword("");
+      setConfirmPassword("");
+      navigate("/login");
+    } catch (err) {
+      const msg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Failed to reset password. Please try again.";
+      setError(msg);
+      toast.error(msg);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center text-[#00588b]">
-          Reset Password
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full border border-gray-300 rounded px-4 py-2"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="New Password (8-12 chars)"
-            className="w-full border border-gray-300 rounded px-4 py-2"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Confirm New Password"
-            className="w-full border border-gray-300 rounded px-4 py-2"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-          <button
-            type="submit"
-            className="w-full bg-[#00588b] text-white py-2 rounded hover:bg-[#004a75] transition"
-            disabled={loading}
-          >
-            {loading ? "Resetting..." : "Reset Password"}
-          </button>
-        </form>
+    <div className="min-h-screen bg-gray-100">
+      <NavBar />
+      <div className="flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 bg-white p-8 rounded shadow">
+          <h2 className="text-center text-2xl font-bold text-gray-900 mb-6">
+            Reset Password
+          </h2>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+                New Password
+              </label>
+              <input
+                id="newPassword"
+                name="newPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            <button
+              type="submit"
+              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Resetting..." : "Reset Password"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default ResetPassword;

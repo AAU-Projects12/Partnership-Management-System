@@ -21,14 +21,13 @@ const generatePassword = () => {
 const preRegisterSuperAdmins = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("Connected to MongoDB");
+
 
     const passwordOutput = [];
 
     for (const email of superAdmins) {
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        console.log(`SuperAdmin ${email} already exists. Password unchanged.`);
         passwordOutput.push(`SuperAdmin ${email}: Already registered (use reset password to change)`);
         continue;
       }
@@ -46,14 +45,12 @@ const preRegisterSuperAdmins = async () => {
       });
 
       await superAdmin.save();
-      console.log(`SuperAdmin ${email} registered successfully.`);
       if (logPasswords) console.log(`Password: ${password}`);
       passwordOutput.push(`SuperAdmin ${email}: ${password}`);
     }
 
     if (passwordOutput.length > 0) {
       fs.writeFileSync("superadmin_passwords.txt", passwordOutput.join("\n"));
-      console.log("Passwords saved to superadmin_passwords.txt (delete after use)");
     }
 
     console.log("SuperAdmin registration completed");
@@ -61,7 +58,6 @@ const preRegisterSuperAdmins = async () => {
     console.error("Error registering SuperAdmins:", error.message);
   } finally {
     await mongoose.disconnect();
-    console.log("Disconnected from MongoDB");
   }
 };
 

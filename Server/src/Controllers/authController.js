@@ -8,11 +8,17 @@ const isValidEmail = (email) => {
   return pattern.test(email);
 };
 
+// Enhanced password validation function
+const isStrongPassword = (password) => {
+  // At least 8 characters, one uppercase, one lowercase, one digit, one special character
+  const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
+  return pattern.test(password);
+};
+
 // Middleware to authenticate JWT
 const authMiddleware = (req, res, next) => {
   const token = req.cookies.jwt;
   if (!token) {
-    console.log("No token provided");
     return res.status(401).json({ error: "Authentication required" });
   }
 
@@ -32,24 +38,47 @@ export const login = async (req, res) => {
 
     // Validate request body
     if (!email || !password) {
-      console.log("Missing email or password:", { email, password });
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    console.log("Login attempt:", { email, passwordLength: password.length });
-
     const user = await User.findOne({ email });
     if (!user) {
-      console.log("User not found:", email);
       return res.status(400).json({ error: "Invalid email or password" });
+    }
+
+    // Check if account is locked
+    if (user.isAccountLocked()) {
+      const lockoutTime = user.accountLockedUntil;
+      const remainingTime = Math.ceil((lockoutTime - new Date()) / (1000 * 60)); // minutes
+      return res.status(423).json({ 
+        error: `Account is locked due to too many failed login attempts. Please try again in ${remainingTime} minutes.`,
+        lockoutRemaining: remainingTime
+      });
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    console.log("Password check:", { isPasswordCorrect });
 
     if (!isPasswordCorrect) {
-      return res.status(400).json({ error: "Invalid email or password" });
+      // Increment failed login attempts
+      await user.incrementFailedAttempts();
+      
+      const remainingAttempts = 5 - user.failedLoginAttempts;
+      
+      if (remainingAttempts <= 0) {
+        return res.status(423).json({ 
+          error: "Account has been locked due to too many failed login attempts. Please try again in 15 minutes.",
+          lockoutRemaining: 15
+        });
+      }
+      
+      return res.status(400).json({ 
+        error: `Invalid email or password. ${remainingAttempts} attempts remaining before account lockout.`,
+        remainingAttempts
+      });
     }
+
+    // Successful login - reset failed attempts
+    await user.resetFailedAttempts();
 
     const token = generateTokenAndSetCookie(user, res);
 
@@ -94,8 +123,20 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ error: "Passwords don't match" });
     }
 
+    // Enhanced password strength check
+    if (!isStrongPassword(newPassword)) {
+      return res.status(400).json({
+        error:
+          "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character."
+      });
+    }
+
     const user = await User.findOne({ email });
-    user.password = newPassword;
+
+    // THIS IS THE FIX: HASH THE NEW PASSWORD BEFORE SAVING
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
     await user.save();
 
     res.status(200).json({ message: "Password reset successfully" });

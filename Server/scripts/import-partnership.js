@@ -9,17 +9,17 @@ const importData = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log('Connected to MongoDB');
+
 
     const data = JSON.parse(fs.readFileSync('./data/sample_partnerships.json', 'utf-8'));
     await Partnership.insertMany(data);
-    console.log('Sample partnerships inserted successfully');
+
   } catch (err) {
     console.error('Import failed:', err.message);
     process.exit(1);
   } finally {
     await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
+
   }
 };
 

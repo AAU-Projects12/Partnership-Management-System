@@ -6,6 +6,7 @@ import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import path from "path";
 import { fileURLToPath } from "url";
+import fileUpload from "express-fileupload";
 
 import authRoutes from "./Routes/authRoutes.js";
 import partnershipRoutes from "./Routes/partnershipRoutes.js";
@@ -32,6 +33,17 @@ app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
+  })
+);
+// File upload middleware (10MB limit, safe defaults)
+app.use(
+  fileUpload({
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    abortOnLimit: true,
+    safeFileNames: true,
+    preserveExtension: true,
+    useTempFiles: false,
+    createParentPath: true,
   })
 );
 

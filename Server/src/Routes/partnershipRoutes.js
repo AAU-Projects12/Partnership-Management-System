@@ -5,7 +5,8 @@ import partnershipController from "../Controllers/partnershipController.js";
 
 const router = express.Router();
 
-// In your routes file (partnershipRoutes.js)
+// POST /api/partnership
+// Expects multipart/form-data with optional file field 'mouFile'
 router.post(
   "/",
   auth.authenticateToken,

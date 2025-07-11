@@ -88,7 +88,7 @@ const Users = () => {
       return;
     }
     try {
-      console.log("Submitting userData:", formData); // Debug
+
       if (editMode && currentUser) {
         await updateUser(currentUser._id, formData);
         toast.success("User updated successfully");

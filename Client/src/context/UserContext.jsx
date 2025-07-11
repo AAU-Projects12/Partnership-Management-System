@@ -50,7 +50,6 @@ export const UserProvider = ({ children }) => {
     } else {
       // If no token is provided during login, it's an inconsistent state, so clear to be safe.
       localStorage.removeItem("authToken");
-      console.warn("Login function called without a token.");
     }
   };
   // Logout function

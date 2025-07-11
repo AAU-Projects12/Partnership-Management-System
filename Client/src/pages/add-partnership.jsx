@@ -51,11 +51,13 @@ function AddPartnership() {
     deliverables: [""],
     fundingAmount: "",
     reportingRequirements: "",
+    mouFile: null, // Add file field
   };
 
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fileError, setFileError] = useState("");
 
   const navigate = useNavigate();
 
@@ -102,13 +104,32 @@ function AddPartnership() {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    validateField(name, value);
+    const { name, value, type, files } = e.target;
+    if (type === "file") {
+      const file = files[0];
+      if (file) {
+        // Validate file type and size client-side
+        const allowedTypes = ["application/pdf", "image/png", "image/jpg", "image/jpeg"];
+        if (!allowedTypes.includes(file.type)) {
+          setFileError("Invalid file type. Only PDF, PNG, JPG, and JPEG are allowed.");
+          setFormData((prev) => ({ ...prev, mouFile: null }));
+          return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          setFileError("File size exceeds 10MB limit.");
+          setFormData((prev) => ({ ...prev, mouFile: null }));
+          return;
+        }
+        setFileError("");
+        setFormData((prev) => ({ ...prev, mouFile: file }));
+      } else {
+        setFileError("");
+        setFormData((prev) => ({ ...prev, mouFile: null }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      validateField(name, value);
+    }
   };
 
   const handleArrayChange = (e, index, fieldName) => {
@@ -185,6 +206,12 @@ function AddPartnership() {
       formIsValid = false;
     }
 
+    if (fileError) {
+      toast.error(fileError);
+      setIsSubmitting(false);
+      return;
+    }
+
     if (!formIsValid) {
       toast.error("Please correct the validation errors.");
       setIsSubmitting(false);
@@ -192,46 +219,25 @@ function AddPartnership() {
     }
 
     // Payload construction remains the same
-    const payload = {
-      partnerInstitution: {
-        name: formData.name,
-        address: formData.region,
-        country: formData.country,
-        typeOfOrganization: formData.type,
-      },
-      aauContact: {
-        interestedCollegeOrDepartment: formData.college,
-      },
-      potentialAreasOfCollaboration: formData.objectives,
-      otherCollaborationArea: formData.objectives.includes("Other")
-        ? formData.scope
-        : undefined,
-      potentialStartDate: formData.signedDate,
-      durationOfPartnership: formData.endDate,
-      partnerContactPerson: {
-        name: formData.contactPerson,
-        title: formData.contactTitle,
-        institutionalEmail: formData.contactEmail,
-        phoneNumber: formData.contactPhone,
-        address: formData.contactAddress,
-      },
-      aauContactPerson: {
-        name: formData.aauContactName,
-        college: formData.aauContactCollege,
-        schoolDepartmentUnit: formData.aauContactSchoolDepartmentUnit,
-        institutionalEmail: formData.aauContactEmail,
-        phoneNumber: formData.aauContactPhone,
-      },
-      description: formData.description.trim(),
-      status: formData.status,
-      ...(formData.mouFileUrl && { mouFileUrl: formData.mouFileUrl.trim() }),
-    };
-
-    // This part for removing empty optional fields is fine, but make sure your `requiredFields` list is accurate.
-    // We will keep it as is, assuming the logic matches backend expectations.
+    const payload = new FormData();
+    // Add all fields except mouFile
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key === "mouFile") return;
+      if (Array.isArray(value)) {
+        value.forEach((v) => payload.append(key, v));
+      } else if (typeof value === "object" && value !== null) {
+        payload.append(key, JSON.stringify(value));
+      } else {
+        payload.append(key, value);
+      }
+    });
+    // Add file if present
+    if (formData.mouFile) {
+      payload.append("mouFile", formData.mouFile);
+    }
 
     try {
-      await createPartnership(payload);
+      await createPartnership(payload, true); // true = multipart
       toast.success("Partnership created successfully!");
       navigate("/partnership");
       setFormData(initialFormData);
@@ -239,6 +245,7 @@ function AddPartnership() {
       console.error("Failed to create partnership:", error);
       const errorMsg =
         error.response?.data?.message ||
+        error.response?.data?.error ||
         "Failed to create partnership. Please try again.";
       toast.error(errorMsg);
       if (error.response?.data?.errors) {
@@ -311,7 +318,7 @@ function AddPartnership() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate>
+          <form onSubmit={handleSubmit} noValidate encType="multipart/form-data">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
               {/* Partnership Name */}
               <div>
@@ -1178,6 +1185,22 @@ function AddPartnership() {
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* MOU File Upload */}
+            <div>
+              <label htmlFor="mouFile" className="block text-sm font-medium text-gray-700 mb-1">
+                <span>MOU File (PDF, PNG, JPG, JPEG, max 10MB)</span>
+              </label>
+              <input
+                type="file"
+                id="mouFile"
+                name="mouFile"
+                accept=".pdf,.png,.jpg,.jpeg"
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              />
+              {fileError && <p className="text-red-500 text-xs mt-1">{fileError}</p>}
             </div>
 
             {/* Submit Button */}
