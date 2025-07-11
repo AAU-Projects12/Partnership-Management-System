@@ -220,6 +220,7 @@ export const getPartnershipById = async (req, res) => {
   }
 };
 
+// partnershipController.js
 export const updatePartnership = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -243,6 +244,32 @@ export const updatePartnership = async (req, res) => {
       });
     }
 
+    // Additional validation for partnerInstitution
+    if (updateData.partnerInstitution) {
+      if (!updateData.partnerInstitution.name) {
+        return res
+          .status(400)
+          .json({ error: "Partner institution name is required" });
+      }
+      if (!updateData.partnerInstitution.address) {
+        return res
+          .status(400)
+          .json({ error: "Partner institution address is required" });
+      }
+      if (!updateData.partnerInstitution.country) {
+        return res
+          .status(400)
+          .json({ error: "Partner institution country is required" });
+      }
+      if (!updateData.partnerInstitution.typeOfOrganization) {
+        return res
+          .status(400)
+          .json({
+            error: "Partner institution type of organization is required",
+          });
+      }
+    }
+
     const updatedPartnership = await Partnership.findOneAndUpdate(
       filter,
       updateData,
@@ -261,6 +288,10 @@ export const updatePartnership = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating partnership:", error.message, error.stack);
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ error: errors.join(", ") });
+    }
     res.status(500).json({ error: "Server error" });
   }
 };

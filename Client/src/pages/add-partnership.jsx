@@ -574,6 +574,22 @@ function AddPartnership() {
                 )}
               </div>
 
+              {/* Partnership Status Section */}
+              <div className="col-span-1 md:col-span-2">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 flex items-center gap-3">
+                  <ActivitySquare size={28} className="text-blue-500" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-blue-800">
+                      Partner Institution Contact Details
+                    </h3>
+                    <p className="text-sm text-blue-700">
+                      Please provide the main contact information for the
+                      partner institution.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Status */}
               <div>
                 <label
@@ -757,8 +773,6 @@ function AddPartnership() {
                   </p>
                 )}
               </div>
-
-              {/* AAU Contact Person Fields */}
               <div>
                 <label
                   htmlFor="aauContactName"
