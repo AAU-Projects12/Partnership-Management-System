@@ -14,7 +14,6 @@ export const authenticateToken = async (req, res, next) => {
   }
 
   if (!token) {
-    console.log("No token provided");
     return res.status(401).json({ error: "Access token required" });
   }
   try {
@@ -22,28 +21,21 @@ export const authenticateToken = async (req, res, next) => {
       token,
       process.env.PRIVATE_KEY || process.env.JWT_SECRET
     );
-    console.log("Decoded JWT:", decoded);
 
     if (!decoded.id || !decoded.role) {
-      console.log("Invalid token: missing id or role");
       return res
         .status(401)
         .json({ error: "Invalid token: missing id or role" });
     }
 
     const user = await User.findById(decoded.id);
-    console.log("User from DB:", user);
 
     if (!user) {
-      console.log("User not found");
       return res.status(404).json({ error: "User not found" });
     }
 
     // Verify role consistency
     if (decoded.role !== user.role) {
-      console.log(
-        `Role mismatch: JWT role=${decoded.role}, DB role=${user.role}`
-      );
       return res.status(403).json({ error: "Role mismatch in token" });
     }
 
@@ -54,7 +46,6 @@ export const authenticateToken = async (req, res, next) => {
       campusId: decoded.campusId || user.campusId,
       status: user.status,
     };
-    console.log("req.user set to:", req.user);
 
     next();
   } catch (error) {
@@ -65,21 +56,16 @@ export const authenticateToken = async (req, res, next) => {
 
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    console.log(
-      `Checking roles: user role=${req.user.role}, required=${roles}`
-    );
     const normalizedUserRole = req.user.role ? req.user.role.toLowerCase() : "";
     const normalizedRequiredRoles = roles.map((r) => r.toLowerCase());
     if (
       !normalizedUserRole ||
       !normalizedRequiredRoles.includes(normalizedUserRole)
     ) {
-      console.log("Role check failed");
       return res
         .status(403)
         .json({ error: "Access forbidden: insufficient role" });
     }
-    console.log("Role check passed");
     next();
   };
 };
@@ -89,18 +75,12 @@ export const verifyOwnership = (req, res, next) => {
   const requestedEmail = req.body.email;
   const loggedInUserEmail = req.user.email;
 
-  console.log(
-    `Ownership check: requested=${requestedEmail}, loggedIn=${loggedInUserEmail}`
-  );
-
   if (requestedEmail !== loggedInUserEmail) {
-    console.log("Unauthorized password reset attempt");
     return res.status(403).json({
       error: "You can only reset your own password",
     });
   }
 
-  console.log("Ownership verified");
   next();
 };
 
