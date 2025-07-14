@@ -49,15 +49,7 @@ export const createPartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    console.log("User attempting to create partnership:", {
-      userId: req.user.userId,
-      role: req.user.role,
-      campusId: req.user.campusId,
-      status: req.user.status,
-    });
-
     if (req.user.status !== "active") {
-      console.log("User not active:", req.user.status);
       return res.status(403).json({
         error: `User account not active. Current status: ${req.user.status}`,
       });
@@ -269,11 +261,9 @@ export const updatePartnership = async (req, res) => {
           .json({ error: "Partner institution country is required" });
       }
       if (!updateData.partnerInstitution.typeOfOrganization) {
-        return res
-          .status(400)
-          .json({
-            error: "Partner institution type of organization is required",
-          });
+        return res.status(400).json({
+          error: "Partner institution type of organization is required",
+        });
       }
     }
 
