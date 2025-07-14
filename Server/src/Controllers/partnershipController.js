@@ -1,17 +1,6 @@
 import { validationResult } from "express-validator";
 import Partnership from "../Models/partnershipModel.js";
 import mongoose from "mongoose";
-import path from "path";
-import fs from "fs";
-
-const ALLOWED_MIME_TYPES = [
-  "application/pdf",
-  "image/png",
-  "image/jpg",
-  "image/jpeg"
-];
-
-const UPLOADS_DIR = path.join(process.cwd(), "Partnership-Management-System", "Server", "uploads");
 
 export const getAllPartnerships = async (req, res) => {
   try {
@@ -58,15 +47,8 @@ export const createPartnership = async (req, res) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-      console.log("User attempting to create partnership:", {
-      userId: req.user.userId,
-      role: req.user.role,
-      campusId: req.user.campusId,
-      status: req.user.status,
-    });
 
     if (req.user.status !== "active") {
-      console.log("User not active:", req.user.status);
       return res.status(403).json({
         error: `User account not active. Current status: ${req.user.status}`,
       });
@@ -84,6 +66,7 @@ export const createPartnership = async (req, res) => {
       aauContactPerson,
       aauContactPersonSecondary,
       description,
+      mouFileUrl,
       status,
     } = req.body;
 
@@ -229,6 +212,7 @@ export const getPartnershipById = async (req, res) => {
   }
 };
 
+// partnershipController.js
 export const updatePartnership = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -252,6 +236,7 @@ export const updatePartnership = async (req, res) => {
       });
     }
 
+    // Additional validation for partnerInstitution
     if (updateData.partnerInstitution) {
       if (!updateData.partnerInstitution.name) {
         return res
@@ -293,6 +278,10 @@ export const updatePartnership = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating partnership:", error.message, error.stack);
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ error: errors.join(", ") });
+    }
     res.status(500).json({ error: "Server error" });
   }
 };

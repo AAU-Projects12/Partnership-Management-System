@@ -61,6 +61,7 @@ function AddPartnership() {
 
   const validateField = (name, value) => {
     let errorMsg = "";
+    // All fields that are required by the backend
     const requiredFields = [
       "name",
       "type",
@@ -82,6 +83,7 @@ function AddPartnership() {
     ];
 
     if (requiredFields.includes(name) && !String(value).trim()) {
+      // Creates a user-friendly field name like "Signed Date" from "signedDate"
       const fieldName =
         name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, " $1");
       errorMsg = `${fieldName} is required.`;
@@ -105,6 +107,7 @@ function AddPartnership() {
       ...prev,
       [name]: value,
     }));
+
     validateField(name, value);
   };
 
@@ -139,6 +142,7 @@ function AddPartnership() {
     setErrors({});
 
     let formIsValid = true;
+    // FIX: Consolidated validation. This single loop now handles all required fields, including description.
     for (const [key, value] of Object.entries(formData)) {
       if (!Array.isArray(value)) {
         if (!validateField(key, value)) {
@@ -153,6 +157,7 @@ function AddPartnership() {
       return;
     }
 
+    // Additional specific format validations after checking for presence
     const e164Regex = /^\+\d{10,15}$/;
     if (formData.contactPhone && !e164Regex.test(formData.contactPhone)) {
       setErrors((prev) => ({
@@ -186,6 +191,7 @@ function AddPartnership() {
       return;
     }
 
+    // Payload construction remains the same
     const payload = {
       partnerInstitution: {
         name: formData.name,
@@ -220,6 +226,9 @@ function AddPartnership() {
       status: formData.status,
       ...(formData.mouFileUrl && { mouFileUrl: formData.mouFileUrl.trim() }),
     };
+
+    // This part for removing empty optional fields is fine, but make sure your `requiredFields` list is accurate.
+    // We will keep it as is, assuming the logic matches backend expectations.
 
     try {
       await createPartnership(payload);
@@ -406,7 +415,9 @@ function AddPartnership() {
                   required
                 />
                 {errors.signedDate && (
-                  <p className="text-red-500 text-xs mt-1">{errors.signedDate}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.signedDate}
+                  </p>
                 )}
               </div>
 
@@ -563,6 +574,22 @@ function AddPartnership() {
                 )}
               </div>
 
+              {/* Partnership Status Section */}
+              <div className="col-span-1 md:col-span-2">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 flex items-center gap-3">
+                  <ActivitySquare size={28} className="text-blue-500" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-blue-800">
+                      Partner Institution Contact Details
+                    </h3>
+                    <p className="text-sm text-blue-700">
+                      Please provide the main contact information for the
+                      partner institution.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Status */}
               <div>
                 <label
@@ -615,7 +642,9 @@ function AddPartnership() {
                   maxLength={maxLengths.name}
                 />
                 {errors.contactPerson && (
-                  <p className="text-red-500 text-xs mt-1">{errors.contactPerson}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.contactPerson}
+                  </p>
                 )}
               </div>
 
@@ -643,7 +672,9 @@ function AddPartnership() {
                   maxLength={maxLengths.email}
                 />
                 {errors.contactEmail && (
-                  <p className="text-red-500 text-xs mt-1">{errors.contactEmail}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.contactEmail}
+                  </p>
                 )}
               </div>
 
@@ -673,7 +704,9 @@ function AddPartnership() {
                   required
                 />
                 {errors.contactPhone && (
-                  <p className="text-red-500 text-xs mt-1">{errors.contactPhone}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.contactPhone}
+                  </p>
                 )}
               </div>
 
@@ -703,7 +736,9 @@ function AddPartnership() {
                   required
                 />
                 {errors.contactTitle && (
-                  <p className="text-red-500 text-xs mt-1">{errors.contactTitle}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.contactTitle}
+                  </p>
                 )}
               </div>
 
@@ -733,11 +768,11 @@ function AddPartnership() {
                   required
                 />
                 {errors.contactAddress && (
-                  <p className="text-red-500 text-xs mt-1">{errors.contactAddress}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.contactAddress}
+                  </p>
                 )}
               </div>
-
-              {/* AAU Contact Person Fields */}
               <div>
                 <label
                   htmlFor="aauContactName"
@@ -763,7 +798,9 @@ function AddPartnership() {
                   required
                 />
                 {errors.aauContactName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.aauContactName}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.aauContactName}
+                  </p>
                 )}
               </div>
 
@@ -786,13 +823,17 @@ function AddPartnership() {
                   value={formData.aauContactEmail}
                   onChange={handleChange}
                   className={`w-full p-2 border ${
-                    errors.aauContactEmail ? "border-red-500" : "border-gray-300"
+                    errors.aauContactEmail
+                      ? "border-red-500"
+                      : "border-gray-300"
                   } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.email}
                   required
                 />
                 {errors.aauContactEmail && (
-                  <p className="text-red-500 text-xs mt-1">{errors.aauContactEmail}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.aauContactEmail}
+                  </p>
                 )}
               </div>
 
@@ -815,13 +856,17 @@ function AddPartnership() {
                   value={formData.aauContactPhone}
                   onChange={handleChange}
                   className={`w-full p-2 border ${
-                    errors.aauContactPhone ? "border-red-500" : "border-gray-300"
+                    errors.aauContactPhone
+                      ? "border-red-500"
+                      : "border-gray-300"
                   } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.phone}
                   required
                 />
                 {errors.aauContactPhone && (
-                  <p className="text-red-500 text-xs mt-1">{errors.aauContactPhone}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.aauContactPhone}
+                  </p>
                 )}
               </div>
 
@@ -843,7 +888,9 @@ function AddPartnership() {
                     value={formData.aauContactCollege}
                     onChange={handleChange}
                     className={`w-full p-2 border ${
-                      errors.aauContactCollege ? "border-red-500" : "border-gray-300"
+                      errors.aauContactCollege
+                        ? "border-red-500"
+                        : "border-gray-300"
                     } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
                     required
                   >
@@ -867,7 +914,9 @@ function AddPartnership() {
                   </div>
                 </div>
                 {errors.aauContactCollege && (
-                  <p className="text-red-500 text-xs mt-1">{errors.aauContactCollege}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.aauContactCollege}
+                  </p>
                 )}
               </div>
 
@@ -927,7 +976,9 @@ function AddPartnership() {
                   } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                 />
                 {errors.fundingAmount && (
-                  <p className="text-red-500 text-xs mt-1">{errors.fundingAmount}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.fundingAmount}
+                  </p>
                 )}
               </div>
             </div>
@@ -958,7 +1009,9 @@ function AddPartnership() {
                 } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
               ></textarea>
               {errors.description && (
-                <p className="text-red-500 text-xs mt-1">{errors.description}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.description}
+                </p>
               )}
             </div>
 
@@ -1052,11 +1105,15 @@ function AddPartnership() {
                 value={formData.reportingRequirements}
                 onChange={handleChange}
                 className={`w-full p-2 border ${
-                  errors.reportingRequirements ? "border-red-500" : "border-gray-300"
+                  errors.reportingRequirements
+                    ? "border-red-500"
+                    : "border-gray-300"
                 } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
               ></textarea>
               {errors.reportingRequirements && (
-                <p className="text-red-500 text-xs mt-1">{errors.reportingRequirements}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.reportingRequirements}
+                </p>
               )}
             </div>
 
@@ -1074,7 +1131,9 @@ function AddPartnership() {
                     type="text"
                     placeholder={`Deliverable ${index + 1}`}
                     value={deliverable}
-                    onChange={(e) => handleArrayChange(e, index, "deliverables")}
+                    onChange={(e) =>
+                      handleArrayChange(e, index, "deliverables")
+                    }
                     className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                   />
                   {formData.deliverables.length > 1 && (
@@ -1098,10 +1157,11 @@ function AddPartnership() {
                 Add Deliverable
               </button>
               {errors.deliverables && (
-                <p className="text-red-500 text-xs mt-1">{errors.deliverables}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.deliverables}
+                </p>
               )}
             </div>
-
             <div className="bg-white shadow rounded-lg p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4">
                 Partnership Document
@@ -1127,7 +1187,8 @@ function AddPartnership() {
                     />
                   </div>
                   <p className="mt-2 text-sm text-gray-500">
-                    Paste the Google Drive link to your partnership document (MOU)
+                    Paste the Google Drive link to your partnership document
+                    (MOU)
                   </p>
                 </div>
               </div>

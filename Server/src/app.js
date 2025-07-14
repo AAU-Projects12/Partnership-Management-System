@@ -7,7 +7,6 @@ import YAML from "yamljs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-
 import authRoutes from "./Routes/authRoutes.js";
 import partnershipRoutes from "./Routes/partnershipRoutes.js";
 import userRoutes from "./Routes/usersRoutes.js";
