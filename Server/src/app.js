@@ -12,6 +12,7 @@ import partnershipRoutes from "./Routes/partnershipRoutes.js";
 import userRoutes from "./Routes/usersRoutes.js";
 import adminRoutes from "./Routes/adminRoutes.js";
 import superAdminRoutes from "./Routes/superAdminRoutes.js";
+import notificationRoutes from "./Routes/notificationRoutes.js";
 import db_connection from "../database/db_connection.js";
 
 dotenv.config();
@@ -44,6 +45,7 @@ app.use("/api/partnership", partnershipRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/superadmin", superAdminRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // DB + Server
 const startServer = async () => {

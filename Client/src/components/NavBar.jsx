@@ -47,7 +47,7 @@ const NavBar = () => {
                 <div className="text-white text-[17px] sm:text-[18px] tracking-[3px] leading-snug mt-[-4px]">
                   አዲስ አበባ ዩኒቨርሲቲ
                 </div>
-                <div className="text-red-600 text-[13px] sm:text-[13.5px] font-medium tracking-wide leading-snug mt-[-4px] sm:mt-[-5px]">
+                <div className="text-red-400 text-[10px] sm:text-[12.5px] font-medium tracking-wide leading-snug mt-[-4px] sm:mt-[-5px]">
                   ADDIS ABABA UNIVERSITY
                 </div>
               </div>

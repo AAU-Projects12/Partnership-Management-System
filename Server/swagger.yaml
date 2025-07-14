@@ -549,6 +549,238 @@ paths:
         500:
           description: Server error
 
+  /notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Get all notifications
+      description: Retrieve notifications with optional filters and pagination
+      security:
+        - jwt: []
+      parameters:
+        - in: query
+          name: type
+          type: string
+          enum: [Partnerships, System, Alerts]
+        - in: query
+          name: isRead
+          type: boolean
+        - in: query
+          name: limit
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+        - in: query
+          name: page
+          type: integer
+          minimum: 1
+          default: 1
+      responses:
+        200:
+          description: List of notifications
+          schema:
+            type: object
+            properties:
+              notifications:
+                type: array
+                items:
+                  $ref: '#/definitions/Notification'
+              pagination:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  pages:
+                    type: integer
+                  limit:
+                    type: integer
+        400:
+          description: Invalid query parameters
+        500:
+          description: Server error
+    post:
+      tags:
+        - Notifications
+      summary: Create a new notification
+      description: Create a new notification (admin/system-generated)
+      security:
+        - jwt: []
+      parameters:
+        - in: body
+          name: notification
+          description: Notification details
+          required: true
+          schema:
+            $ref: '#/definitions/Notification'
+      responses:
+        201:
+          description: Notification created
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              notification:
+                $ref: '#/definitions/Notification'
+        400:
+          description: Validation error
+        500:
+          description: Server error
+
+  /notifications/unread:
+    get:
+      tags:
+        - Notifications
+      summary: Get unread notifications
+      description: Retrieve all unread notifications
+      security:
+        - jwt: []
+      responses:
+        200:
+          description: List of unread notifications
+          schema:
+            type: object
+            properties:
+              notifications:
+                type: array
+                items:
+                  $ref: '#/definitions/Notification'
+        500:
+          description: Server error
+
+  /notifications/{id}/read:
+    patch:
+      tags:
+        - Notifications
+      summary: Mark notification as read
+      description: Mark a single notification as read
+      security:
+        - jwt: []
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: Notification ID (MongoDB ObjectId)
+      responses:
+        200:
+          description: Notification marked as read
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              notification:
+                $ref: '#/definitions/Notification'
+        404:
+          description: Notification not found
+        500:
+          description: Server error
+
+  /notifications/read-all:
+    patch:
+      tags:
+        - Notifications
+      summary: Mark all notifications as read
+      description: Mark all notifications as read for the user
+      security:
+        - jwt: []
+      responses:
+        200:
+          description: All notifications marked as read
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+        500:
+          description: Server error
+
+  /notifications/{id}:
+    delete:
+      tags:
+        - Notifications
+      summary: Delete a notification
+      description: Delete a notification by ID
+      security:
+        - jwt: []
+      parameters:
+        - in: path
+          name: id
+          type: string
+          required: true
+          description: Notification ID (MongoDB ObjectId)
+      responses:
+        200:
+          description: Notification deleted
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+        404:
+          description: Notification not found
+        500:
+          description: Server error
+
+  /notifications/settings:
+    get:
+      tags:
+        - Notifications
+      summary: Get notification settings
+      description: Get the current user's notification preferences (system, partnership, alerts)
+      security:
+        - jwt: []
+      responses:
+        200:
+          description: User notification settings
+          schema:
+            type: object
+            properties:
+              settings:
+                $ref: '#/definitions/NotificationSettings'
+        500:
+          description: Server error
+    post:
+      tags:
+        - Notifications
+      summary: Update notification settings
+      description: Update the current user's notification preferences
+      security:
+        - jwt: []
+      parameters:
+        - in: body
+          name: preferences
+          description: Notification preferences object
+          required: true
+          schema:
+            type: object
+            properties:
+              preferences:
+                type: object
+                properties:
+                  system:
+                    type: boolean
+                  partnership:
+                    type: boolean
+                  alerts:
+                    type: boolean
+      responses:
+        200:
+          description: Settings updated
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              settings:
+                $ref: '#/definitions/NotificationSettings'
+        500:
+          description: Server error
+
 definitions:
   User:
     type: object
@@ -719,3 +951,54 @@ definitions:
       - aauContactPerson
       - campusId
       - createdBy
+
+  Notification:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Unique notification ID
+      title:
+        type: string
+        description: Notification title
+      message:
+        type: string
+        description: Notification message
+      type:
+        type: string
+        enum: [Partnerships, System, Alerts]
+        description: Notification type
+      isRead:
+        type: boolean
+        description: Read status
+      timestamp:
+        type: string
+        format: date-time
+        description: ISO timestamp
+      userId:
+        type: string
+        description: User ID (if user-specific)
+    required:
+      - title
+      - message
+      - type
+      - isRead
+      - timestamp
+
+  NotificationSettings:
+    type: object
+    properties:
+      userId:
+        type: string
+      preferences:
+        type: object
+        properties:
+          system:
+            type: boolean
+          partnership:
+            type: boolean
+          alerts:
+            type: boolean
+    required:
+      - userId
+      - preferences

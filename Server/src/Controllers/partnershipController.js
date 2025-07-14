@@ -1,6 +1,7 @@
 import { validationResult } from "express-validator";
 import Partnership from "../Models/partnershipModel.js";
 import mongoose from "mongoose";
+import { sendNotification } from "../Utils/sendNotification.js";
 
 export const getAllPartnerships = async (req, res) => {
   try {
@@ -116,6 +117,12 @@ export const createPartnership = async (req, res) => {
     });
 
     await partnership.save();
+    // Event-based notification: New Partnership Request
+    await sendNotification({
+      title: "New Partnership Request",
+      message: `${partnership.partnerInstitution.name} has requested a new partnership`,
+      type: "Partnerships",
+    });
 
     res.status(201).json({
       message: "Partnership created successfully",
@@ -281,6 +288,12 @@ export const updatePartnership = async (req, res) => {
         .status(404)
         .json({ message: "Partnership not found or not in your campus" });
     }
+    // Event-based notification: Partnership Updated
+    await sendNotification({
+      title: "Partnership Updated",
+      message: `The partnership with ${updatedPartnership.partnerInstitution.name} has been updated`,
+      type: "Partnerships",
+    });
 
     res.status(200).json({
       message: "Partnership updated successfully",

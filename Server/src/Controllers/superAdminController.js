@@ -311,6 +311,7 @@
 import { validationResult } from "express-validator";
 import User from "../Models/userModel.js";
 import bcrypt from "bcryptjs";
+import { sendNotification } from "../Utils/sendNotification.js";
 
 const generateRandomPassword = () => {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -356,7 +357,13 @@ export const assignAdmin = async (req, res) => {
     });
 
     await user.save();
-
+    // Event-based notification: User Account Created
+    await sendNotification({
+      title: "User Account Created",
+      message: `A new user account has been created for ${user.firstName} ${user.lastName}`,
+      type: "System",
+      userId: user._id,
+    });
     res.status(201).json({
       message: "User assigned successfully",
       email: user.email,
