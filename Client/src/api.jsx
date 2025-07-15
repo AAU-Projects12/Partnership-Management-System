@@ -1,10 +1,12 @@
-// api.jsx
+// src/api.jsx
 import axios from "axios";
 
+// Create an Axios instance with a base URL for your API
 const API = axios.create({
   baseURL: "http://localhost:7004/api",
 });
 
+// Use an interceptor to attach the auth token to every request
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("authToken");
@@ -18,15 +20,14 @@ API.interceptors.request.use(
   }
 );
 
-// Authentication endpoints
+// --- AUTHENTICATION ENDPOINTS ---
 export const signUp = (userData) => API.post("/auth/signup", userData);
 export const login = (userData) => API.post("/auth/login", userData);
 export const logout = () => API.post("/auth/logout");
 export const resetPassword = (data) => API.post("/auth/reset-password", data);
 
-// Partnership endpoints
-export const createPartnership = (partnershipData) =>
-  API.post("/partnership", partnershipData);
+// --- PARTNERSHIP ENDPOINTS ---
+export const createPartnership = (data) => API.post("/partnership", data);
 export const getPartnerships = (params) => API.get("/partnership", { params });
 export const getPartnershipById = (id) => API.get(`/partnership/${id}`);
 export const updatePartnership = (id, data) =>
@@ -41,10 +42,23 @@ export const archivePartnership = (id) =>
   API.patch(`/partnership/${id}/archive`);
 export const exportPartnerships = () => API.get("/partnership/export");
 
-// User management endpoints
+// --- USER MANAGEMENT ENDPOINTS ---
 export const getUsers = () => API.get("/users");
 export const addUser = (userData) =>
   API.post("/superadmin/assign-admin", userData);
-export const updateUser = (userId, userData) =>
-  API.put(`/superadmin/users/${userId}`, userData);
+export const updateUser = (userId, data) =>
+  API.put(`/superadmin/users/${userId}`, data);
 export const deleteUser = (userId) => API.delete(`/superadmin/users/${userId}`);
+
+// --- NOTIFICATION ENDPOINTS ---
+export const getNotifications = (params) =>
+  API.get("/notifications", { params });
+export const markNotificationAsRead = (id) =>
+  API.patch(`/notifications/${id}/read`);
+export const markAllNotificationsAsRead = () =>
+  API.put("/notifications/read-all");
+
+// --- NOTIFICATION SETTINGS ENDPOINTS ---
+export const getNotificationSettings = () => API.get("/notifications/settings");
+export const updateNotificationSettings = (preferences) =>
+  API.patch("/notifications/settings", { preferences });
