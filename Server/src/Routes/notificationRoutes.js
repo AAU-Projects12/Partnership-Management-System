@@ -81,4 +81,53 @@ router.patch(
   notificationController.updateSettings
 );
 
+
+// GET /api/notifications/all - all notifications
+router.get(
+  "/all",
+  auth.authenticateToken,
+  auth.authorizeRoles("Admin", "SuperAdmin"),
+  (req, res, next) => {
+    req.query = { ...req.query }; // no filter, get all
+    next();
+  },
+  notificationController.getNotifications
+);
+
+// GET /api/notifications/partnerships - all partnership notifications
+router.get(
+  "/partnerships",
+  auth.authenticateToken,
+  auth.authorizeRoles("Admin", "SuperAdmin"),
+  (req, res, next) => {
+    req.query = { ...req.query, type: "Partnerships" };
+    next();
+  },
+  notificationController.getNotifications
+);
+
+// GET /api/notifications/system-read - all read system notifications
+router.get(
+  "/system-read",
+  auth.authenticateToken,
+  auth.authorizeRoles("Admin", "SuperAdmin"),
+  (req, res, next) => {
+    req.query = { ...req.query, type: "System", isRead: "true" };
+    next();
+  },
+  notificationController.getNotifications
+);
+
+// GET /api/notifications/alerts - all alert notifications
+router.get(
+  "/alerts",
+  auth.authenticateToken,
+  auth.authorizeRoles("Admin", "SuperAdmin"),
+  (req, res, next) => {
+    req.query = { ...req.query, type: "Alerts" };
+    next();
+  },
+  notificationController.getNotifications
+);
+
 export default router;
