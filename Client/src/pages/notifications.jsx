@@ -1,11 +1,15 @@
-// src/pages/Notifications.jsx
 import React, { useState, useEffect } from "react";
-import { BellIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import {
+  BellIcon,
+  CheckCircleIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import NavBar from "../components/NavBar";
 import {
   getNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  deleteNotification,
 } from "../api";
 
 const Notifications = () => {
@@ -13,23 +17,39 @@ const Notifications = () => {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    pages: 1,
+  });
+
+  const filterToTypeMap = {
+    all: null,
+    unread: null,
+    partnership: "Partnerships",
+    system: "System",
+    alert: "Alerts",
+  };
 
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
         setLoading(true);
-        const params = { limit: 20, page: 1 };
+        setError(null);
+        const params = { limit: pagination.limit, page: pagination.page };
 
         if (filter === "unread") {
           params.isRead = false;
         } else if (filter !== "all") {
-          // Assuming your API uses capitalized types like "System", "Partnership"
-          params.type = filter.charAt(0).toUpperCase() + filter.slice(1);
+          params.type = filterToTypeMap[filter];
         }
 
         const response = await getNotifications(params);
-        // Note: The backend returns notifications in a "notifications" property
         setNotifications(response.data.notifications || []);
+        setPagination(
+          response.data.pagination || { page: 1, limit: 20, total: 0, pages: 1 }
+        );
       } catch (err) {
         setError("Failed to fetch notifications. Please try again later.");
         console.error(err);
@@ -39,7 +59,7 @@ const Notifications = () => {
     };
 
     fetchNotifications();
-  }, [filter]); // Re-fetch when the filter changes
+  }, [filter, pagination.page, pagination.limit]);
 
   const handleMarkAsRead = async (id) => {
     try {
@@ -61,6 +81,19 @@ const Notifications = () => {
     }
   };
 
+  const handleDeleteNotification = async (id) => {
+    try {
+      await deleteNotification(id);
+      setNotifications(notifications.filter((n) => n._id !== id));
+    } catch (err) {
+      console.error("Failed to delete notification:", err);
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    setPagination({ ...pagination, page: newPage });
+  };
+
   const formatDate = (dateString) => {
     const options = {
       month: "short",
@@ -80,7 +113,17 @@ const Notifications = () => {
       );
     }
     if (error) {
-      return <div className="p-8 text-center text-red-500">{error}</div>;
+      return (
+        <div className="p-8 text-center text-red-500">
+          {error}
+          <button
+            onClick={() => setFilter(filter)}
+            className="ml-4 text-sm text-blue-600 hover:text-blue-800"
+          >
+            Retry
+          </button>
+        </div>
+      );
     }
     if (notifications.length === 0) {
       return (
@@ -123,15 +166,24 @@ const Notifications = () => {
                 <p className="mt-1 text-sm text-gray-600">
                   {notification.message}
                 </p>
-                {!notification.isRead && (
+                <div className="mt-2 flex space-x-2">
+                  {!notification.isRead && (
+                    <button
+                      onClick={() => handleMarkAsRead(notification._id)}
+                      className="flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800"
+                    >
+                      <CheckCircleIcon className="h-4 w-4 mr-1" />
+                      Mark as read
+                    </button>
+                  )}
                   <button
-                    onClick={() => handleMarkAsRead(notification._id)}
-                    className="mt-2 flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800"
+                    onClick={() => handleDeleteNotification(notification._id)}
+                    className="flex items-center text-xs font-semibold text-red-600 hover:text-red-800"
                   >
-                    <CheckCircleIcon className="h-4 w-4 mr-1" />
-                    Mark as read
+                    <TrashIcon className="h-4 w-4 mr-1" />
+                    Delete
                   </button>
-                )}
+                </div>
               </div>
             </div>
           </li>
@@ -154,7 +206,6 @@ const Notifications = () => {
               Mark all as read
             </button>
           </div>
-
           <div className="flex space-x-2 mb-6">
             <button
               onClick={() => setFilter("all")}
@@ -207,10 +258,30 @@ const Notifications = () => {
               Alerts
             </button>
           </div>
-
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             {renderContent()}
           </div>
+          {pagination.pages > 1 && (
+            <div className="mt-4 flex justify-between items-center">
+              <button
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page === 1}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-600">
+                Page {pagination.page} of {pagination.pages}
+              </span>
+              <button
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page === pagination.pages}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

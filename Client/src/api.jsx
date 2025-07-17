@@ -7,6 +7,7 @@ const API = axios.create({
 });
 
 // Use an interceptor to attach the auth token to every request
+
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("authToken");
@@ -57,6 +58,7 @@ export const markNotificationAsRead = (id) =>
   API.patch(`/notifications/${id}/read`);
 export const markAllNotificationsAsRead = () =>
   API.put("/notifications/read-all");
+export const deleteNotification = (id) => API.delete(`/notifications/${id}`);
 
 // --- NOTIFICATION SETTINGS ENDPOINTS ---
 export const getNotificationSettings = () => API.get("/notifications/settings");

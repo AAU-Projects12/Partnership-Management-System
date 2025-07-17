@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Bars3Icon,
@@ -11,11 +11,27 @@ import {
 import { useUser } from "../context/UserContext";
 import UserProfileMenu from "./UserProfileMenu";
 import aauLogo from "../assets/aauLogo.png";
+import { getNotifications } from "../api"; // Import getNotifications from api.jsx
 
 const NavBar = () => {
   const location = useLocation();
   const { user } = useUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0); // State for unread notification count
+
+  // Fetch unread notification count on component mount
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await getNotifications({ isRead: false });
+        setUnreadCount(response.data.notifications.length || 0);
+      } catch (err) {
+        console.error("Failed to fetch unread notifications:", err);
+        setUnreadCount(0); // Fallback to 0 on error
+      }
+    };
+    fetchUnreadCount();
+  }, []); // Run once on mount
 
   // Function to check if the current path matches the link path
   const isActive = (path) => {
@@ -137,9 +153,12 @@ const NavBar = () => {
                   } flex items-center space-x-1 relative cursor-pointer`}
                 >
                   <BellIcon className="w-5 h-5" />
-                  <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">3</span>
-                  </div>
+                  <span>Notifications</span>
+                  {unreadCount > 0 && (
+                    <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs">{unreadCount}</span>
+                    </div>
+                  )}
                 </Link>
               </div>
               <div className="pl-4">
@@ -227,9 +246,11 @@ const NavBar = () => {
             >
               <BellIcon className="w-6 h-6" />
               <span>Notifications</span>
-              <div className="absolute left-8 top-3 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs">3</span>
-              </div>
+              {unreadCount > 0 && (
+                <div className="absolute left-8 top-3 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">{unreadCount}</span>
+                </div>
+              )}
             </Link>
             <div className="mt-4">
               <UserProfileMenu />
