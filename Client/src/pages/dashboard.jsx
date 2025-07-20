@@ -1,6 +1,5 @@
-// Dashboard.jsx
-import React, { useState, useEffect } from "react";
-import { Line, Bar, Pie } from "react-chartjs-2"; // Added Pie for the new chart
+import React, { useState, useEffect, useMemo } from "react";
+import { Line, Bar, Pie } from "react-chartjs-2";
 import { Link } from "react-router-dom";
 import {
   Chart as ChartJS,
@@ -13,7 +12,7 @@ import {
   Tooltip,
   Legend,
   ArcElement,
-} from "chart.js"; // Added ArcElement for Pie chart
+} from "chart.js";
 import NavBar from "../components/NavBar";
 import { getPartnerships } from "../api";
 import { toast } from "react-hot-toast";
@@ -32,85 +31,98 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
+  // State management for filters, data, and loading status
   const [timeFilter, setTimeFilter] = useState("Monthly");
   const [collegeFilter, setCollegeFilter] = useState("All Colleges");
   const [partnerships, setPartnerships] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Expanded list of colleges and institutes
   const colleges = [
     "All Colleges",
     "Central",
-    "College of Business and Economics",
-    "College of Social Science, Arts and Humanities",
-    "College of Veterinary Medicine and Agriculture",
-    "School of Law",
-    "College of Technology and Built Environment",
-    "College of Education and Language Studies",
-    "College of Health Science",
+    "College of Business and Economics (CBE)",
+    "College of Social Sciences, Arts and Humanities (CSSAH)",
+    "College of Education and Language Studies (CELS)",
+    "College of Veterinary Medicine & Agriculture (CVMA)",
+    "College of Technology & Built Environment (CoTBE)",
+    "College of Natural and Computational Sciences (CNCS)",
+    "College of Health Sciences (CHS)",
+    "School of Law (SoL)",
+    "Institute of Water Environment & Climate Research (IWECR)",
+    "Aklilu Lema Institute of Health Research (ALIHR)",
+    "Institute of Geophysics Space Science & Astronomy (IGSSA)",
+    "Institute for Social & Economic Research (ISER)",
+    "Institute of Ethiopian Studies (IES)",
+    "Institute of Advanced Science & Technology (IAST)",
+    "Institute of Peace & Security (IPSS)",
   ];
 
+  // Effect hook to fetch all partnerships using pagination.
   useEffect(() => {
-    const fetchPartnerships = async () => {
-      try {
-        setLoading(true);
-        const params = {};
-        if (collegeFilter !== "All Colleges") {
-          params.college = collegeFilter;
-        }
-        const response = await getPartnerships(params);
-        // Extract partnerships array from response
-        const data = Array.isArray(response.data.partnerships)
-          ? response.data.partnerships
-          : [];
+    const fetchAllPartnerships = async () => {
+      setLoading(true);
+      let allPartnerships = [];
+      let currentPage = 1;
+      const limit = 100; // Use the maximum allowed limit per page.
+      let hasMore = true;
 
-        setPartnerships(data);
-        setLoading(false);
+      try {
+        while (hasMore) {
+          const params = { limit, page: currentPage };
+          const response = await getPartnerships(params);
+
+          const fetchedPartnerships = Array.isArray(
+            response?.data?.partnerships
+          )
+            ? response.data.partnerships
+            : [];
+
+          if (fetchedPartnerships.length > 0) {
+            allPartnerships = [...allPartnerships, ...fetchedPartnerships];
+            currentPage++;
+          } else {
+            // No more partnerships to fetch, exit the loop.
+            hasMore = false;
+          }
+        }
+        setPartnerships(allPartnerships);
       } catch (error) {
         console.error("Error fetching partnerships:", error);
         toast.error(
           error.response?.data?.message || "Failed to fetch partnerships"
         );
-        setPartnerships([]);
+        setPartnerships([]); // Reset to empty array on error
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchPartnerships();
-  }, [collegeFilter]);
+    fetchAllPartnerships();
+  }, []); // Empty dependency array ensures this runs only once
 
-  const processChartData = () => {
-    if (!Array.isArray(partnerships)) {
-      return {
-        collegeData: {},
-        totalData: { active: 0, expiringSoon: 0, expired: 0, prospect: 0 },
-      };
-    }
-
+  // Memoize the initial processing of partnerships to add a 'derivedStatus'
+  // This avoids recalculating the status for every filter change.
+  const processedPartnerships = useMemo(() => {
+    if (!Array.isArray(partnerships)) return [];
     const now = new Date();
-    let startDate;
-    if (timeFilter === "Weekly") {
-      startDate = new Date(now.setDate(now.getDate() - 7));
-    } else if (timeFilter === "Monthly") {
-      startDate = new Date(now.setMonth(now.getMonth() - 1));
-    } else if (timeFilter === "Yearly") {
-      startDate = new Date(now.setFullYear(now.getFullYear() - 1));
-    } else {
-      startDate = new Date(0);
-    }
 
-    const filteredPartnerships = partnerships.filter(
-      (p) => p.createdAt && new Date(p.createdAt) >= startDate
-    );
-
-    const processedPartnerships = filteredPartnerships.map((p) => {
+    return partnerships.map((p) => {
       const expirationDate = p.expirationDate
         ? new Date(p.expirationDate)
         : null;
       let derivedStatus = p.status ? p.status.toLowerCase() : "pending";
+
       if (expirationDate && p.status === "Active") {
         const daysUntilExpiration =
           (expirationDate - now) / (1000 * 60 * 60 * 24);
-        derivedStatus = daysUntilExpiration <= 30 ? "expiringSoon" : "active";
+        if (daysUntilExpiration <= 0) {
+          derivedStatus = "expired";
+        } else if (daysUntilExpiration <= 30) {
+          derivedStatus = "expiringSoon";
+        } else {
+          derivedStatus = "active";
+        }
       } else if (derivedStatus === "rejected") {
         derivedStatus = "expired";
       } else if (derivedStatus === "pending") {
@@ -118,13 +130,35 @@ const Dashboard = () => {
       }
       return { ...p, derivedStatus };
     });
+  }, [partnerships]);
 
+  // Memoize the partnerships filtered by the selected time range
+  const filteredByTime = useMemo(() => {
+    const now = new Date();
+    let startDate;
+
+    if (timeFilter === "Weekly") {
+      startDate = new Date(new Date().setDate(now.getDate() - 7));
+    } else if (timeFilter === "Monthly") {
+      startDate = new Date(new Date().setMonth(now.getMonth() - 1));
+    } else if (timeFilter === "Yearly") {
+      startDate = new Date(new Date().setFullYear(now.getFullYear() - 1));
+    } else {
+      // "All Times"
+      startDate = new Date(0); // The beginning of time
+    }
+
+    return processedPartnerships.filter(
+      (p) => p.createdAt && new Date(p.createdAt) >= startDate
+    );
+  }, [processedPartnerships, timeFilter]);
+
+  // Memoize aggregated data for the bar chart based on the time-filtered data
+  const { collegeData, totalData } = useMemo(() => {
     const collegeData = colleges.reduce((acc, college) => {
       if (college === "All Colleges") return acc;
-      const collegePartnerships = processedPartnerships.filter(
-        (p) =>
-          p.aauContact?.interestedCollegeOrDepartment === college ||
-          collegeFilter === "All Colleges"
+      const collegePartnerships = filteredByTime.filter(
+        (p) => p.aauContact?.interestedCollegeOrDepartment === college
       );
       acc[college] = {
         active: collegePartnerships.filter((p) => p.derivedStatus === "active")
@@ -142,7 +176,7 @@ const Dashboard = () => {
       return acc;
     }, {});
 
-    const totalData = processedPartnerships.reduce(
+    const totalData = filteredByTime.reduce(
       (acc, p) => {
         acc[p.derivedStatus] = (acc[p.derivedStatus] || 0) + 1;
         return acc;
@@ -151,87 +185,52 @@ const Dashboard = () => {
     );
 
     return { collegeData, totalData };
-  };
+  }, [filteredByTime, colleges]);
 
-  const processLineData = () => {
-    if (!Array.isArray(partnerships)) {
-      return { months: [], lineDataByCollege: {} };
-    }
-
+  // Memoize aggregated data for the line chart, now also based on time-filtered data
+  const { months, lineDataByCollege } = useMemo(() => {
     const now = new Date();
     const months = Array.from({ length: 12 }, (_, i) => {
       const date = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
       return date.toLocaleString("default", { month: "short" }).toUpperCase();
     });
 
-    const lineDataByCollege = colleges.reduce(
-      (acc, college) => {
-        if (college === "All Colleges") return acc;
-        acc[college] = {
-          active: new Array(12).fill(0),
-          expired: new Array(12).fill(0),
-          expiringSoon: new Array(12).fill(0),
-          prospect: new Array(12).fill(0),
-        };
-        return acc;
-      },
-      {
-        "All Colleges": {
-          active: new Array(12).fill(0),
-          expired: new Array(12).fill(0),
-          expiringSoon: new Array(12).fill(0),
-          prospect: new Array(12).fill(0),
-        },
-      }
-    );
+    const initialCollegeData = colleges.reduce((acc, college) => {
+      acc[college] = {
+        active: new Array(12).fill(0),
+        expired: new Array(12).fill(0),
+        expiringSoon: new Array(12).fill(0),
+        prospect: new Array(12).fill(0),
+      };
+      return acc;
+    }, {});
 
-    partnerships.forEach((p) => {
-      if (!p.createdAt || !p.aauContact?.interestedCollegeOrDepartment) return;
-      const expirationDate = p.expirationDate
-        ? new Date(p.expirationDate)
-        : null;
-      let derivedStatus = p.status ? p.status.toLowerCase() : "pending";
-      if (expirationDate && p.status === "Active") {
-        const daysUntilExpiration =
-          (expirationDate - now) / (1000 * 60 * 60 * 24);
-        derivedStatus = daysUntilExpiration <= 30 ? "expiringSoon" : "active";
-      } else if (derivedStatus === "rejected") {
-        derivedStatus = "expired";
-      } else if (derivedStatus === "pending") {
-        derivedStatus = "prospect";
-      }
+    filteredByTime.forEach((p) => {
+      if (!p.createdAt) return;
       const createdDate = new Date(p.createdAt);
+      // Calculate the month index relative to the last 12 months
       const monthIndex =
         (createdDate.getFullYear() - now.getFullYear()) * 12 +
         createdDate.getMonth() -
         (now.getMonth() - 11);
+
       if (monthIndex >= 0 && monthIndex < 12) {
-        if (
-          collegeFilter === "All Colleges" ||
-          p.aauContact.interestedCollegeOrDepartment === collegeFilter
-        ) {
-          lineDataByCollege[p.aauContact.interestedCollegeOrDepartment][
-            derivedStatus
-          ][monthIndex]++;
-          lineDataByCollege["All Colleges"][derivedStatus][monthIndex]++;
+        const collegeName = p.aauContact?.interestedCollegeOrDepartment;
+        if (collegeName && initialCollegeData[collegeName]) {
+          initialCollegeData[collegeName][p.derivedStatus][monthIndex]++;
         }
+        initialCollegeData["All Colleges"][p.derivedStatus][monthIndex]++;
       }
     });
 
-    return { months, lineDataByCollege };
-  };
+    return { months, lineDataByCollege: initialCollegeData };
+  }, [filteredByTime, colleges]);
 
-  const processPieData = () => {
-    if (!Array.isArray(partnerships)) {
-      return {
-        labels: [],
-        datasets: [{ data: [], backgroundColor: [] }],
-      };
-    }
-
+  // Memoize data for the pie chart (shows all-time distribution)
+  const pieData = useMemo(() => {
     const collegeCounts = colleges.reduce((acc, college) => {
       if (college !== "All Colleges") {
-        const count = partnerships.filter(
+        const count = processedPartnerships.filter(
           (p) => p.aauContact?.interestedCollegeOrDepartment === college
         ).length;
         if (count > 0) acc[college] = count;
@@ -253,17 +252,29 @@ const Dashboard = () => {
             "#F59E0B",
             "#10B981",
             "#F472B6",
-          ], // Colors for each college
+            "#6B7280",
+            "#EC4899",
+            "#8B5CF6",
+            "#F97316",
+            "#22C55E",
+            "#0EA5E9",
+            "#E11D48",
+            "#FDE047",
+            "#5EEAD4",
+          ],
           borderWidth: 1,
           borderColor: "#fff",
         },
       ],
     };
-  };
+  }, [processedPartnerships, colleges]);
 
-  const { collegeData, totalData } = processChartData();
-  const { months, lineDataByCollege } = processLineData();
-  const pieData = processPieData();
+  // ----- Chart Configurations -----
+
+  const displayedTotal = Object.values(totalData).reduce(
+    (sum, count) => sum + count,
+    0
+  );
 
   const selectedCollegeData =
     collegeFilter === "All Colleges"
@@ -274,6 +285,7 @@ const Dashboard = () => {
           expired: 0,
           prospect: 0,
         };
+
   const barData = {
     labels: ["Active Partners", "Expiring Soon", "Expired", "Prospect"],
     datasets: [
@@ -290,59 +302,45 @@ const Dashboard = () => {
       },
     ],
   };
-
   const barOptions = {
     indexAxis: "y",
-    scales: {
-      x: { beginAtZero: true, max: 200, ticks: { stepSize: 50 } },
-      y: { ticks: { font: { size: 14 } } },
-    },
+    scales: { x: { beginAtZero: true, ticks: { stepSize: 50 } } },
     plugins: { legend: { display: false } },
   };
 
+  const lineChartDataSource =
+    lineDataByCollege[collegeFilter] || lineDataByCollege["All Colleges"];
   const lineData = {
     labels: months,
     datasets: [
       {
         label: "Active",
-        data:
-          lineDataByCollege[collegeFilter]?.active ||
-          lineDataByCollege["All Colleges"].active,
+        data: lineChartDataSource.active,
         borderColor: "#3B82F6",
         fill: false,
       },
       {
         label: "Expired",
-        data:
-          lineDataByCollege[collegeFilter]?.expired ||
-          lineDataByCollege["All Colleges"].expired,
+        data: lineChartDataSource.expired,
         borderColor: "#A855F7",
         fill: false,
       },
       {
         label: "Expiring Soon",
-        data:
-          lineDataByCollege[collegeFilter]?.expiringSoon ||
-          lineDataByCollege["All Colleges"].expiringSoon,
+        data: lineChartDataSource.expiringSoon,
         borderColor: "#F59E0B",
         fill: false,
       },
       {
         label: "Prospect",
-        data:
-          lineDataByCollege[collegeFilter]?.prospect ||
-          lineDataByCollege["All Colleges"].prospect,
+        data: lineChartDataSource.prospect,
         borderColor: "#D1D5DB",
         fill: false,
       },
     ],
   };
-
   const lineOptions = {
-    scales: {
-      y: { beginAtZero: true, max: 70, ticks: { stepSize: 10 } },
-      x: { ticks: { font: { size: 12 } } },
-    },
+    scales: { y: { beginAtZero: true, ticks: { stepSize: 10 } } },
     plugins: { legend: { position: "bottom" } },
   };
 
@@ -352,18 +350,13 @@ const Dashboard = () => {
     plugins: {
       legend: {
         position: "bottom",
-        labels: {
-          boxWidth: 10,
-          font: { size: 12 },
-        },
+        labels: { boxWidth: 10, font: { size: 10 } },
       },
-      title: {
-        display: true,
-        text: "Partnerships by College",
-        font: { size: 14 },
-      },
+      title: { display: false },
     },
   };
+
+  // ----- Render JSX -----
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
@@ -374,14 +367,6 @@ const Dashboard = () => {
             Partnership Statistics
           </h1>
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-            <div className="relative flex-1 sm:flex-none">
-              <input
-                type="text"
-                placeholder="Search Partners"
-                className="w-full sm:w-64 pl-4 pr-10 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <span className="absolute right-3 top-2.5 text-gray-800">×</span>
-            </div>
             <select
               value={collegeFilter}
               onChange={(e) => setCollegeFilter(e.target.value)}
@@ -410,95 +395,40 @@ const Dashboard = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
-              {/* Left Column: Units Per Status */}
               <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md lg:col-span-1">
                 <h2 className="text-2xl lg:text-4xl font-bold text-gray-800">
-                  {selectedCollegeData.active +
-                    selectedCollegeData.expiringSoon +
-                    selectedCollegeData.expired +
-                    selectedCollegeData.prospect}{" "}
-                  Partners
+                  {displayedTotal} Partners
                 </h2>
-                <p className="text-gray-600 mt-2">Units Per Status</p>
+                <p className="text-gray-600 mt-2">
+                  Units Per Status ({timeFilter})
+                </p>
                 <div className="mt-4">
                   <Bar data={barData} options={barOptions} height={100} />
                 </div>
               </div>
 
-              {/* Middle Two Columns: Active Partners and Pending Applications */}
-              <div className="lg:col-span-2">
-                <div className="flex flex-col space-y-4 lg:space-y-6">
-                  <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md">
-                    <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">
-                      {selectedCollegeData.active} Partners
-                    </h2>
-                    <div className="flex justify-between mt-2">
-                      <p className="text-gray-600">Active Partners</p>
-                      <p className="text-green-500 font-semibold">+15%</p>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-500 mt-2">
-                      <span>
-                        Ongoing: {Math.round(selectedCollegeData.active * 0.9)}
-                      </span>
-                      <span>
-                        Closing: {Math.round(selectedCollegeData.active * 0.1)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md">
-                    <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">
-                      {Math.round(
-                        (selectedCollegeData.expiringSoon +
-                          selectedCollegeData.prospect) *
-                          0.5
-                      )}
-                    </h2>
-                    <div className="flex justify-between mt-2">
-                      <p className="text-gray-600">Pending Applications</p>
-                      <p className="text-red-500 font-semibold">-5%</p>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-500 mt-2">
-                      <span>
-                        Partners:{" "}
-                        {selectedCollegeData.active +
-                          selectedCollegeData.expiringSoon +
-                          selectedCollegeData.expired +
-                          selectedCollegeData.prospect}
-                      </span>
-                      <span>
-                        Deals:{" "}
-                        {Math.round(selectedCollegeData.expiringSoon * 0.5)}
-                      </span>
-                    </div>
-                  </div>
+              <div className="lg:col-span-2 flex flex-col space-y-4 lg:space-y-6">
+                <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md">
+                  <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">
+                    {selectedCollegeData.active}
+                  </h2>
+                  <p className="text-gray-600 mt-2">Active Partners</p>
+                </div>
+                <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md">
+                  <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">
+                    {selectedCollegeData.prospect}
+                  </h2>
+                  <p className="text-gray-600 mt-2">Pending Applications</p>
                 </div>
               </div>
 
-              {/* Top-Right: New Pie Chart */}
-              <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md lg:col-span-1 h-64">
+              <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md lg:col-span-1">
                 <h2 className="text-lg font-medium text-gray-800 mb-2">
                   College Distribution
                 </h2>
-                <div className="h-40 flex items-center justify-center">
-                  {pieData && pieData.labels && pieData.labels.length > 0 ? (
-                    <Pie
-                      data={pieData}
-                      options={{
-                        ...pieOptions,
-                        plugins: {
-                          ...pieOptions.plugins,
-                          tooltip: {
-                            callbacks: {
-                              label: function (context) {
-                                const label = context.label || "";
-                                const value = context.parsed || 0;
-                                return `${label}: ${value}`;
-                              },
-                            },
-                          },
-                        },
-                      }}
-                    />
+                <div className="h-52 flex items-center justify-center">
+                  {pieData.labels.length > 0 ? (
+                    <Pie data={pieData} options={pieOptions} />
                   ) : (
                     <span className="text-gray-400 text-sm">
                       No data available
@@ -511,49 +441,24 @@ const Dashboard = () => {
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3">
                 <h2 className="text-lg font-medium text-gray-800">
-                  Partnership Status
+                  Partnership Status Trend
                 </h2>
                 <div className="flex flex-wrap gap-1">
-                  <button
-                    onClick={() => setTimeFilter("Weekly")}
-                    className={`px-3 py-1 rounded-md text-sm ${
-                      timeFilter === "Weekly"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-600"
-                    } cursor-pointer`}
-                  >
-                    Weekly
-                  </button>
-                  <button
-                    onClick={() => setTimeFilter("Monthly")}
-                    className={`px-3 py-1 rounded-md text-sm ${
-                      timeFilter === "Monthly"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-600"
-                    } cursor-pointer`}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    onClick={() => setTimeFilter("Yearly")}
-                    className={`px-3 py-1 rounded-md text-sm ${
-                      timeFilter === "Yearly"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-600"
-                    } cursor-pointer`}
-                  >
-                    Yearly
-                  </button>
-                  <button
-                    onClick={() => setTimeFilter("All Times")}
-                    className={`px-3 py-1 rounded-md text-sm ${
-                      timeFilter === "All Times"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-600"
-                    } cursor-pointer`}
-                  >
-                    All Times
-                  </button>
+                  {["Weekly", "Monthly", "Yearly", "All Times"].map(
+                    (filter) => (
+                      <button
+                        key={filter}
+                        onClick={() => setTimeFilter(filter)}
+                        className={`px-3 py-1 rounded-md text-sm ${
+                          timeFilter === filter
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-200 text-gray-600"
+                        } cursor-pointer`}
+                      >
+                        {filter}
+                      </button>
+                    )
+                  )}
                 </div>
               </div>
               <Line data={lineData} options={lineOptions} height={80} />
