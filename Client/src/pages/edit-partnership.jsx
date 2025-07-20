@@ -20,6 +20,7 @@ import {
   XCircle,
   Phone,
   Link,
+  ArrowLeft,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -61,13 +62,14 @@ function EditPartnership() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [originalFormData, setOriginalFormData] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       try {
         const { data } = await getPartnershipById(id);
-        setFormData({
+        const mapped = {
           name: data.partnerInstitution?.name || "",
           type: data.partnerInstitution?.typeOfOrganization || "",
           signedDate: data.potentialStartDate ? new Date(data.potentialStartDate).toISOString().split("T")[0] : "",
@@ -75,6 +77,7 @@ function EditPartnership() {
           region: data.partnerInstitution?.address || "",
           country: data.partnerInstitution?.country || "",
           college: data.aauContact?.interestedCollegeOrDepartment || "",
+          aauContactCollege: data.aauContactPerson?.college || "",
           schoolDepartmentUnit: data.aauContactPerson?.schoolDepartmentUnit || "",
           status: data.status || "",
           description: data.description || "",
@@ -95,7 +98,9 @@ function EditPartnership() {
           deliverables: data.deliverables && data.deliverables.length > 0 ? data.deliverables : [""],
           fundingAmount: data.fundingAmount !== undefined ? String(data.fundingAmount) : "",
           reportingRequirements: data.reportingRequirements || "",
-        });
+        };
+        setFormData(mapped);
+        setOriginalFormData(mapped);
       } catch (error) {
         toast.error("Failed to load partnership data");
       } finally {
@@ -220,17 +225,6 @@ function EditPartnership() {
       formIsValid = false;
     }
 
-    const startDate = new Date(formData.signedDate);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    if (startDate < now) {
-      setErrors((prev) => ({
-        ...prev,
-        signedDate: "Start date cannot be in the past.",
-      }));
-      formIsValid = false;
-    }
-
     if (!formIsValid) {
       toast.error("Please correct the validation errors.");
       setIsSubmitting(false);
@@ -312,14 +306,23 @@ function EditPartnership() {
     "5 years",
   ];
   const collegeOptions = [
+    "All Colleges",
     "Central",
-    "College of Business and Economics",
-    "College of Social Science, Arts and Humanities",
-    "College of Veterinary Medicine and Agriculture",
-    "School of Law",
-    "College of Technology and Built Environment",
-    "College of Education and Language Studies",
-    "College of Health Science",
+    "College of Business and Economics (CBE)",
+    "College of Social Sciences, Arts and Humanities (CSSAH)",
+    "College of Education and Language Studies (CELS)",
+    "College of Veterinary Medicine & Agriculture (CVMA)",
+    "College of Technology & Built Environment (CoTBE)",
+    "College of Natural and Computational Sciences (CNCS)",
+    "College of Health Sciences (CHS)",
+    "School of Law (SoL)",
+    "Institute of Water Environment & Climate Research (IWECR)",
+    "Aklilu Lema Institute of Health Research (ALIHR)",
+    "Institute of Geophysics Space Science & Astronomy (IGSSA)",
+    "Institute for Social & Economic Research (ISER)",
+    "Institute of Ethiopian Studies (IES)",
+    "Institute of Advanced Science & Technology (IAST)",
+    "Institute of Peace & Security (IPSS)",
   ];
   const collaborationOptions = [
     "Research/Technology Transfer",
@@ -348,6 +351,14 @@ function EditPartnership() {
       <NavBar />
       <div className="py-8 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 sm:p-8">
+          <button
+            type="button"
+            className="mb-4 flex items-center text-[#004165] hover:underline"
+            onClick={() => navigate("/partnership")}
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Partnerships
+          </button>
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
               Edit Partnership
@@ -454,10 +465,6 @@ function EditPartnership() {
                   name="signedDate"
                   value={formData.signedDate}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.signedDate ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-colors`}
-                  min={new Date().toISOString().split("T")[0]}
                   required
                 />
                 {errors.signedDate && (
@@ -1258,6 +1265,14 @@ function EditPartnership() {
 
             {/* Submit Button */}
             <div className="flex justify-end mt-8">
+              <button
+                type="button"
+                className="px-6 py-2 bg-gray-300 text-gray-800 font-semibold rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors mr-4"
+                onClick={() => originalFormData && setFormData(originalFormData)}
+                disabled={isSubmitting}
+              >
+                Cancel Changes
+              </button>
               <button
                 type="submit"
                 disabled={isSubmitting}

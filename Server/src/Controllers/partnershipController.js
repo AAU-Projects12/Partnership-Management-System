@@ -236,6 +236,7 @@ export const updatePartnership = async (req, res) => {
     }
 
     const updateData = { ...req.body };
+    console.log('Incoming updatePartnership payload:', JSON.stringify(updateData, null, 2));
     if (
       Array.isArray(updateData.potentialAreasOfCollaboration) &&
       updateData.potentialAreasOfCollaboration.includes("Other") &&

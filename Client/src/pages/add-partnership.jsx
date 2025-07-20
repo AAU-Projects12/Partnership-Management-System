@@ -20,6 +20,7 @@ import {
   XCircle,
   Phone,
   Link,
+  ArrowLeft,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -190,17 +191,6 @@ function AddPartnership() {
       formIsValid = false;
     }
 
-    const startDate = new Date(formData.signedDate);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    if (startDate < now) {
-      setErrors((prev) => ({
-        ...prev,
-        signedDate: "Start date cannot be in the past.",
-      }));
-      formIsValid = false;
-    }
-
     if (!formIsValid) {
       toast.error("Please correct the validation errors.");
       setIsSubmitting(false);
@@ -289,7 +279,6 @@ function AddPartnership() {
   const collegeOptions = [
     "All Colleges",
     "Central",
-    // Colleges
     "College of Business and Economics (CBE)",
     "College of Social Sciences, Arts and Humanities (CSSAH)",
     "College of Education and Language Studies (CELS)",
@@ -298,7 +287,6 @@ function AddPartnership() {
     "College of Natural and Computational Sciences (CNCS)",
     "College of Health Sciences (CHS)",
     "School of Law (SoL)",
-    // Institutes
     "Institute of Water Environment & Climate Research (IWECR)",
     "Aklilu Lema Institute of Health Research (ALIHR)",
     "Institute of Geophysics Space Science & Astronomy (IGSSA)",
@@ -334,6 +322,14 @@ function AddPartnership() {
       <NavBar />
       <div className="py-8 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 sm:p-8">
+          <button
+            type="button"
+            className="mb-4 flex items-center text-[#004165] hover:underline"
+            onClick={() => navigate("/partnership")}
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back to Partnerships
+          </button>
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
               Add New Partnership
@@ -440,10 +436,6 @@ function AddPartnership() {
                   name="signedDate"
                   value={formData.signedDate}
                   onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.signedDate ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-colors`}
-                  min={new Date().toISOString().split("T")[0]}
                   required
                 />
                 {errors.signedDate && (

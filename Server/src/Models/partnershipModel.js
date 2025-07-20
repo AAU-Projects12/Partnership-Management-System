@@ -51,7 +51,6 @@ const aauContactPersonSchema = new mongoose.Schema({
     enum: [
       "All Colleges",
       "Central",
-      // Colleges
       "College of Business and Economics (CBE)",
       "College of Social Sciences, Arts and Humanities (CSSAH)",
       "College of Education and Language Studies (CELS)",
@@ -60,7 +59,6 @@ const aauContactPersonSchema = new mongoose.Schema({
       "College of Natural and Computational Sciences (CNCS)",
       "College of Health Sciences (CHS)",
       "School of Law (SoL)",
-      // Institutes
       "Institute of Water Environment & Climate Research (IWECR)",
       "Aklilu Lema Institute of Health Research (ALIHR)",
       "Institute of Geophysics Space Science & Astronomy (IGSSA)",
