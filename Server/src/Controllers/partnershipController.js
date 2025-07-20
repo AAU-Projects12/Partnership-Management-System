@@ -10,32 +10,9 @@ export const getAllPartnerships = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { status, typeOfOrganization, limit = 10, page = 1 } = req.query;
-
-    const query = {};
-    if (status) query.status = status;
-    if (typeOfOrganization)
-      query["partnerInstitution.typeOfOrganization"] = typeOfOrganization;
-    query.isArchived = false;
-
-    if (req.user.role !== "SuperAdmin") {
-      query.campusId = req.user.campusId;
-    }
-
-    const total = await Partnership.countDocuments(query);
-    const partnerships = await Partnership.find(query)
-      .limit(Number(limit))
-      .skip((Number(page) - 1) * Number(limit));
-
-    res.status(200).json({
-      partnerships,
-      pagination: {
-        total,
-        page: Number(page),
-        pages: Math.ceil(total / limit),
-        limit: Number(limit),
-      },
-    });
+    // Admins and SuperAdmins see all partnerships
+    const partnerships = await Partnership.find({});
+    res.status(200).json(partnerships);
   } catch (error) {
     console.error("Error in getAllPartnerships:", error.message, error.stack);
     res.status(500).json({ error: "Server error" });
@@ -142,8 +119,8 @@ export const getPartnerships = async (req, res) => {
       limit = 10,
       page = 1,
     } = req.query;
-    let filter =
-      req.user.role === "SuperAdmin" ? {} : { campusId: req.user.campusId };
+    // Admins and SuperAdmins see all partnerships
+    let filter = {};
 
     if (status) filter.status = status;
     if (typeOfOrganization)
@@ -201,16 +178,14 @@ export const getPartnershipById = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter =
-      req.user.role === "SuperAdmin"
-        ? { _id: req.params.id }
-        : { _id: req.params.id, campusId: req.user.campusId };
+    // Admins and SuperAdmins can access any partnership
+    const filter = { _id: req.params.id };
     const partnership = await Partnership.findOne(filter);
 
     if (!partnership) {
       return res
         .status(404)
-        .json({ message: "Partnership not found or not in your campus" });
+        .json({ message: "Partnership not found" });
     }
     res.status(200).json(partnership);
   } catch (error) {
@@ -227,10 +202,11 @@ export const updatePartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter =
-      req.user.role === "SuperAdmin"
-        ? { _id: req.params.id }
-        : { _id: req.params.id, campusId: req.user.campusId };
+    // Restrict Admins to only update partnerships they created
+    let filter = { _id: req.params.id };
+    if (req.user.role === "Admin") {
+      filter.createdBy = req.user.userId;
+    }
 
     const updateData = { ...req.body };
     if (
@@ -274,27 +250,26 @@ export const updatePartnership = async (req, res) => {
     );
 
     if (!updatedPartnership) {
-      return res
-        .status(404)
-        .json({ message: "Partnership not found or not in your campus" });
+      // If admin, show access error; otherwise, not found
+      if (req.user.role === "Admin") {
+        return res.status(403).json({ message: "You do not have access to modify this partnership." });
+      } else {
+        return res.status(404).json({ message: "Partnership not found" });
+      }
     }
     // Event-based notification: Partnership Updated
     await sendNotification({
       title: "Partnership Updated",
-      message: `The partnership with ${updatedPartnership.partnerInstitution.name} has been updated`,
+      message: `Partnership ${updatedPartnership.partnerInstitution?.name || ""} has been updated`,
       type: "Partnerships",
     });
 
     res.status(200).json({
       message: "Partnership updated successfully",
-      updatedPartnership,
+      partnership: updatedPartnership,
     });
   } catch (error) {
     console.error("Error updating partnership:", error.message, error.stack);
-    if (error.name === "ValidationError") {
-      const errors = Object.values(error.errors).map((err) => err.message);
-      return res.status(400).json({ error: errors.join(", ") });
-    }
     res.status(500).json({ error: "Server error" });
   }
 };
@@ -306,16 +281,20 @@ export const deletePartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter =
-      req.user.role === "SuperAdmin"
-        ? { _id: req.params.id }
-        : { _id: req.params.id, campusId: req.user.campusId };
+    // Restrict Admins to only delete partnerships they created
+    let filter = { _id: req.params.id };
+    if (req.user.role === "Admin") {
+      filter.createdBy = req.user.userId;
+    }
     const deletedPartnership = await Partnership.findOneAndDelete(filter);
 
     if (!deletedPartnership) {
-      return res
-        .status(404)
-        .json({ message: "Partnership not found or not in your campus" });
+      // If admin, show access error; otherwise, not found
+      if (req.user.role === "Admin") {
+        return res.status(403).json({ message: "You do not have access to delete this partnership." });
+      } else {
+        return res.status(404).json({ message: "Partnership not found" });
+      }
     }
 
     res.status(200).json({ message: "Partnership deleted successfully" });
@@ -332,16 +311,14 @@ export const renewPartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter =
-      req.user.role === "SuperAdmin"
-        ? { _id: req.params.id }
-        : { _id: req.params.id, campusId: req.user.campusId };
+    // Admins and SuperAdmins can renew any partnership
+    const filter = { _id: req.params.id };
     const partnership = await Partnership.findOne(filter);
 
     if (!partnership) {
       return res
         .status(404)
-        .json({ message: "Partnership not found or not in your campus" });
+        .json({ message: "Partnership not found" });
     }
 
     partnership.potentialStartDate = new Date(req.body.potentialStartDate);
@@ -365,9 +342,8 @@ export const exportPartnerships = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const filter =
-      req.user.role === "SuperAdmin" ? {} : { campusId: req.user.campusId };
-    const partnerships = await Partnership.find(filter);
+    // Admins and SuperAdmins can export all partnerships
+    const partnerships = await Partnership.find({});
 
     res.status(200).json(partnerships);
   } catch (error) {
@@ -395,16 +371,13 @@ export const approvePartnership = async (req, res) => {
         .json({ error: "Only Admins or SuperAdmins can approve partnerships" });
     }
 
-    const filter =
-      req.user.role === "SuperAdmin"
-        ? { _id: id }
-        : { _id: id, campusId: req.user.campusId };
-
+    // Admins and SuperAdmins can approve any partnership
+    const filter = { _id: id };
     const partnership = await Partnership.findOne(filter);
     if (!partnership) {
       return res
         .status(404)
-        .json({ error: "Partnership not found or not in your campus" });
+        .json({ error: "Partnership not found" });
     }
 
     if (partnership.status !== "Pending") {
@@ -445,16 +418,13 @@ export const rejectPartnership = async (req, res) => {
         .json({ error: "Only Admins or SuperAdmins can reject partnerships" });
     }
 
-    const filter =
-      req.user.role === "SuperAdmin"
-        ? { _id: id }
-        : { _id: id, campusId: req.user.campusId };
-
+    // Admins and SuperAdmins can reject any partnership
+    const filter = { _id: id };
     const partnership = await Partnership.findOne(filter);
     if (!partnership) {
       return res
         .status(404)
-        .json({ error: "Partnership not found or not in your campus" });
+        .json({ error: "Partnership not found" });
     }
 
     if (partnership.status !== "Pending") {
@@ -489,16 +459,13 @@ export const archivePartnership = async (req, res) => {
       return res.status(400).json({ error: "Invalid partnership ID" });
     }
 
-    const filter =
-      req.user.role === "SuperAdmin"
-        ? { _id: id }
-        : { _id: id, campusId: req.user.campusId };
-
+    // Admins and SuperAdmins can archive any partnership
+    const filter = { _id: id };
     const partnership = await Partnership.findOne(filter);
     if (!partnership) {
       return res
         .status(404)
-        .json({ error: "Partnership not found or not in your campus" });
+        .json({ error: "Partnership not found" });
     }
 
     if (partnership.isArchived) {
