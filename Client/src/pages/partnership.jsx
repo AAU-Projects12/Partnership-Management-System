@@ -35,7 +35,7 @@ import {
   filterBySearch,
   applyFilters,
   sortPartners,
-  paginatePartners,
+  // paginatePartners, // REMOVE client-side pagination
 } from "../features/partnership/utils/partnershipUtils";
 import useLocalStorage from "../features/partnership/hooks/useLocalStorage";
 import { getPartnerships, deletePartnership } from "../api.jsx";
@@ -43,8 +43,8 @@ import { getPartnerships, deletePartnership } from "../api.jsx";
 const PartnershipDashboard = () => {
   // State for search and filters
   const [searchQuery, setSearchQuery] = useState("");
-  const [partners, setPartners] = useState(samplePartners);
-  const [filteredPartners, setFilteredPartners] = useState(partners);
+  const [partners, setPartners] = useState([]);
+  const [filteredPartners, setFilteredPartners] = useState([]);
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
 
   // Filter states
@@ -67,6 +67,8 @@ const PartnershipDashboard = () => {
   // Pagination state
   const [currentPage, setCurrentPage] = useLocalStorage("currentPage", 1);
   const [itemsPerPage, setItemsPerPage] = useLocalStorage("itemsPerPage", 5);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   // UI states
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -82,14 +84,18 @@ const PartnershipDashboard = () => {
 
   const navigate = useNavigate();
 
-  // Apply filters, sorting, and search
+  // Fetch partners from backend with pagination
   useEffect(() => {
     async function fetchPartners() {
       setLoading(true);
       try {
-        const response = await getPartnerships();
+        const response = await getPartnerships({
+          page: currentPage,
+          limit: itemsPerPage,
+        });
+        const { partnerships = [], pagination = {} } = response.data;
         // Map backend data to frontend table structure
-        const mappedPartners = (response.data.partnerships || []).map((p) => ({
+        const mappedPartners = partnerships.map((p) => ({
           id: p._id || p.id,
           logo: p.logo || "/placeholder.svg",
           name: p.partnerInstitution?.name || "-",
@@ -97,50 +103,38 @@ const PartnershipDashboard = () => {
           duration: p.durationOfPartnership || "-",
           contact: p.partnerContactPerson?.name || "-",
           status: p.status || "-",
-          // Add more fields as needed
         }));
         setPartners(mappedPartners);
+        setTotalItems(pagination.total || 0);
+        setTotalPages(pagination.pages || 1);
       } catch (error) {
         setPartners([]);
         setFilteredPartners([]);
+        setTotalItems(0);
+        setTotalPages(1);
         setToast({ message: "Failed to fetch partnerships", type: "error" });
       } finally {
         setLoading(false);
       }
     }
     fetchPartners();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
+  // Apply search, filters, and sorting client-side (on current page only)
   useEffect(() => {
     let result = [...partners];
-
-    // Apply search query
     result = filterBySearch(result, searchQuery);
-
-    // Apply filters
     result = applyFilters(result, filters);
-
-    // Apply sorting
     if (sortConfig.column) {
       result = sortPartners(result, sortConfig.column, sortConfig.direction);
     }
-
     setFilteredPartners(result);
-
-    // Reset to first page when filters change
-    if (currentPage !== 1 && result.length <= itemsPerPage) {
-      setCurrentPage(1);
-    }
   }, [searchQuery, partners, filters, sortConfig]);
 
   // Handle sorting
   const handleSort = (column, direction) => {
-    if (column === "actions") return; // Don't sort by actions column
-
-    setSortConfig({
-      column,
-      direction,
-    });
+    if (column === "actions") return;
+    setSortConfig({ column, direction });
   };
 
   // Handle partner delete
@@ -171,7 +165,6 @@ const PartnershipDashboard = () => {
 
   // Handle partner edit
   const handleEditPartner = (partnerId) => {
-    // For demo purposes, we'll just show a toast
     showToast(`Editing partner ${partnerId}`, "info");
   };
 
@@ -196,13 +189,6 @@ const PartnershipDashboard = () => {
     showToast("All filters cleared", "info");
   };
 
-  // Get paginated partners for current view
-  const paginatedPartners = paginatePartners(
-    filteredPartners,
-    currentPage,
-    itemsPerPage
-  );
-
   // Check if any filters are active
   const hasActiveFilters =
     searchQuery.trim() !== "" ||
@@ -219,7 +205,6 @@ const PartnershipDashboard = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
-
       {/* Main Content */}
       <main className="flex-1 bg-gray-50 py-8 px-4 md:px-8">
         <div className="container mx-auto">
@@ -232,7 +217,6 @@ const PartnershipDashboard = () => {
                 and partner organizations.
               </p>
             </div>
-
             <Link
               to="/add-partnership"
               className="bg-[#004165] hover:bg-[#00334e] text-white rounded-full px-6 py-2 flex items-center transition-colors"
@@ -240,7 +224,6 @@ const PartnershipDashboard = () => {
               <Plus className="mr-2 h-4 w-4" /> New Partner
             </Link>
           </div>
-
           {/* Search and Filter */}
           <div className="bg-[#DBE4E9] rounded-lg md:rounded-full p-4 md:p-6 mb-8">
             <div className="flex flex-col md:flex-row gap-4">
@@ -279,38 +262,6 @@ const PartnershipDashboard = () => {
                   </span>
                 )}
               </button>
-              {/* <div className="flex flex-wrap gap-2">
-                <FilterDropdown
-                  label="Type"
-                  options={partnerTypes}
-                  selectedOptions={filters.types}
-                  onChange={(selected) => setFilters({...filters, types: selected})}
-                />
-                
-                <FilterDropdown
-                  label="Status"
-                  options={partnerStatuses}
-                  selectedOptions={filters.statuses}
-                  onChange={(selected) => setFilters({...filters, statuses: selected})}
-                />
-                
-                <FilterDropdown
-                  label="Duration"
-                  options={durationCategories}
-                  selectedOptions={filters.durations}
-                  onChange={(selected) => setFilters({...filters, durations: selected})}
-                />
-                
-                {hasActiveFilters && (
-                  <button
-                    onClick={clearAllFilters}
-                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    Clear All
-                  </button>
-                )}
-              </div> */}
-
               {/* Filter Buttons Section */}
               <div className="bg-[#6D91A7] rounded-full flex items-center px-2">
                 <FilterButton
@@ -348,22 +299,16 @@ const PartnershipDashboard = () => {
               </div>
             </div>
           </div>
-
           {/* Partnership Lists */}
           <div className="bg-[#DBE4E9] rounded-3xl mb-6">
             <div className="flex justify-between items-center px-6 py-4">
               <h3 className="text-lg font-bold">Partnership Lists</h3>
-
               <div className="text-sm text-gray-600">
                 Showing{" "}
-                {Math.min(
-                  filteredPartners.length,
-                  1 + (currentPage - 1) * itemsPerPage
-                )}
-                -{Math.min(currentPage * itemsPerPage, filteredPartners.length)}{" "}
-                of {filteredPartners.length} partners
+                {Math.min(totalItems, 1 + (currentPage - 1) * itemsPerPage)}-
+                {Math.min(currentPage * itemsPerPage, totalItems)} of{" "}
+                {totalItems} partners
               </div>
-
               <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 className="text-[#004165] hover:bg-[#004165]/10 p-2 rounded-full transition-colors"
@@ -375,7 +320,6 @@ const PartnershipDashboard = () => {
                 )}
               </button>
             </div>
-
             {!isCollapsed && (
               <div className="bg-white rounded-b-3xl overflow-hidden">
                 {/* Table Container with Horizontal Scroll */}
@@ -387,9 +331,8 @@ const PartnershipDashboard = () => {
                       sortConfig={sortConfig}
                       onSort={handleSort}
                     />
-
                     {/* No Results */}
-                    {paginatedPartners.length === 0 && (
+                    {filteredPartners.length === 0 && (
                       <div className="p-4 sm:p-8 text-center text-gray-500">
                         <p>No partners found matching your criteria.</p>
                         {hasActiveFilters && (
@@ -402,9 +345,8 @@ const PartnershipDashboard = () => {
                         )}
                       </div>
                     )}
-
                     {/* Table Rows */}
-                    {paginatedPartners.map((partner) => (
+                    {filteredPartners.map((partner) => (
                       <PartnerRow
                         key={partner.id}
                         partner={partner}
@@ -414,13 +356,13 @@ const PartnershipDashboard = () => {
                     ))}
                   </div>
                 </div>
-
                 {/* Pagination */}
                 <div className="px-2 sm:px-4">
                   <Pagination
-                    totalItems={filteredPartners.length}
+                    totalItems={totalItems}
                     itemsPerPage={itemsPerPage}
                     currentPage={currentPage}
+                    totalPages={totalPages}
                     onPageChange={setCurrentPage}
                     onItemsPerPageChange={setItemsPerPage}
                   />
@@ -447,7 +389,6 @@ const PartnershipDashboard = () => {
           onClose={() => setToast(null)}
         />
       )}
-
       {/* Confirmation Dialog */}
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
