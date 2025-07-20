@@ -19,6 +19,7 @@ import {
   PlusCircle,
   XCircle,
   Phone,
+  Link,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -32,8 +33,9 @@ function AddPartnership() {
     country: "",
     college: "",
     schoolDepartmentUnit: "",
-    status: "Active",
+    status: "",
     description: "",
+    mouFileUrl: "",
     contactPerson: "",
     contactEmail: "",
     contactPhone: "",
@@ -94,10 +96,6 @@ function AddPartnership() {
     } else if (name === "fundingAmount" && value && isNaN(Number(value))) {
       errorMsg = "Funding amount must be a number.";
     }
-    // FIX: Removed the faulty endDate validation. The comparison was between a date and a string like "1 year".
-    // else if (name === "endDate" && formData.signedDate && String(value) < formData.signedDate) {
-    //   errorMsg = "End date cannot be earlier than signed date.";
-    // }
 
     setErrors((prev) => ({ ...prev, [name]: errorMsg }));
     return !errorMsg;
@@ -109,7 +107,7 @@ function AddPartnership() {
       ...prev,
       [name]: value,
     }));
-    // Validate on change for better user experience
+
     validateField(name, value);
   };
 
@@ -141,7 +139,7 @@ function AddPartnership() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setErrors({}); // Clear previous errors to re-validate everything
+    setErrors({});
 
     let formIsValid = true;
     // FIX: Consolidated validation. This single loop now handles all required fields, including description.
@@ -178,7 +176,7 @@ function AddPartnership() {
 
     const startDate = new Date(formData.signedDate);
     const now = new Date();
-    now.setHours(0, 0, 0, 0); // Set time to the beginning of the day for accurate comparison
+    now.setHours(0, 0, 0, 0);
     if (startDate < now) {
       setErrors((prev) => ({
         ...prev,
@@ -225,6 +223,8 @@ function AddPartnership() {
         phoneNumber: formData.aauContactPhone,
       },
       description: formData.description.trim(),
+      status: formData.status,
+      ...(formData.mouFileUrl && { mouFileUrl: formData.mouFileUrl.trim() }),
     };
 
     // This part for removing empty optional fields is fine, but make sure your `requiredFields` list is accurate.
@@ -249,7 +249,6 @@ function AddPartnership() {
     }
   };
 
-  //... (rest of the component JSX is unchanged)
   const typeOfOrganizationOptions = [
     "Academic",
     "Research",
@@ -535,7 +534,7 @@ function AddPartnership() {
                 >
                   <div className="flex items-center gap-2">
                     <GraduationCap size={16} />
-                    <span>College</span>
+                    <span>College/Institution</span>
                     <span className="text-red-500">*</span>
                   </div>
                 </label>
@@ -575,6 +574,22 @@ function AddPartnership() {
                 )}
               </div>
 
+              {/* Partnership Status Section */}
+              <div className="col-span-1 md:col-span-2">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 flex items-center gap-3">
+                  <ActivitySquare size={28} className="text-blue-500" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-blue-800">
+                      Partner Institution Contact Details
+                    </h3>
+                    <p className="text-sm text-blue-700">
+                      Please provide the main contact information for the
+                      partner institution.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Status */}
               <div>
                 <label
@@ -587,31 +602,17 @@ function AddPartnership() {
                     <span className="text-red-500">*</span>
                   </div>
                 </label>
-                <div className="relative">
-                  <select
-                    id="status"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className={`w-full p-2 border ${
-                      errors.status ? "border-red-500" : "border-gray-300"
-                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Expired">Expired</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                    <svg
-                      className="fill-current h-4 w-4"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5.516 7.548l4.484 4.484 4.484-4.484L16 9l-6 6-6-6z" />
-                    </svg>
-                  </div>
-                </div>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="">Select Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Rejected">Rejected</option>
+                  <option value="Pending">Pending</option>
+                </select>
                 {errors.status && (
                   <p className="text-red-500 text-xs mt-1">{errors.status}</p>
                 )}
@@ -625,7 +626,7 @@ function AddPartnership() {
                 >
                   <div className="flex items-center gap-2">
                     <User size={16} />
-                    <span>Contact Person</span>
+                    <span>Partner Contact Person</span>
                   </div>
                 </label>
                 <input
@@ -655,7 +656,7 @@ function AddPartnership() {
                 >
                   <div className="flex items-center gap-2">
                     <Mail size={16} />
-                    <span>Contact Email</span>
+                    <span>Partner Contact Email</span>
                   </div>
                 </label>
                 <input
@@ -717,7 +718,7 @@ function AddPartnership() {
                 >
                   <div className="flex items-center gap-2">
                     <User size={16} />
-                    <span>Contact Person Title</span>
+                    <span>Partner Contact Person Title</span>
                     <span className="text-red-500">*</span>
                   </div>
                 </label>
@@ -749,7 +750,7 @@ function AddPartnership() {
                 >
                   <div className="flex items-center gap-2">
                     <MapPin size={16} />
-                    <span>Contact Person Address</span>
+                    <span>Partner Contact Person Address</span>
                     <span className="text-red-500">*</span>
                   </div>
                 </label>
@@ -772,8 +773,6 @@ function AddPartnership() {
                   </p>
                 )}
               </div>
-
-              {/* AAU Contact Person Fields */}
               <div>
                 <label
                   htmlFor="aauContactName"
@@ -1016,6 +1015,50 @@ function AddPartnership() {
               )}
             </div>
 
+            {/* Potential Areas of Collaboration (Objectives) */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="flex items-center gap-2">
+                  <ListChecks size={16} />
+                  <span>Potential Areas of Collaboration</span>
+                  <span className="text-red-500">*</span>
+                </div>
+              </label>
+              <div className="flex flex-wrap gap-2"></div>
+              {collaborationOptions.map((option) => (
+                <label
+                  key={option}
+                  className={`flex items-center px-3 py-1 rounded-full border cursor-pointer transition-colors ${
+                    formData.objectives.includes(option)
+                      ? "bg-blue-100 border-blue-500 text-blue-700"
+                      : "bg-white border-gray-300 text-gray-700"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    name="objectives"
+                    value={option}
+                    checked={formData.objectives.includes(option)}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setFormData((prev) => ({
+                        ...prev,
+                        objectives: checked
+                          ? [...prev.objectives, option]
+                          : prev.objectives.filter((obj) => obj !== option),
+                      }));
+                      setErrors((prev) => ({ ...prev, objectives: "" }));
+                    }}
+                    className="mr-2"
+                  />
+                  {option}
+                </label>
+              ))}
+            </div>
+            {errors.objectives && (
+              <p className="text-red-500 text-xs mt-1">{errors.objectives}</p>
+            )}
+
             {/* Scope (Optional) */}
             <div className="mb-6">
               <label
@@ -1074,41 +1117,6 @@ function AddPartnership() {
               )}
             </div>
 
-            {/* Objectives (Optional) */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                <div className="flex items-center gap-2">
-                  <ListChecks size={16} />
-                  <span>Objectives (Optional)</span>
-                </div>
-              </label>
-              <select
-                name="objectives"
-                multiple
-                value={formData.objectives}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    objectives: Array.from(
-                      e.target.selectedOptions,
-                      (option) => option.value
-                    ),
-                  }))
-                }
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                size={8}
-              >
-                {collaborationOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-              {errors.objectives && (
-                <p className="text-red-500 text-xs mt-1">{errors.objectives}</p>
-              )}
-            </div>
-
             {/* Deliverables (Optional) */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1153,6 +1161,37 @@ function AddPartnership() {
                   {errors.deliverables}
                 </p>
               )}
+            </div>
+            <div className="bg-white shadow rounded-lg p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Partnership Document
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Google Drive Document Link
+                  </label>
+                  <div className="mt-1 flex rounded-md shadow-sm">
+                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                      <Link className="h-5 w-5" />
+                    </span>
+                    <input
+                      type="url"
+                      name="mouFileUrl"
+                      value={formData.mouFileUrl}
+                      onChange={(e) =>
+                        setFormData({ ...formData, mouFileUrl: e.target.value })
+                      }
+                      placeholder="https://drive.google.com/..."
+                      className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300"
+                    />
+                  </div>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Paste the Google Drive link to your partnership document
+                    (MOU)
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Submit Button */}

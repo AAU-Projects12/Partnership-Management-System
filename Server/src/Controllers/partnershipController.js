@@ -1,6 +1,7 @@
 import { validationResult } from "express-validator";
 import Partnership from "../Models/partnershipModel.js";
 import mongoose from "mongoose";
+import { sendNotification } from "../Utils/sendNotification.js";
 
 export const getAllPartnerships = async (req, res) => {
   try {
@@ -48,15 +49,7 @@ export const createPartnership = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    console.log("User attempting to create partnership:", {
-      userId: req.user.userId,
-      role: req.user.role,
-      campusId: req.user.campusId,
-      status: req.user.status,
-    });
-
     if (req.user.status !== "active") {
-      console.log("User not active:", req.user.status);
       return res.status(403).json({
         error: `User account not active. Current status: ${req.user.status}`,
       });
@@ -74,6 +67,8 @@ export const createPartnership = async (req, res) => {
       aauContactPerson,
       aauContactPersonSecondary,
       description,
+      mouFileUrl,
+      status,
     } = req.body;
 
     if (
@@ -86,7 +81,12 @@ export const createPartnership = async (req, res) => {
       });
     }
 
-    const partnershipStatus = req.user.role === "Admin" ? "Pending" : "Active";
+    // Validate status if provided
+    if (status && !["Active", "Rejected", "Pending"].includes(status)) {
+      return res.status(400).json({
+        error: "Invalid status. Must be one of: Active, Rejected, or Pending",
+      });
+    }
 
     const partnership = new Partnership({
       partnerInstitution,
@@ -99,15 +99,22 @@ export const createPartnership = async (req, res) => {
       partnerContactPersonSecondary,
       aauContactPerson,
       aauContactPersonSecondary,
-      status: partnershipStatus,
+      status: status,
       campusId:
         req.user.role === "SuperAdmin" ? "default_campus" : req.user.campusId,
       createdBy: req.user.userId,
       isArchived: false,
       description,
+      mouFileUrl,
     });
 
     await partnership.save();
+    // Event-based notification: New Partnership Request
+    await sendNotification({
+      title: "New Partnership Request",
+      message: `${partnership.partnerInstitution.name} has requested a new partnership`,
+      type: "Partnerships",
+    });
 
     res.status(201).json({
       message: "Partnership created successfully",
@@ -212,6 +219,7 @@ export const getPartnershipById = async (req, res) => {
   }
 };
 
+// partnershipController.js
 export const updatePartnership = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -235,6 +243,30 @@ export const updatePartnership = async (req, res) => {
       });
     }
 
+    // Additional validation for partnerInstitution
+    if (updateData.partnerInstitution) {
+      if (!updateData.partnerInstitution.name) {
+        return res
+          .status(400)
+          .json({ error: "Partner institution name is required" });
+      }
+      if (!updateData.partnerInstitution.address) {
+        return res
+          .status(400)
+          .json({ error: "Partner institution address is required" });
+      }
+      if (!updateData.partnerInstitution.country) {
+        return res
+          .status(400)
+          .json({ error: "Partner institution country is required" });
+      }
+      if (!updateData.partnerInstitution.typeOfOrganization) {
+        return res.status(400).json({
+          error: "Partner institution type of organization is required",
+        });
+      }
+    }
+
     const updatedPartnership = await Partnership.findOneAndUpdate(
       filter,
       updateData,
@@ -246,6 +278,12 @@ export const updatePartnership = async (req, res) => {
         .status(404)
         .json({ message: "Partnership not found or not in your campus" });
     }
+    // Event-based notification: Partnership Updated
+    await sendNotification({
+      title: "Partnership Updated",
+      message: `The partnership with ${updatedPartnership.partnerInstitution.name} has been updated`,
+      type: "Partnerships",
+    });
 
     res.status(200).json({
       message: "Partnership updated successfully",
@@ -253,6 +291,10 @@ export const updatePartnership = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating partnership:", error.message, error.stack);
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ error: errors.join(", ") });
+    }
     res.status(500).json({ error: "Server error" });
   }
 };

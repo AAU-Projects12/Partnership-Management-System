@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Bars3Icon,
@@ -11,11 +11,27 @@ import {
 import { useUser } from "../context/UserContext";
 import UserProfileMenu from "./UserProfileMenu";
 import aauLogo from "../assets/aauLogo.png";
+import { getNotifications } from "../api"; // Import getNotifications from api.jsx
 
 const NavBar = () => {
   const location = useLocation();
   const { user } = useUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0); // State for unread notification count
+
+  // Fetch unread notification count on component mount
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await getNotifications({ isRead: false });
+        setUnreadCount(response.data.notifications.length || 0);
+      } catch (err) {
+        console.error("Failed to fetch unread notifications:", err);
+        setUnreadCount(0); // Fallback to 0 on error
+      }
+    };
+    fetchUnreadCount();
+  }, []); // Run once on mount
 
   // Function to check if the current path matches the link path
   const isActive = (path) => {
@@ -47,7 +63,7 @@ const NavBar = () => {
                 <div className="text-white text-[17px] sm:text-[18px] tracking-[3px] leading-snug mt-[-4px]">
                   አዲስ አበባ ዩኒቨርሲቲ
                 </div>
-                <div className="text-red-600 text-[13px] sm:text-[13.5px] font-medium tracking-wide leading-snug mt-[-4px] sm:mt-[-5px]">
+                <div className="text-red-400 text-[10px] sm:text-[12.5px] font-medium tracking-wide leading-snug mt-[-4px] sm:mt-[-5px]">
                   ADDIS ABABA UNIVERSITY
                 </div>
               </div>
@@ -59,7 +75,7 @@ const NavBar = () => {
 
           {/* Hamburger Menu Button */}
           <button
-            className="lg:hidden text-white hover:text-[#04B09E] focus:outline-none"
+            className="lg:hidden text-white hover:text-gray-400 focus:outline-none"
             onClick={toggleMenu}
           >
             {isMenuOpen ? (
@@ -76,8 +92,8 @@ const NavBar = () => {
                 to="/dashboard"
                 className={`${
                   isActive("/dashboard")
-                    ? "text-[#04B09E] font-semibold"
-                    : "text-white hover:text-[#04B09E]"
+                    ? "text-gray-400 font-semibold"
+                    : "text-white hover:text-gray-400"
                 } flex items-center space-x-1 cursor-pointer`}
               >
                 <Bars3Icon className="w-5 h-5" />
@@ -87,8 +103,8 @@ const NavBar = () => {
                 to="/partnership"
                 className={`${
                   isActive("/partnership")
-                    ? "text-[#04B09E] font-semibold"
-                    : "text-white hover:text-[#04B09E]"
+                    ? "text-gray-400 font-semibold"
+                    : "text-white hover:text-gray-400"
                 } flex items-center space-x-1 cursor-pointer`}
               >
                 <UsersIcon className="w-5 h-5" />
@@ -98,8 +114,8 @@ const NavBar = () => {
                 to="/users"
                 className={`${
                   isActive("/users")
-                    ? "text-[#04B09E] font-semibold"
-                    : "text-white hover:text-[#04B09E]"
+                    ? "text-gray-400 font-semibold"
+                    : "text-white hover:text-gray-400"
                 } flex items-center space-x-1 cursor-pointer`}
               >
                 <UsersIcon className="w-5 h-5" />
@@ -109,8 +125,8 @@ const NavBar = () => {
                 to="/settings"
                 className={`${
                   isActive("/settings")
-                    ? "text-[#04B09E] font-semibold"
-                    : "text-white hover:text-[#04B09E]"
+                    ? "text-gray-400 font-semibold"
+                    : "text-white hover:text-gray-400"
                 } flex items-center space-x-1 cursor-pointer`}
               >
                 <Cog6ToothIcon className="w-5 h-5" />
@@ -120,8 +136,8 @@ const NavBar = () => {
                 to="/profile"
                 className={`${
                   isActive("/profile")
-                    ? "text-[#04B09E] font-semibold"
-                    : "text-white hover:text-[#04B09E]"
+                    ? "text-gray-400 font-semibold"
+                    : "text-white hover:text-gray-400"
                 } flex items-center space-x-1 cursor-pointer`}
               >
                 <UserIcon className="w-5 h-5" />
@@ -132,14 +148,17 @@ const NavBar = () => {
                   to="/notifications"
                   className={`${
                     isActive("/notifications")
-                      ? "text-[#04B09E] font-semibold"
-                      : "text-white hover:text-[#04B09E]"
+                      ? "text-gray-400 font-semibold"
+                      : "text-white hover:text-gray-400"
                   } flex items-center space-x-1 relative cursor-pointer`}
                 >
                   <BellIcon className="w-5 h-5" />
-                  <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs">3</span>
-                  </div>
+                  <span>Notifications</span>
+                  {unreadCount > 0 && (
+                    <div className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs">{unreadCount}</span>
+                    </div>
+                  )}
                 </Link>
               </div>
               <div className="pl-4">
@@ -160,8 +179,8 @@ const NavBar = () => {
               to="/dashboard"
               className={`${
                 isActive("/dashboard")
-                  ? "text-[#04B09E] font-semibold"
-                  : "text-white hover:text-[#04B09E]"
+                  ? "text-gray-400 font-semibold"
+                  : "text-white hover:text-gray-400"
               } flex items-center space-x-2 py-3 text-lg`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -172,8 +191,8 @@ const NavBar = () => {
               to="/partnership"
               className={`${
                 isActive("/partnership")
-                  ? "text-[#04B09E] font-semibold"
-                  : "text-white hover:text-[#04B09E]"
+                  ? "text-gray-400 font-semibold"
+                  : "text-white hover:text-gray-400"
               } flex items-center space-x-2 py-3 text-lg`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -184,8 +203,8 @@ const NavBar = () => {
               to="/users"
               className={`${
                 isActive("/users")
-                  ? "text-[#04B09E] font-semibold"
-                  : "text-white hover:text-[#04B09E]"
+                  ? "text-gray-400 font-semibold"
+                  : "text-white hover:text-gray-400"
               } flex items-center space-x-2 py-3 text-lg`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -196,8 +215,8 @@ const NavBar = () => {
               to="/settings"
               className={`${
                 isActive("/settings")
-                  ? "text-[#04B09E] font-semibold"
-                  : "text-white hover:text-[#04B09E]"
+                  ? "text-gray-400 font-semibold"
+                  : "text-white hover:text-gray-400"
               } flex items-center space-x-2 py-3 text-lg`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -208,8 +227,8 @@ const NavBar = () => {
               to="/profile"
               className={`${
                 isActive("/profile")
-                  ? "text-[#04B09E] font-semibold"
-                  : "text-white hover:text-[#04B09E]"
+                  ? "text-gray-400 font-semibold"
+                  : "text-white hover:text-gray-400"
               } flex items-center space-x-2 py-3 text-lg`}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -220,16 +239,18 @@ const NavBar = () => {
               to="/notifications"
               className={`${
                 isActive("/notifications")
-                  ? "text-[#04B09E] font-semibold"
-                  : "text-white hover:text-[#04B09E]"
+                  ? "text-gray-400 font-semibold"
+                  : "text-white hover:text-gray-400"
               } flex items-center space-x-2 py-3 text-lg relative`}
               onClick={() => setIsMenuOpen(false)}
             >
               <BellIcon className="w-6 h-6" />
               <span>Notifications</span>
-              <div className="absolute left-8 top-3 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs">3</span>
-              </div>
+              {unreadCount > 0 && (
+                <div className="absolute left-8 top-3 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">{unreadCount}</span>
+                </div>
+              )}
             </Link>
             <div className="mt-4">
               <UserProfileMenu />

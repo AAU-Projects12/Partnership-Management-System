@@ -38,7 +38,7 @@ const UserProfileMenu = () => {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 text-white hover:text-[#04B09E] focus:outline-none"
+        className="flex items-center space-x-2 text-white hover:text-gray-800 focus:outline-none"
       >
         <div className="h-8 w-8 rounded-full bg-[#04B09E] flex items-center justify-center text-white">
           {user.firstName ? user.firstName.charAt(0) : "U"}

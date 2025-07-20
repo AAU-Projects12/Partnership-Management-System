@@ -1,21 +1,21 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const Pagination = ({ 
-  totalItems, 
-  itemsPerPage, 
-  currentPage, 
+const Pagination = ({
+  totalItems,
+  itemsPerPage,
+  currentPage,
   onPageChange,
-  onItemsPerPageChange 
+  onItemsPerPageChange,
 }) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-  
+
   const handlePrevious = () => {
     if (currentPage > 1) {
       onPageChange(currentPage - 1);
     }
   };
-  
+
   const handleNext = () => {
     if (currentPage < totalPages) {
       onPageChange(currentPage + 1);
@@ -26,7 +26,7 @@ const Pagination = ({
   const getPageNumbers = () => {
     const pages = [];
     const maxPagesToShow = 5;
-    
+
     if (totalPages <= maxPagesToShow) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -49,7 +49,7 @@ const Pagination = ({
         }
       }
     }
-    
+
     return pages;
   };
 
@@ -62,35 +62,35 @@ const Pagination = ({
           onClick={handlePrevious}
           disabled={currentPage === 1}
           className={`p-2 rounded ${
-            currentPage === 1 
-              ? 'text-gray-400 cursor-not-allowed' 
-              : 'text-gray-600 hover:bg-gray-100'
+            currentPage === 1
+              ? "text-gray-800 cursor-not-allowed"
+              : "text-gray-600 hover:bg-gray-100"
           }`}
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        
-        {getPageNumbers().map(page => (
+
+        {getPageNumbers().map((page) => (
           <button
             key={page}
             onClick={() => onPageChange(page)}
             className={`w-8 h-8 rounded-full ${
               currentPage === page
-                ? 'bg-[#004165] text-white'
-                : 'text-gray-600 hover:bg-gray-100'
+                ? "bg-[#004165] text-white"
+                : "text-gray-600 hover:bg-gray-100"
             }`}
           >
             {page}
           </button>
         ))}
-        
+
         <button
           onClick={handleNext}
           disabled={currentPage === totalPages}
           className={`p-2 rounded ${
-            currentPage === totalPages 
-              ? 'text-gray-400 cursor-not-allowed' 
-              : 'text-gray-600 hover:bg-gray-100'
+            currentPage === totalPages
+              ? "text-gray-800 cursor-not-allowed"
+              : "text-gray-600 hover:bg-gray-100"
           }`}
         >
           <ChevronRight className="h-4 w-4" />

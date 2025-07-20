@@ -1,6 +1,6 @@
 import React from "react";
 import "./index.css";
-import Login from "./pages/Login.jsx";
+import Login from "./pages/login.jsx";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import PartnershipDashboard from "./pages/partnership.jsx";

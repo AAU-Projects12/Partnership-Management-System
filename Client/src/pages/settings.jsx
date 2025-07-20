@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Switch } from "@headlessui/react";
 import {
   Cog6ToothIcon,
@@ -11,23 +11,61 @@ import {
 } from "@heroicons/react/24/outline";
 import NavBar from "../components/NavBar";
 import { useNavigate } from "react-router-dom";
+import { getNotificationSettings, updateNotificationSettings } from "../api"; // Import from api.jsx
 
 const Settings = () => {
-  // State for settings
+  // State for general settings
   const [darkMode, setDarkMode] = useState(false);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [systemNotifications, setSystemNotifications] = useState(true);
-  const [partnershipUpdates, setPartnershipUpdates] = useState(true);
   const [language, setLanguage] = useState("English");
   const [dataSharing, setDataSharing] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
 
+  // State for notification settings
+  const [emailNotifications, setEmailNotifications] = useState(true); // Assuming this is managed elsewhere or a future feature
+  const [systemNotifications, setSystemNotifications] = useState(true);
+  const [partnershipUpdates, setPartnershipUpdates] = useState(true);
+  const [alerts, setAlerts] = useState(true);
+
   const navigate = useNavigate();
+
+  // Fetch notification settings on component mount
+  useEffect(() => {
+    if (activeTab === "notifications") {
+      const fetchSettings = async () => {
+        try {
+          const response = await getNotificationSettings();
+          const { preferences } = response.data.settings;
+          setSystemNotifications(preferences.system);
+          setPartnershipUpdates(preferences.partnership);
+          setAlerts(preferences.alerts);
+        } catch (error) {
+          console.error("Failed to fetch notification settings:", error);
+        }
+      };
+      fetchSettings();
+    }
+  }, [activeTab]);
+
+  // Function to save notification settings
+  const handleSaveNotificationSettings = async () => {
+    const preferences = {
+      system: systemNotifications,
+      partnership: partnershipUpdates,
+      alerts: alerts,
+    };
+    try {
+      await updateNotificationSettings(preferences);
+      alert("Notification settings updated successfully!");
+    } catch (error) {
+      console.error("Failed to update notification settings:", error);
+      alert("Failed to update settings. Please try again.");
+    }
+  };
 
   // Toggle function for switches
   const toggleSwitch = (setter) => (value) => setter(value);
 
-  // Function to render the settings tab content
+  // Render the settings tab content
   const renderTabContent = () => {
     switch (activeTab) {
       case "general":
@@ -93,34 +131,7 @@ const Settings = () => {
               Notification Settings
             </h3>
 
-            <div className="flex items-center justify-between py-4 border-b border-gray-200">
-              <div className="flex items-center space-x-3">
-                <BellIcon className="h-6 w-6 text-gray-500" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    Email Notifications
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Receive notifications via email
-                  </p>
-                </div>
-              </div>
-              <Switch
-                checked={emailNotifications}
-                onChange={toggleSwitch(setEmailNotifications)}
-                className={`${
-                  emailNotifications ? "bg-blue-600" : "bg-gray-200"
-                } relative inline-flex h-6 w-11 items-center rounded-full`}
-              >
-                <span className="sr-only">Enable Email Notifications</span>
-                <span
-                  className={`${
-                    emailNotifications ? "translate-x-6" : "translate-x-1"
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition cursor-pointer`}
-                />
-              </Switch>
-            </div>
-
+            {/* System Notifications */}
             <div className="flex items-center justify-between py-4 border-b border-gray-200">
               <div className="flex items-center space-x-3">
                 <BellIcon className="h-6 w-6 text-gray-500" />
@@ -129,7 +140,7 @@ const Settings = () => {
                     System Notifications
                   </p>
                   <p className="text-xs text-gray-500">
-                    Receive notifications within the system
+                    Receive notifications for system updates and announcements.
                   </p>
                 </div>
               </div>
@@ -149,6 +160,7 @@ const Settings = () => {
               </Switch>
             </div>
 
+            {/* Partnership Updates */}
             <div className="flex items-center justify-between py-4 border-b border-gray-200">
               <div className="flex items-center space-x-3">
                 <BellIcon className="h-6 w-6 text-gray-500" />
@@ -157,7 +169,7 @@ const Settings = () => {
                     Partnership Updates
                   </p>
                   <p className="text-xs text-gray-500">
-                    Get notified about partnership changes
+                    Get notified about partnership changes and requests.
                   </p>
                 </div>
               </div>
@@ -175,6 +187,42 @@ const Settings = () => {
                   } inline-block h-4 w-4 transform rounded-full bg-white transition`}
                 />
               </Switch>
+            </div>
+
+            {/* Alerts */}
+            <div className="flex items-center justify-between py-4 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <BellIcon className="h-6 w-6 text-gray-500" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Alerts</p>
+                  <p className="text-xs text-gray-500">
+                    Receive important alerts and warnings.
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={alerts}
+                onChange={toggleSwitch(setAlerts)}
+                className={`${
+                  alerts ? "bg-blue-600" : "bg-gray-200"
+                } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
+              >
+                <span className="sr-only">Enable Alerts</span>
+                <span
+                  className={`${
+                    alerts ? "translate-x-6" : "translate-x-1"
+                  } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                />
+              </Switch>
+            </div>
+
+            <div className="pt-4">
+              <button
+                onClick={handleSaveNotificationSettings}
+                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Save Notification Settings
+              </button>
             </div>
           </div>
         );
@@ -274,14 +322,12 @@ const Settings = () => {
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
       <NavBar />
-
       {/* Main Content */}
       <div className="p-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800">Settings</h1>
           </div>
-
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="flex border-b border-gray-200">
               {/* Settings Navigation */}

@@ -12,7 +12,6 @@ const isValidEmail = (email) => {
 const authMiddleware = (req, res, next) => {
   const token = req.cookies.jwt;
   if (!token) {
-    console.log("No token provided");
     return res.status(401).json({ error: "Authentication required" });
   }
 
@@ -32,20 +31,20 @@ export const login = async (req, res) => {
 
     // Validate request body
     if (!email || !password) {
-      console.log("Missing email or password:", { email, password });
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    console.log("Login attempt:", { email, password });
+    console.log("Login attempt:", {
+      email,
+      passwordLength: password.length,
+    });
 
     const user = await User.findOne({ email });
     if (!user) {
-      console.log("User not found:", email);
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    console.log("Password check:", { isPasswordCorrect });
 
     if (!isPasswordCorrect) {
       return res.status(400).json({ error: "Invalid email or password" });
