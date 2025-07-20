@@ -14,11 +14,11 @@ import jwt from "jsonwebtoken";
              maxAge: 24 * 60 * 60 * 1000,
            });
 
-           return token;
-         } catch (error) {
-           console.error("Error generating token:", error.message, error.stack);
-           throw error;
-         }
-       };
+    return token;
+  } catch (error) {
+    console.error("Error generating token:", error.message, error.stack);
+    throw error;
+  }
+};
 
-       export default generateTokenAndSetCookie;
+export default generateTokenAndSetCookie;
