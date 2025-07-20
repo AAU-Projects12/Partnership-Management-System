@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import NavBar from "../components/NavBar";
 import { createPartnership } from "../api.jsx";
 import toast from "react-hot-toast";
@@ -24,6 +24,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 function AddPartnership() {
+  const DRAFT_KEY = "addPartnershipDraft";
   const initialFormData = {
     name: "",
     type: "",
@@ -48,14 +49,29 @@ function AddPartnership() {
     aauContactSchoolDepartmentUnit: "",
     objectives: [],
     scope: "",
+    otherCollaborationArea: "",
     deliverables: [""],
     fundingAmount: "",
     reportingRequirements: "",
   };
 
-  const [formData, setFormData] = useState(initialFormData);
+  // Initialize formData from localStorage if present
+  const [formData, setFormData] = useState(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      try {
+        return JSON.parse(draft);
+      } catch {}
+    }
+    return initialFormData;
+  });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Save draft to localStorage on every formData change
+  useEffect(() => {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
+  }, [formData]);
 
   const navigate = useNavigate();
 
@@ -204,10 +220,11 @@ function AddPartnership() {
       },
       potentialAreasOfCollaboration: formData.objectives,
       otherCollaborationArea: formData.objectives.includes("Other")
-        ? formData.scope
+        ? formData.otherCollaborationArea?.trim() || ""
         : undefined,
       potentialStartDate: formData.signedDate,
       durationOfPartnership: formData.endDate,
+      fundingAmount: Number(formData.fundingAmount),
       partnerContactPerson: {
         name: formData.contactPerson,
         title: formData.contactTitle,
@@ -224,6 +241,9 @@ function AddPartnership() {
       },
       description: formData.description.trim(),
       status: formData.status,
+      reportingRequirements: formData.reportingRequirements?.trim() || "",
+      scope: formData.scope?.trim() || "",
+      deliverables: formData.deliverables.filter(d => d.trim() !== ""),
       ...(formData.mouFileUrl && { mouFileUrl: formData.mouFileUrl.trim() }),
     };
 
@@ -235,6 +255,7 @@ function AddPartnership() {
       toast.success("Partnership created successfully!");
       navigate("/partnership");
       setFormData(initialFormData);
+      localStorage.removeItem(DRAFT_KEY); // Clear draft on success
     } catch (error) {
       console.error("Failed to create partnership:", error);
       const errorMsg =
@@ -474,6 +495,37 @@ function AddPartnership() {
                 </div>
                 {errors.endDate && (
                   <p className="text-red-500 text-xs mt-1">{errors.endDate}</p>
+                )}
+              </div>
+
+              {/* Funding Amount */}
+              <div>
+                <label
+                  htmlFor="fundingAmount"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <DollarSign size={16} />
+                    <span>Funding Amount</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="number"
+                  id="fundingAmount"
+                  name="fundingAmount"
+                  placeholder="e.g. 10000"
+                  value={formData.fundingAmount}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.fundingAmount ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  min="0"
+                  step="any"
+                  required
+                />
+                {errors.fundingAmount && (
+                  <p className="text-red-500 text-xs mt-1">{errors.fundingAmount}</p>
                 )}
               </div>
 
@@ -963,35 +1015,6 @@ function AddPartnership() {
                   </p>
                 )}
               </div>
-
-              {/* Funding Amount (Optional) */}
-              <div>
-                <label
-                  htmlFor="fundingAmount"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  <div className="flex items-center gap-2">
-                    <DollarSign size={16} />
-                    <span>Funding Amount (Optional)</span>
-                  </div>
-                </label>
-                <input
-                  type="number"
-                  id="fundingAmount"
-                  name="fundingAmount"
-                  placeholder="e.g. 50000"
-                  value={formData.fundingAmount}
-                  onChange={handleChange}
-                  className={`w-full p-2 border ${
-                    errors.fundingAmount ? "border-red-500" : "border-gray-300"
-                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
-                />
-                {errors.fundingAmount && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.fundingAmount}
-                  </p>
-                )}
-              </div>
             </div>
 
             {/* Description */}
@@ -1065,6 +1088,20 @@ function AddPartnership() {
                   {option}
                 </label>
               ))}
+              {/* Show input for 'Other' if checked */}
+              {formData.objectives.includes("Other") && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    name="otherCollaborationArea"
+                    value={formData.otherCollaborationArea}
+                    onChange={handleChange}
+                    placeholder="Please specify other area of collaboration..."
+                    className="w-full p-2 border border-blue-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                    required
+                  />
+                </div>
+              )}
             </div>
             {errors.objectives && (
               <p className="text-red-500 text-xs mt-1">{errors.objectives}</p>
