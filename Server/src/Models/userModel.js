@@ -1,3 +1,4 @@
+// Models/userModel.js
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
@@ -23,7 +24,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["Admin", "User"], // Removed "SuperAdmin"
+      enum: ["SuperAdmin", "Admin"], // Kept as provided
       required: true,
       default: "User", // Default to "User"
     },
@@ -42,10 +43,13 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash password before saving
+// Hash password before saving, but skip if already hashed
 userSchema.pre("save", async function (next) {
-  // Skip hashing if password is already hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)
-  if (!this.isModified("password") || this.password.match(/^\$2[aby]\$/)) return next();
+  if (!this.isModified("password")) return next();
+  // Check if password is already hashed (starts with $2a$, $2b$, or $2y$)
+  if (this.password && this.password.startsWith("$2")) {
+    return next();
+  }
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });

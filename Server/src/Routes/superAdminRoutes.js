@@ -1,3 +1,4 @@
+// routes/superAdminRouter.js
 import express from "express";
 import { check } from "express-validator";
 import auth from "../middleware/auth.js";
@@ -14,7 +15,9 @@ router.post(
     check("firstName").notEmpty().withMessage("First name is required"),
     check("lastName").notEmpty().withMessage("Last name is required"),
     check("campusId").notEmpty().withMessage("Campus ID is required"),
-    check("role").isIn(["Admin", "User"]).withMessage("Invalid role"),
+    check("role")
+      .isIn(["SuperAdmin", "Admin"])
+      .withMessage("Role must be SuperAdmin or Admin"),
   ],
   superAdminController.assignAdmin
 );
@@ -26,15 +29,31 @@ router.get(
   superAdminController.getAllPartnerships
 );
 
+router.get(
+  "/users",
+  auth.authenticateToken,
+  auth.authorizeRoles("SuperAdmin"),
+  superAdminController.getUsers
+);
+
 router.put(
   "/users/:id",
   auth.authenticateToken,
-  auth.authorizeRoles("Admin"), // Changed from "SuperAdmin" to "Admin"
+  auth.authorizeRoles("SuperAdmin"),
   [
-    check("firstName").optional().notEmpty().withMessage("First name is required"),
-    check("lastName").optional().notEmpty().withMessage("Last name is required"),
     check("email").optional().isEmail().withMessage("Valid email is required"),
-    check("role").optional().isIn(["Admin", "User"]).withMessage("Invalid role"),
+    check("firstName")
+      .optional()
+      .notEmpty()
+      .withMessage("First name is required"),
+    check("lastName")
+      .optional()
+      .notEmpty()
+      .withMessage("Last name is required"),
+    check("role")
+      .optional()
+      .isIn(["SuperAdmin", "Admin"])
+      .withMessage("Role must be SuperAdmin or Admin"),
   ],
   superAdminController.updateUser
 );
@@ -42,7 +61,7 @@ router.put(
 router.delete(
   "/users/:id",
   auth.authenticateToken,
-  auth.authorizeRoles("Admin"), // Changed from "SuperAdmin" to "Admin"
+  auth.authorizeRoles("SuperAdmin"),
   superAdminController.deleteUser
 );
 

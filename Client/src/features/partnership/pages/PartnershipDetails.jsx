@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Calendar, Users, Building2, Clock } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Users,
+  Building2,
+  Clock,
+  FileText,
+  ExternalLink,
+} from "lucide-react";
 import NavBar from "../../../components/NavBar";
 import StatusBadge from "../components/StatusBadge";
 import { getPartnershipById } from "../../../api.jsx";
@@ -103,7 +111,7 @@ const PartnershipDetail = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <Building2 className="h-5 w-5 text-gray-400" />
+                    <Building2 className="h-5 w-5 text-gray-800" />
                     <div>
                       <p className="text-sm text-gray-500">Type</p>
                       <p className="font-medium">
@@ -112,7 +120,7 @@ const PartnershipDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="h-5 w-5 text-gray-400">🏢</span>
+                    <span className="h-5 w-5 text-gray-800">🏢</span>
                     <div>
                       <p className="text-sm text-gray-500">Address</p>
                       <p className="font-medium">
@@ -121,7 +129,7 @@ const PartnershipDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="h-5 w-5 text-gray-400">🌍</span>
+                    <span className="h-5 w-5 text-gray-800">🌍</span>
                     <div>
                       <p className="text-sm text-gray-500">Country</p>
                       <p className="font-medium">
@@ -130,7 +138,7 @@ const PartnershipDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Clock className="h-5 w-5 text-gray-400" />
+                    <Clock className="h-5 w-5 text-gray-800" />
                     <div>
                       <p className="text-sm text-gray-500">Duration</p>
                       <p className="font-medium">
@@ -139,7 +147,7 @@ const PartnershipDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5 text-gray-400" />
+                    <Calendar className="h-5 w-5 text-gray-800" />
                     <div>
                       <p className="text-sm text-gray-500">Start Date</p>
                       <p className="font-medium">
@@ -152,7 +160,7 @@ const PartnershipDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="h-5 w-5 text-gray-400">🏫</span>
+                    <span className="h-5 w-5 text-gray-800">🏫</span>
                     <div>
                       <p className="text-sm text-gray-500">AAU Department</p>
                       <p className="font-medium">
@@ -161,7 +169,7 @@ const PartnershipDetail = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="h-5 w-5 text-gray-400">🔖</span>
+                    <span className="h-5 w-5 text-gray-800">🔖</span>
                     <div>
                       <p className="text-sm text-gray-500">
                         Areas of Collaboration
@@ -173,7 +181,7 @@ const PartnershipDetail = () => {
                   </div>
                   {partner.otherCollaborationArea && (
                     <div className="flex items-center gap-3">
-                      <span className="h-5 w-5 text-gray-400">📝</span>
+                      <span className="h-5 w-5 text-gray-800">📝</span>
                       <div>
                         <p className="text-sm text-gray-500">
                           Other Collaboration Area
@@ -248,6 +256,38 @@ const PartnershipDetail = () => {
                     <span className="font-medium">Phone:</span>{" "}
                     {aauContact.phoneNumber || "-"}
                   </div>
+                  {partner.mouFileUrl && (
+                    <div className="pt-3 border-t border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700 mb-2 block">
+                          Partnership Agreement
+                        </span>
+                      </div>
+                      <a
+                        href={partner.mouFileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group inline-flex items-center space-x-3 w-full p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-lg hover:from-blue-100 hover:to-indigo-100 hover:border-blue-200 transition-all duration-200 hover:shadow-sm"
+                      >
+                        <div className="flex-shrink-0">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-200">
+                            <FileText className="w-4 h-4 text-blue-600" />
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 group-hover:text-blue-900 transition-colors duration-200">
+                            MOU Document
+                          </p>
+                          <p className="text-xs text-gray-500 group-hover:text-blue-700 transition-colors duration-200">
+                            Click to view partnership agreement
+                          </p>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <ExternalLink className="w-4 h-4 text-gray-800 group-hover:text-blue-600 transition-colors duration-200" />
+                        </div>
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
