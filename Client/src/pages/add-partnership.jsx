@@ -287,14 +287,25 @@ function AddPartnership() {
     "5 years",
   ];
   const collegeOptions = [
+    "All Colleges",
     "Central",
-    "College of Business and Economics",
-    "College of Social Science, Arts and Humanities",
-    "College of Veterinary Medicine and Agriculture",
-    "School of Law",
-    "College of Technology and Built Environment",
-    "College of Education and Language Studies",
-    "College of Health Science",
+    // Colleges
+    "College of Business and Economics (CBE)",
+    "College of Social Sciences, Arts and Humanities (CSSAH)",
+    "College of Education and Language Studies (CELS)",
+    "College of Veterinary Medicine & Agriculture (CVMA)",
+    "College of Technology & Built Environment (CoTBE)",
+    "College of Natural and Computational Sciences (CNCS)",
+    "College of Health Sciences (CHS)",
+    "School of Law (SoL)",
+    // Institutes
+    "Institute of Water Environment & Climate Research (IWECR)",
+    "Aklilu Lema Institute of Health Research (ALIHR)",
+    "Institute of Geophysics Space Science & Astronomy (IGSSA)",
+    "Institute for Social & Economic Research (ISER)",
+    "Institute of Ethiopian Studies (IES)",
+    "Institute of Advanced Science & Technology (IAST)",
+    "Institute of Peace & Security (IPSS)",
   ];
   const collaborationOptions = [
     "Research/Technology Transfer",
