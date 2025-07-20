@@ -16,6 +16,9 @@ import {
 import NavBar from "../components/NavBar";
 import { getPartnerships } from "../api";
 import { toast } from "react-hot-toast";
+import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+import chroma from "chroma-js";
+import { feature } from "topojson-client";
 
 // Register Chart.js components
 ChartJS.register(
@@ -36,6 +39,8 @@ const Dashboard = () => {
   const [collegeFilter, setCollegeFilter] = useState("All Colleges");
   const [partnerships, setPartnerships] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [mapData, setMapData] = useState(null);
+  const [tooltip, setTooltip] = useState({ show: false, content: "", x: 0, y: 0 });
 
   // Expanded list of colleges and institutes
   const colleges = [
@@ -57,6 +62,8 @@ const Dashboard = () => {
     "Institute of Advanced Science & Technology (IAST)",
     "Institute of Peace & Security (IPSS)",
   ];
+
+  const geoUrl = "https://unpkg.com/world-atlas@2.0.2/countries-110m.json";
 
   // Effect hook to fetch all partnerships using pagination.
   useEffect(() => {
@@ -100,6 +107,23 @@ const Dashboard = () => {
 
     fetchAllPartnerships();
   }, []); // Empty dependency array ensures this runs only once
+
+  // Fetch and parse TopoJSON for the world map
+  useEffect(() => {
+    fetch(geoUrl)
+      .then((response) => {
+        if (!response.ok) throw new Error("Failed to load map data");
+        return response.json();
+      })
+      .then((topology) => {
+        const geoJson = feature(topology, topology.objects.countries);
+        setMapData(geoJson);
+      })
+      .catch((error) => {
+        console.error("Error loading map data:", error);
+        setMapData(null);
+      });
+  }, []);
 
   // Memoize the initial processing of partnerships to add a 'derivedStatus'
   // This avoids recalculating the status for every filter change.
@@ -268,6 +292,54 @@ const Dashboard = () => {
       ],
     };
   }, [processedPartnerships, colleges]);
+
+  // World map partner density data
+  const countryCounts = useMemo(() => {
+    if (!Array.isArray(processedPartnerships)) return {};
+    // Normalize country names for better matching
+    const normalizeCountryName = (name) => {
+      if (!name) return "Unknown";
+      const normalized = name.trim().toLowerCase();
+      const countryMap = {
+        "united states": "United States",
+        usa: "United States",
+        "united states of america": "United States",
+        "united kingdom": "United Kingdom",
+        uk: "United Kingdom",
+        "great britain": "United Kingdom",
+        "south korea": "South Korea",
+        "korea, republic of": "South Korea",
+        russia: "Russian Federation",
+        china: "China",
+        taiwan: "Taiwan",
+        ethiopia: "Ethiopia",
+      };
+      const mappedName = countryMap[normalized];
+      return mappedName
+        ? mappedName.charAt(0).toUpperCase() + mappedName.slice(1)
+        : name.charAt(0).toUpperCase() + name.slice(1);
+    };
+    return processedPartnerships.reduce((acc, p) => {
+      const country = normalizeCountryName(p.partnerInstitution?.country) || "Unknown";
+      acc[country] = (acc[country] || 0) + 1;
+      return acc;
+    }, {});
+  }, [processedPartnerships]);
+  const maxCount = Math.max(...Object.values(countryCounts), 1);
+  const colorScale = chroma.scale(["#F5F6F0", "#00A087"]).mode("lch").domain([0, maxCount]);
+  const handleMouseEnter = (e, countryName, count) => {
+    if (count > 0) {
+      setTooltip({
+        show: true,
+        content: `${countryName}: ${count} partner${count > 1 ? "s" : ""}`,
+        x: e.clientX + 10,
+        y: e.clientY + 10,
+      });
+    }
+  };
+  const handleMouseLeave = () => {
+    setTooltip({ show: false, content: "", x: 0, y: 0 });
+  };
 
   // ----- Chart Configurations -----
 
@@ -462,6 +534,76 @@ const Dashboard = () => {
                 </div>
               </div>
               <Line data={lineData} options={lineOptions} height={80} />
+            </div>
+            {/* World Map Partner Density Visualization */}
+            <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md mb-6 mt-6">
+              <h2 className="text-lg font-medium text-gray-800 mb-4">
+                Partner Density by Country
+              </h2>
+              <div className="h-[500px] w-full relative px-2 lg:px-4">
+                {mapData ? (
+                  <ComposableMap
+                    projectionConfig={{ scale: 180, center: [0, 20] }}
+                    style={{ width: "100%", height: "100%" }}
+                  >
+                    <Geographies geography={mapData}>
+                      {({ geographies }) =>
+                        geographies.map((geo) => {
+                          const countryName = geo.properties.name;
+                          const count = countryCounts[countryName] || 0;
+                          const fillColor =
+                            count > 0 ? colorScale(count).hex() : "#ECEFF1";
+                          return (
+                            <Geography
+                              key={geo.rsmKey}
+                              geography={geo}
+                              fill={fillColor}
+                              stroke="#ffffff"
+                              strokeWidth={0.5}
+                              style={{
+                                default: { outline: "none" },
+                                hover: {
+                                  outline: "none",
+                                  fill: "#93C5FD",
+                                },
+                                pressed: { outline: "none" },
+                              }}
+                              onMouseEnter={(e) =>
+                                handleMouseEnter(e, countryName, count)
+                              }
+                              onMouseLeave={handleMouseLeave}
+                            />
+                          );
+                        })
+                      }
+                    </Geographies>
+                  </ComposableMap>
+                ) : (
+                  <div className="text-red-500 text-center h-full flex items-center justify-center">
+                    Failed to load map data. Please try again later.
+                  </div>
+                )}
+                {tooltip.show && (
+                  <div
+                    className="absolute bg-black/80 text-white text-sm px-3 py-1 rounded-md shadow-xl z-50 border border-white"
+                    style={{ left: tooltip.x, top: tooltip.y }}
+                  >
+                    {tooltip.content}
+                  </div>
+                )}
+              </div>
+              <div className="w-full flex flex-col items-center mt-6">
+                <div className="h-4 w-full max-w-3xl bg-gradient-to-r from-[#F5F6F0] to-[#00A087] rounded-full"></div>
+                <div className="flex justify-between text-sm text-gray-700 w-full max-w-3xl mt-1">
+                  <span>Low</span>
+                  <span>High</span>
+                </div>
+              </div>
+              {countryCounts["Unknown"] > 0 && (
+                <p className="text-sm text-red-500 mt-2 text-center">
+                  {countryCounts["Unknown"]} partners have unknown or invalid country data
+                </p>
+              )}
             </div>
           </>
         )}
