@@ -33,6 +33,8 @@ const TableHeader = ({ columns, sortConfig, onSort }) => {
         return "w-20 sm:w-28 md:w-32"; // Responsive width for status
       case "actions":
         return "w-22 sm:w-30 md:w-37"; // Responsive width for actions
+      case "createdAt":
+        return "w-28 sm:w-36 md:w-40"; // Responsive width for created at
       default:
         return "w-auto";
     }
@@ -46,11 +48,12 @@ const TableHeader = ({ columns, sortConfig, onSort }) => {
     if (column.key === "contact") return "CONTACT";
     if (column.key === "status") return "STATUS";
     if (column.key === "actions") return "ACTIONS";
+    if (column.key === "createdAt") return "CREATED AT";
     return column.label;
   };
 
   return (
-    <div className="grid grid-cols-7 gap-1 sm:gap-2 md:gap-4 p-2 sm:p-3 md:p-4 border-b-0.5 text-gray-600 font-medium shadow-md text-[10px] xs:text-xs sm:text-sm">
+    <div className="grid grid-cols-8 gap-1 sm:gap-2 md:gap-4 p-2 sm:p-3 md:p-4 border-b-0.5 text-gray-600 font-medium shadow-md text-[10px] xs:text-xs sm:text-sm">
       {columns.map((column) => {
         const widthClass = getColumnWidth(column.key);
         const isSortable = column.key !== "logo" && column.key !== "actions";

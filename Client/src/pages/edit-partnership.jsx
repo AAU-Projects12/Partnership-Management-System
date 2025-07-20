@@ -1,912 +1,1276 @@
-// EditPartnership.jsx
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import { getPartnershipById, updatePartnership } from "../api.jsx";
 import toast from "react-hot-toast";
 import {
-  Building2,
+  Clipboard,
+  Building,
   Calendar,
-  Mail,
-  Phone,
   MapPin,
+  GraduationCap,
+  ActivitySquare,
   FileText,
-  Save,
-  X,
+  User,
+  Mail,
+  ListChecks,
+  Target,
+  DollarSign,
+  FileSignature,
+  PlusCircle,
+  XCircle,
+  Phone,
+  Link,
 } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 
-const EditPartnership = () => {
+function EditPartnership() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-  const [originalData, setOriginalData] = useState(null);
-  const [formData, setFormData] = useState({
-    partnerInstitution: {
-      name: "",
-      address: "",
-      country: "",
-      typeOfOrganization: "",
-    },
-    aauContact: {
-      interestedCollegeOrDepartment: "",
-    },
-    partnerContactPerson: {
-      name: "",
-      institutionalEmail: "",
-      phoneNumber: "",
-      title: "",
-      address: "",
-    },
-    partnerContactPersonSecondary: {
-      name: "",
-      institutionalEmail: "",
-      phoneNumber: "",
-      title: "",
-      address: "",
-    },
-    aauContactPerson: {
-      name: "",
-      institutionalEmail: "",
-      phoneNumber: "",
-      title: "",
-      address: "",
-    },
-    aauContactPersonSecondary: {
-      name: "",
-      institutionalEmail: "",
-      phoneNumber: "",
-      title: "",
-      address: "",
-    },
-    potentialAreasOfCollaboration: [],
-    otherCollaborationArea: "",
-    potentialStartDate: "",
-    durationOfPartnership: "",
+  const initialFormData = {
+    name: "",
+    type: "",
+    signedDate: "",
+    endDate: "",
+    region: "",
+    country: "",
+    college: "",
+    schoolDepartmentUnit: "",
+    status: "",
     description: "",
     mouFileUrl: "",
-    status: "",
-  });
+    contactPerson: "",
+    contactEmail: "",
+    contactPhone: "",
+    contactAddress: "",
+    contactTitle: "",
+    aauContactName: "",
+    aauContactEmail: "",
+    aauContactPhone: "",
+    aauContactCollege: "",
+    aauContactSchoolDepartmentUnit: "",
+    objectives: [],
+    scope: "",
+    otherCollaborationArea: "",
+    deliverables: [""],
+    fundingAmount: "",
+    reportingRequirements: "",
+  };
+
+  // Move this to the top, before useEffect
+  const [formData, setFormData] = useState(initialFormData);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPartnership = async () => {
+    async function fetchData() {
+      setLoading(true);
       try {
         const { data } = await getPartnershipById(id);
-        const formattedData = {
-          partnerInstitution: {
-            name: data.partnerInstitution?.name || "",
-            address: data.partnerInstitution?.address || "",
-            country: data.partnerInstitution?.country || "",
-            typeOfOrganization:
-              data.partnerInstitution?.typeOfOrganization || "",
-          },
-          aauContact: {
-            interestedCollegeOrDepartment:
-              data.aauContact?.interestedCollegeOrDepartment || "",
-          },
-          partnerContactPerson: {
-            name: data.partnerContactPerson?.name || "",
-            institutionalEmail:
-              data.partnerContactPerson?.institutionalEmail || "",
-            phoneNumber: data.partnerContactPerson?.phoneNumber || "",
-            title: data.partnerContactPerson?.title || "",
-            address: data.partnerContactPerson?.address || "",
-          },
-          partnerContactPersonSecondary: {
-            name: data.partnerContactPersonSecondary?.name || "",
-            institutionalEmail:
-              data.partnerContactPersonSecondary?.institutionalEmail || "",
-            phoneNumber: data.partnerContactPersonSecondary?.phoneNumber || "",
-            title: data.partnerContactPersonSecondary?.title || "",
-            address: data.partnerContactPersonSecondary?.address || "",
-          },
-          aauContactPerson: {
-            name: data.aauContactPerson?.name || "",
-            institutionalEmail: data.aauContactPerson?.institutionalEmail || "",
-            phoneNumber: data.aauContactPerson?.phoneNumber || "",
-            title: data.aauContactPerson?.title || "",
-            address: data.aauContactPerson?.address || "",
-          },
-          aauContactPersonSecondary: {
-            name: data.aauContactPersonSecondary?.name || "",
-            institutionalEmail:
-              data.aauContactPersonSecondary?.institutionalEmail || "",
-            phoneNumber: data.aauContactPersonSecondary?.phoneNumber || "",
-            title: data.aauContactPersonSecondary?.title || "",
-            address: data.aauContactPersonSecondary?.address || "",
-          },
-          potentialAreasOfCollaboration:
-            data.potentialAreasOfCollaboration || [],
-          otherCollaborationArea: data.otherCollaborationArea || "",
-          potentialStartDate: data.potentialStartDate
-            ? new Date(data.potentialStartDate).toISOString().split("T")[0]
-            : "",
-          durationOfPartnership: data.durationOfPartnership || "",
+        setFormData({
+          name: data.partnerInstitution?.name || "",
+          type: data.partnerInstitution?.typeOfOrganization || "",
+          signedDate: data.potentialStartDate ? new Date(data.potentialStartDate).toISOString().split("T")[0] : "",
+          endDate: data.durationOfPartnership || "",
+          region: data.partnerInstitution?.address || "",
+          country: data.partnerInstitution?.country || "",
+          college: data.aauContact?.interestedCollegeOrDepartment || "",
+          schoolDepartmentUnit: data.aauContactPerson?.schoolDepartmentUnit || "",
+          status: data.status || "",
           description: data.description || "",
           mouFileUrl: data.mouFileUrl || "",
-          status: data.status || "",
-        };
-        setFormData(formattedData);
-        setOriginalData(formattedData);
-      } catch (err) {
-        const errorMessage =
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          err.message;
-        setError(errorMessage);
-        toast.error("Failed to load partnership details: " + errorMessage);
+          contactPerson: data.partnerContactPerson?.name || "",
+          contactEmail: data.partnerContactPerson?.institutionalEmail || "",
+          contactPhone: data.partnerContactPerson?.phoneNumber || "",
+          contactAddress: data.partnerContactPerson?.address || "",
+          contactTitle: data.partnerContactPerson?.title || "",
+          aauContactName: data.aauContactPerson?.name || "",
+          aauContactEmail: data.aauContactPerson?.institutionalEmail || "",
+          aauContactPhone: data.aauContactPerson?.phoneNumber || "",
+          aauContactCollege: data.aauContactPerson?.college || "",
+          aauContactSchoolDepartmentUnit: data.aauContactPerson?.schoolDepartmentUnit || "",
+          objectives: data.potentialAreasOfCollaboration || [],
+          scope: data.scope || "",
+          otherCollaborationArea: data.otherCollaborationArea || "",
+          deliverables: data.deliverables && data.deliverables.length > 0 ? data.deliverables : [""],
+          fundingAmount: data.fundingAmount !== undefined ? String(data.fundingAmount) : "",
+          reportingRequirements: data.reportingRequirements || "",
+        });
+      } catch (error) {
+        toast.error("Failed to load partnership data");
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchPartnership();
+    }
+    fetchData();
   }, [id]);
+
+  const validateField = (name, value) => {
+    let errorMsg = "";
+    // All fields that are required by the backend
+    const requiredFields = [
+      "name",
+      "type",
+      "signedDate",
+      "endDate",
+      "region",
+      "country",
+      "college",
+      "status",
+      "description",
+      "contactPhone",
+      "contactTitle",
+      "contactAddress",
+      "aauContactName",
+      "aauContactEmail",
+      "aauContactPhone",
+      "aauContactCollege",
+      "aauContactSchoolDepartmentUnit",
+    ];
+
+    if (requiredFields.includes(name) && !String(value).trim()) {
+      // Creates a user-friendly field name like "Signed Date" from "signedDate"
+      const fieldName =
+        name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, " $1");
+      errorMsg = `${fieldName} is required.`;
+    } else if (
+      (name === "contactEmail" || name === "aauContactEmail") &&
+      value &&
+      !/\S+@\S+\.\S+/.test(String(value))
+    ) {
+      errorMsg = "Invalid email format.";
+    } else if (name === "fundingAmount" && value && isNaN(Number(value))) {
+      errorMsg = "Funding amount must be a number.";
+    }
+
+    setErrors((prev) => ({ ...prev, [name]: errorMsg }));
+    return !errorMsg;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes(".")) {
-      const [section, field] = name.split(".");
-      setFormData((prev) => ({
-        ...prev,
-        [section]: {
-          ...prev[section],
-          [field]: value,
-        },
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    validateField(name, value);
   };
 
-  const handleCollaborationChange = (e) => {
-    const { value, checked } = e.target;
-    setFormData((prev) => {
-      const newAreas = checked
-        ? [...prev.potentialAreasOfCollaboration, value]
-        : prev.potentialAreasOfCollaboration.filter((area) => area !== value);
-      return {
-        ...prev,
-        potentialAreasOfCollaboration: newAreas,
-      };
-    });
+  const handleArrayChange = (e, index, fieldName) => {
+    const { value } = e.target;
+    const updatedArray = [...formData[fieldName]];
+    updatedArray[index] = value;
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: updatedArray,
+    }));
   };
 
-  const getChangedFields = () => {
-    const changes = {};
-    const compareObjects = (obj1, obj2, path = "") => {
-      for (const key in obj1) {
-        const currentPath = path ? `${path}.${key}` : key;
-        if (
-          typeof obj1[key] === "object" &&
-          obj1[key] !== null &&
-          !Array.isArray(obj1[key])
-        ) {
-          compareObjects(obj1[key], obj2[key], currentPath);
-        } else if (JSON.stringify(obj1[key]) !== JSON.stringify(obj2[key])) {
-          if (currentPath.includes(".")) {
-            const [section, field] = currentPath.split(".");
-            if (!changes[section]) changes[section] = {};
-            changes[section][field] = obj1[key];
-          } else {
-            changes[key] = obj1[key];
-          }
-        }
-      }
-    };
-    compareObjects(formData, originalData);
-    // Ensure partnerInstitution includes all required fields if any are changed
-    if (changes.partnerInstitution) {
-      changes.partnerInstitution = {
-        name: formData.partnerInstitution.name,
-        address: formData.partnerInstitution.address,
-        country: formData.partnerInstitution.country,
-        typeOfOrganization: formData.partnerInstitution.typeOfOrganization,
-      };
-    }
-    return changes;
+  const addArrayItem = (fieldName) => {
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: [...prev[fieldName], ""],
+    }));
+  };
+
+  const removeArrayItem = (index, fieldName) => {
+    const updatedArray = formData[fieldName].filter((_, i) => i !== index);
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: updatedArray.length > 0 ? updatedArray : [""],
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitting(true);
-    setError(null);
+    setIsSubmitting(true);
+    setErrors({});
 
-    // Client-side validation
-    const changedFields = getChangedFields();
-    if (Object.keys(changedFields).length === 0) {
-      toast.info("No changes to save");
-      setSubmitting(false);
+    let formIsValid = true;
+    // FIX: Consolidated validation. This single loop now handles all required fields, including description.
+    for (const [key, value] of Object.entries(formData)) {
+      if (!Array.isArray(value)) {
+        if (!validateField(key, value)) {
+          formIsValid = false;
+        }
+      }
+    }
+
+    if (!formIsValid) {
+      toast.error("Please correct the errors in the form.");
+      setIsSubmitting(false);
       return;
     }
 
-    // Validate mandatory fields if they are being updated
-    if (changedFields.partnerInstitution) {
-      if (!changedFields.partnerInstitution.name) {
-        setError("Partner institution name is required");
-        setSubmitting(false);
-        return;
-      }
-      if (!changedFields.partnerInstitution.address) {
-        setError("Partner institution address is required");
-        setSubmitting(false);
-        return;
-      }
-      if (!changedFields.partnerInstitution.country) {
-        setError("Partner institution country is required");
-        setSubmitting(false);
-        return;
-      }
-      if (!changedFields.partnerInstitution.typeOfOrganization) {
-        setError("Partner institution type of organization is required");
-        setSubmitting(false);
-        return;
-      }
+    // Additional specific format validations after checking for presence
+    const e164Regex = /^\+\d{10,15}$/;
+    if (formData.contactPhone && !e164Regex.test(formData.contactPhone)) {
+      setErrors((prev) => ({
+        ...prev,
+        contactPhone: "Phone must be in E.164 format (e.g. +251911234567)",
+      }));
+      formIsValid = false;
     }
-    if (
-      changedFields.aauContact &&
-      !changedFields.aauContact.interestedCollegeOrDepartment
-    ) {
-      setError("AAU department is required");
-      setSubmitting(false);
+    if (formData.aauContactPhone && !e164Regex.test(formData.aauContactPhone)) {
+      setErrors((prev) => ({
+        ...prev,
+        aauContactPhone: "Phone must be in E.164 format (e.g. +251911234567)",
+      }));
+      formIsValid = false;
+    }
+
+    const startDate = new Date(formData.signedDate);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    if (startDate < now) {
+      setErrors((prev) => ({
+        ...prev,
+        signedDate: "Start date cannot be in the past.",
+      }));
+      formIsValid = false;
+    }
+
+    if (!formIsValid) {
+      toast.error("Please correct the validation errors.");
+      setIsSubmitting(false);
       return;
     }
-    if (changedFields.partnerContactPerson) {
-      if (!changedFields.partnerContactPerson.name) {
-        setError("Partner contact person name is required");
-        setSubmitting(false);
-        return;
-      }
-      if (
-        !changedFields.partnerContactPerson.institutionalEmail ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-          changedFields.partnerContactPerson.institutionalEmail
-        )
-      ) {
-        setError("Valid partner contact email is required");
-        setSubmitting(false);
-        return;
-      }
-      if (!changedFields.partnerContactPerson.phoneNumber) {
-        setError("Partner contact phone number is required");
-        setSubmitting(false);
-        return;
-      }
-    }
-    if (changedFields.aauContactPerson) {
-      if (!changedFields.aauContactPerson.name) {
-        setError("AAU contact person name is required");
-        setSubmitting(false);
-        return;
-      }
-      if (
-        !changedFields.aauContactPerson.institutionalEmail ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-          changedFields.aauContactPerson.institutionalEmail
-        )
-      ) {
-        setError("Valid AAU contact email is required");
-        setSubmitting(false);
-        return;
-      }
-      if (!changedFields.aauContactPerson.phoneNumber) {
-        setError("AAU contact phone number is required");
-        setSubmitting(false);
-        return;
-      }
-    }
-    if (
-      changedFields.potentialStartDate &&
-      !/^\d{4}-\d{2}-\d{2}$/.test(changedFields.potentialStartDate)
-    ) {
-      setError("Valid potential start date is required (YYYY-MM-DD)");
-      setSubmitting(false);
-      return;
-    }
-    if (
-      changedFields.durationOfPartnership &&
-      !changedFields.durationOfPartnership
-    ) {
-      setError("Duration of partnership is required");
-      setSubmitting(false);
-      return;
-    }
-    if (
-      changedFields.potentialAreasOfCollaboration &&
-      changedFields.potentialAreasOfCollaboration.includes("Other") &&
-      !changedFields.otherCollaborationArea
-    ) {
-      setError(
-        "Other collaboration description is required when 'Other' is selected"
-      );
-      setSubmitting(false);
-      return;
-    }
-    if (
-      changedFields.status &&
-      !["Active", "Rejected", "Pending"].includes(changedFields.status)
-    ) {
-      setError("Status must be Active, Rejected, or Pending");
-      setSubmitting(false);
-      return;
-    }
+
+    // Payload construction remains the same
+    const payload = {
+      partnerInstitution: {
+        name: formData.name,
+        address: formData.region,
+        country: formData.country,
+        typeOfOrganization: formData.type,
+      },
+      aauContact: {
+        interestedCollegeOrDepartment: formData.college,
+      },
+      potentialAreasOfCollaboration: formData.objectives,
+      otherCollaborationArea: formData.objectives.includes("Other")
+        ? formData.otherCollaborationArea?.trim() || ""
+        : undefined,
+      potentialStartDate: formData.signedDate,
+      durationOfPartnership: formData.endDate,
+      fundingAmount: Number(formData.fundingAmount),
+      partnerContactPerson: {
+        name: formData.contactPerson,
+        title: formData.contactTitle,
+        institutionalEmail: formData.contactEmail,
+        phoneNumber: formData.contactPhone,
+        address: formData.contactAddress,
+      },
+      aauContactPerson: {
+        name: formData.aauContactName,
+        college: formData.aauContactCollege,
+        schoolDepartmentUnit: formData.aauContactSchoolDepartmentUnit,
+        institutionalEmail: formData.aauContactEmail,
+        phoneNumber: formData.aauContactPhone,
+      },
+      description: formData.description.trim(),
+      status: formData.status,
+      reportingRequirements: formData.reportingRequirements?.trim() || "",
+      scope: formData.scope?.trim() || "",
+      deliverables: formData.deliverables.filter(d => d.trim() !== ""),
+      ...(formData.mouFileUrl && { mouFileUrl: formData.mouFileUrl.trim() }),
+    };
 
     try {
-      await updatePartnership(id, changedFields);
-      toast.success("Partnership updated successfully");
+      await updatePartnership(id, payload);
+      toast.success("Partnership updated successfully!");
       navigate("/partnership");
-    } catch (err) {
-      const errorMessage =
-        err.response?.data?.errors?.map((e) => e.msg).join(", ") ||
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        "Failed to update partnership";
-      setError(errorMessage);
-      toast.error(errorMessage);
+    } catch (error) {
+      console.error("Failed to create partnership:", error);
+      const errorMsg =
+        error.response?.data?.message ||
+        "Failed to create partnership. Please try again.";
+      toast.error(errorMsg);
+      if (error.response?.data?.errors) {
+        setErrors((prev) => ({ ...prev, ...error.response.data.errors }));
+      }
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <NavBar />
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const typeOfOrganizationOptions = [
+    "Academic",
+    "Research",
+    "NGO",
+    "INGO",
+    "Government",
+    "Private",
+    "Other",
+  ];
+  const durationOptions = [
+    "1 year",
+    "2 years",
+    "3 years",
+    "4 years",
+    "5 years",
+  ];
+  const collegeOptions = [
+    "Central",
+    "College of Business and Economics",
+    "College of Social Science, Arts and Humanities",
+    "College of Veterinary Medicine and Agriculture",
+    "School of Law",
+    "College of Technology and Built Environment",
+    "College of Education and Language Studies",
+    "College of Health Science",
+  ];
+  const collaborationOptions = [
+    "Research/Technology Transfer",
+    "Student/Staff/Researcher Mobility",
+    "Funding Grant/Resource Mobilization",
+    "Joint Courses/Programs",
+    "University-Industry Linkage",
+    "Consultancy",
+    "Joint Training/Seminars/Workshops",
+    "Other",
+  ];
+  const maxLengths = {
+    name: 100,
+    title: 100,
+    email: 100,
+    phone: 20,
+    address: 200,
+    department: 100,
+    description: 200,
+    institution: 200,
+    country: 100,
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100 font-sans">
       <NavBar />
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900">
+      <div className="py-8 px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-6 sm:p-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">
               Edit Partnership
-            </h1>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => navigate("/partnership")}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {submitting ? "Saving..." : "Save Changes"}
-              </button>
-            </div>
+            </h2>
+            <p className="text-gray-600 text-sm mt-1">
+              Update the details and save your changes.
+            </p>
           </div>
 
-          {error && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-              {error}
-            </div>
-          )}
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
+              {/* Partnership Name */}
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <Building size={16} />
+                    <span>Partnership Name</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  placeholder="e.g. Collaborative Research Initiative"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.name ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  maxLength={maxLengths.institution}
+                  required
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                )}
+              </div>
 
-          <form className="space-y-8" onSubmit={handleSubmit}>
-            {/* Partner Institution */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Partner Institution
-              </h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="partnerInstitution.name"
-                    value={formData.partnerInstitution.name}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Type of Organization <span className="text-red-500">*</span>
-                  </label>
+              {/* Partnership Type */}
+              <div>
+                <label
+                  htmlFor="type"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <Clipboard size={16} />
+                    <span>Partnership Type</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <div className="relative">
                   <select
-                    name="partnerInstitution.typeOfOrganization"
-                    value={formData.partnerInstitution.typeOfOrganization}
+                    id="type"
+                    name="type"
+                    value={formData.type}
                     onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className={`w-full p-2 border ${
+                      errors.type ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
                     required
                   >
-                    <option value="">Select Type</option>
-                    <option value="University">University</option>
-                    <option value="NGO">NGO</option>
-                    <option value="Government">Government</option>
-                    <option value="Private">Private</option>
+                    <option value="" disabled>
+                      Select partnership type
+                    </option>
+                    {typeOfOrganizationOptions.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
                   </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Address <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="partnerInstitution.address"
-                    value={formData.partnerInstitution.address}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Country <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="partnerInstitution.country"
-                    value={formData.partnerInstitution.country}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* AAU Contact */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                AAU Contact
-              </h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Department <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="aauContact.interestedCollegeOrDepartment"
-                    value={formData.aauContact.interestedCollegeOrDepartment}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* AAU Contact Person */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                AAU Contact Person
-              </h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="aauContactPerson.name"
-                    value={formData.aauContactPerson.name}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    name="aauContactPerson.title"
-                    value={formData.aauContactPerson.title}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    name="aauContactPerson.institutionalEmail"
-                    value={formData.aauContactPerson.institutionalEmail}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Phone <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    name="aauContactPerson.phoneNumber"
-                    value={formData.aauContactPerson.phoneNumber}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Address
-                  </label>
-                  <input
-                    type="text"
-                    name="aauContactPerson.address"
-                    value={formData.aauContactPerson.address}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Partner Contact Person */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Partner Contact Person
-              </h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="partnerContactPerson.name"
-                    value={formData.partnerContactPerson.name}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    name="partnerContactPerson.title"
-                    value={formData.partnerContactPerson.title}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    name="partnerContactPerson.institutionalEmail"
-                    value={formData.partnerContactPerson.institutionalEmail}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Phone <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    name="partnerContactPerson.phoneNumber"
-                    value={formData.partnerContactPerson.phoneNumber}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Address
-                  </label>
-                  <input
-                    type="text"
-                    name="partnerContactPerson.address"
-                    value={formData.partnerContactPerson.address}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Secondary Partner Contact Person */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Secondary Partner Contact Person (Optional)
-              </h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    name="partnerContactPersonSecondary.name"
-                    value={formData.partnerContactPersonSecondary.name}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    name="partnerContactPersonSecondary.title"
-                    value={formData.partnerContactPersonSecondary.title}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="partnerContactPersonSecondary.institutionalEmail"
-                    value={
-                      formData.partnerContactPersonSecondary.institutionalEmail
-                    }
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Phone
-                  </label>
-                  <input
-                    type="tel"
-                    name="partnerContactPersonSecondary.phoneNumber"
-                    value={formData.partnerContactPersonSecondary.phoneNumber}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Address
-                  </label>
-                  <input
-                    type="text"
-                    name="partnerContactPersonSecondary.address"
-                    value={formData.partnerContactPersonSecondary.address}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Secondary AAU Contact Person */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Secondary AAU Contact Person (Optional)
-              </h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    name="aauContactPersonSecondary.name"
-                    value={formData.aauContactPersonSecondary.name}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    name="aauContactPersonSecondary.title"
-                    value={formData.aauContactPersonSecondary.title}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="aauContactPersonSecondary.institutionalEmail"
-                    value={
-                      formData.aauContactPersonSecondary.institutionalEmail
-                    }
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Phone
-                  </label>
-                  <input
-                    type="tel"
-                    name="aauContactPersonSecondary.phoneNumber"
-                    value={formData.aauContactPersonSecondary.phoneNumber}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Address
-                  </label>
-                  <input
-                    type="text"
-                    name="aauContactPersonSecondary.address"
-                    value={formData.aauContactPersonSecondary.address}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Collaboration Areas */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Collaboration Areas
-              </h2>
-              <div className="space-y-2">
-                {[
-                  "Research",
-                  "Student Exchange",
-                  "Faculty Exchange",
-                  "Other",
-                ].map((area) => (
-                  <label key={area} className="inline-flex items-center">
-                    <input
-                      type="checkbox"
-                      value={area}
-                      checked={formData.potentialAreasOfCollaboration.includes(
-                        area
-                      )}
-                      onChange={handleCollaborationChange}
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">{area}</span>
-                  </label>
-                ))}
-                {formData.potentialAreasOfCollaboration.includes("Other") && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Other Collaboration Description{" "}
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      name="otherCollaborationArea"
-                      value={formData.otherCollaborationArea}
-                      onChange={handleChange}
-                      rows={3}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      required
-                    />
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg
+                      className="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M5.516 7.548l4.484 4.484 4.484-4.484L16 9l-6 6-6-6z" />
+                    </svg>
                   </div>
+                </div>
+                {errors.type && (
+                  <p className="text-red-500 text-xs mt-1">{errors.type}</p>
+                )}
+              </div>
+
+              {/* Signed Date */}
+              <div>
+                <label
+                  htmlFor="signedDate"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <Calendar size={16} />
+                    <span>Signed Date</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="date"
+                  id="signedDate"
+                  name="signedDate"
+                  value={formData.signedDate}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.signedDate ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-colors`}
+                  min={new Date().toISOString().split("T")[0]}
+                  required
+                />
+                {errors.signedDate && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.signedDate}
+                  </p>
+                )}
+              </div>
+
+              {/* End Date */}
+              <div>
+                <label
+                  htmlFor="endDate"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <Calendar size={16} />
+                    <span>Duration</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <div className="relative">
+                  <select
+                    id="endDate"
+                    name="endDate"
+                    value={formData.endDate}
+                    onChange={handleChange}
+                    className={`w-full p-2 border ${
+                      errors.endDate ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
+                    required
+                  >
+                    <option value="">Select duration</option>
+                    {durationOptions.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg
+                      className="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M5.516 7.548l4.484 4.484 4.484-4.484L16 9l-6 6-6-6z" />
+                    </svg>
+                  </div>
+                </div>
+                {errors.endDate && (
+                  <p className="text-red-500 text-xs mt-1">{errors.endDate}</p>
+                )}
+              </div>
+
+              {/* Funding Amount */}
+              <div>
+                <label
+                  htmlFor="fundingAmount"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <DollarSign size={16} />
+                    <span>Funding Amount</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="number"
+                  id="fundingAmount"
+                  name="fundingAmount"
+                  placeholder="e.g. 10000"
+                  value={formData.fundingAmount}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.fundingAmount ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  min="0"
+                  step="any"
+                  required
+                />
+                {errors.fundingAmount && (
+                  <p className="text-red-500 text-xs mt-1">{errors.fundingAmount}</p>
+                )}
+              </div>
+
+              {/* Region */}
+              <div>
+                <label
+                  htmlFor="region"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <MapPin size={16} />
+                    <span>Region</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  id="region"
+                  name="region"
+                  placeholder="e.g. National, Addis Ababa"
+                  value={formData.region}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.region ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  maxLength={maxLengths.address}
+                  required
+                />
+                {errors.region && (
+                  <p className="text-red-500 text-xs mt-1">{errors.region}</p>
+                )}
+              </div>
+
+              {/* Country */}
+              <div>
+                <label
+                  htmlFor="country"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <Building size={16} />
+                    <span>Partner Country</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  id="country"
+                  name="country"
+                  placeholder="Partner Country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.country ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  maxLength={maxLengths.country}
+                  required
+                />
+                {errors.country && (
+                  <p className="text-red-500 text-xs mt-1">{errors.country}</p>
+                )}
+              </div>
+
+              {/* College */}
+              <div>
+                <label
+                  htmlFor="college"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <GraduationCap size={16} />
+                    <span>College/Institution</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <div className="relative">
+                  <select
+                    id="college"
+                    name="college"
+                    value={formData.college}
+                    onChange={handleChange}
+                    className={`w-full p-2 border ${
+                      errors.college ? "border-red-500" : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
+                    maxLength={maxLengths.department}
+                    required
+                  >
+                    <option value="" disabled>
+                      Select college
+                    </option>
+                    {collegeOptions.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg
+                      className="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M5.516 7.548l4.484 4.484 4.484-4.484L16 9l-6 6-6-6z" />
+                    </svg>
+                  </div>
+                </div>
+                {errors.college && (
+                  <p className="text-red-500 text-xs mt-1">{errors.college}</p>
+                )}
+              </div>
+
+              {/* Partnership Status Section */}
+              <div className="col-span-1 md:col-span-2">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 flex items-center gap-3">
+                  <ActivitySquare size={28} className="text-blue-500" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-blue-800">
+                      Partner Institution Contact Details
+                    </h3>
+                    <p className="text-sm text-blue-700">
+                      Please provide the main contact information for the
+                      partner institution.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label
+                  htmlFor="status"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <ActivitySquare size={16} />
+                    <span>Status</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  <option value="">Select Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Rejected">Rejected</option>
+                  <option value="Pending">Pending</option>
+                </select>
+                {errors.status && (
+                  <p className="text-red-500 text-xs mt-1">{errors.status}</p>
+                )}
+              </div>
+
+              {/* Contact Person (Optional) */}
+              <div>
+                <label
+                  htmlFor="contactPerson"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <User size={16} />
+                    <span>Partner Contact Person</span>
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  id="contactPerson"
+                  name="contactPerson"
+                  placeholder="e.g. Dr. Jane Doe"
+                  value={formData.contactPerson}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.contactPerson ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  maxLength={maxLengths.name}
+                />
+                {errors.contactPerson && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.contactPerson}
+                  </p>
+                )}
+              </div>
+
+              {/* Contact Email (Optional) */}
+              <div>
+                <label
+                  htmlFor="contactEmail"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <Mail size={16} />
+                    <span>Partner Contact Email</span>
+                  </div>
+                </label>
+                <input
+                  type="email"
+                  id="contactEmail"
+                  name="contactEmail"
+                  placeholder="e.g. jane.doe@example.com"
+                  value={formData.contactEmail}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.contactEmail ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  maxLength={maxLengths.email}
+                />
+                {errors.contactEmail && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.contactEmail}
+                  </p>
+                )}
+              </div>
+
+              {/* Partner Contact Phone */}
+              <div>
+                <label
+                  htmlFor="contactPhone"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <Phone size={16} />
+                    <span>Partner Contact Phone</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  id="contactPhone"
+                  name="contactPhone"
+                  placeholder="+251911234567"
+                  value={formData.contactPhone}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.contactPhone ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  maxLength={maxLengths.phone}
+                  required
+                />
+                {errors.contactPhone && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.contactPhone}
+                  </p>
+                )}
+              </div>
+
+              {/* Partner Contact Title */}
+              <div>
+                <label
+                  htmlFor="contactTitle"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <User size={16} />
+                    <span>Partner Contact Person Title</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  id="contactTitle"
+                  name="contactTitle"
+                  placeholder="e.g., Project Manager"
+                  value={formData.contactTitle}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.contactTitle ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  maxLength={maxLengths.title}
+                  required
+                />
+                {errors.contactTitle && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.contactTitle}
+                  </p>
+                )}
+              </div>
+
+              {/* Partner Contact Address */}
+              <div>
+                <label
+                  htmlFor="contactAddress"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <MapPin size={16} />
+                    <span>Partner Contact Person Address</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  id="contactAddress"
+                  name="contactAddress"
+                  placeholder="e.g., 123 Innovation Dr, Addis Ababa"
+                  value={formData.contactAddress}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.contactAddress ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  maxLength={maxLengths.address}
+                  required
+                />
+                {errors.contactAddress && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.contactAddress}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label
+                  htmlFor="aauContactName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <User size={16} />
+                    <span>AAU Contact Name</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  id="aauContactName"
+                  name="aauContactName"
+                  placeholder="e.g., Prof. John Smith"
+                  value={formData.aauContactName}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.aauContactName ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  maxLength={maxLengths.name}
+                  required
+                />
+                {errors.aauContactName && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.aauContactName}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="aauContactEmail"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <Mail size={16} />
+                    <span>AAU Contact Email</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="email"
+                  id="aauContactEmail"
+                  name="aauContactEmail"
+                  placeholder="e.g., john.smith@aau.edu.et"
+                  value={formData.aauContactEmail}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.aauContactEmail
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  maxLength={maxLengths.email}
+                  required
+                />
+                {errors.aauContactEmail && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.aauContactEmail}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="aauContactPhone"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <Phone size={16} />
+                    <span>AAU Contact Phone</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  id="aauContactPhone"
+                  name="aauContactPhone"
+                  placeholder="+251912345678"
+                  value={formData.aauContactPhone}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.aauContactPhone
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  maxLength={maxLengths.phone}
+                  required
+                />
+                {errors.aauContactPhone && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.aauContactPhone}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="aauContactCollege"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <GraduationCap size={16} />
+                    <span>AAU Contact College</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <div className="relative">
+                  <select
+                    id="aauContactCollege"
+                    name="aauContactCollege"
+                    value={formData.aauContactCollege}
+                    onChange={handleChange}
+                    className={`w-full p-2 border ${
+                      errors.aauContactCollege
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
+                    required
+                  >
+                    <option value="" disabled>
+                      Select college
+                    </option>
+                    {collegeOptions.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg
+                      className="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M5.516 7.548l4.484 4.484 4.484-4.484L16 9l-6 6-6-6z" />
+                    </svg>
+                  </div>
+                </div>
+                {errors.aauContactCollege && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.aauContactCollege}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="aauContactSchoolDepartmentUnit"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <GraduationCap size={16} />
+                    <span>AAU Contact School/Dept/Unit</span>
+                    <span className="text-red-500">*</span>
+                  </div>
+                </label>
+                <input
+                  type="text"
+                  id="aauContactSchoolDepartmentUnit"
+                  name="aauContactSchoolDepartmentUnit"
+                  placeholder="e.g., School of Information Science"
+                  value={formData.aauContactSchoolDepartmentUnit}
+                  onChange={handleChange}
+                  className={`w-full p-2 border ${
+                    errors.aauContactSchoolDepartmentUnit
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+                  maxLength={maxLengths.department}
+                  required
+                />
+                {errors.aauContactSchoolDepartmentUnit && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.aauContactSchoolDepartmentUnit}
+                  </p>
                 )}
               </div>
             </div>
 
-            {/* Dates and Duration */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Dates and Duration
-              </h2>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Potential Start Date <span className="text-red-500">*</span>
-                  </label>
+            {/* Description */}
+            <div className="mb-6">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                <div className="flex items-center gap-2">
+                  <FileText size={16} />
+                  <span>Description</span>
+                  <span className="text-red-500">*</span>
+                </div>
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                rows="4"
+                placeholder="Detailed description of the partnership..."
+                value={formData.description}
+                required
+                maxLength={500}
+                onChange={handleChange}
+                className={`w-full p-2 border ${
+                  errors.description ? "border-red-500" : "border-gray-300"
+                } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+              ></textarea>
+              {errors.description && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.description}
+                </p>
+              )}
+            </div>
+
+            {/* Potential Areas of Collaboration (Objectives) */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="flex items-center gap-2">
+                  <ListChecks size={16} />
+                  <span>Potential Areas of Collaboration</span>
+                  <span className="text-red-500">*</span>
+                </div>
+              </label>
+              <div className="flex flex-wrap gap-2"></div>
+              {collaborationOptions.map((option) => (
+                <label
+                  key={option}
+                  className={`flex items-center px-3 py-1 rounded-full border cursor-pointer transition-colors ${
+                    formData.objectives.includes(option)
+                      ? "bg-blue-100 border-blue-500 text-blue-700"
+                      : "bg-white border-gray-300 text-gray-700"
+                  }`}
+                >
                   <input
-                    type="date"
-                    name="potentialStartDate"
-                    value={formData.potentialStartDate}
+                    type="checkbox"
+                    name="objectives"
+                    value={option}
+                    checked={formData.objectives.includes(option)}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setFormData((prev) => ({
+                        ...prev,
+                        objectives: checked
+                          ? [...prev.objectives, option]
+                          : prev.objectives.filter((obj) => obj !== option),
+                      }));
+                      setErrors((prev) => ({ ...prev, objectives: "" }));
+                    }}
+                    className="mr-2"
+                  />
+                  {option}
+                </label>
+              ))}
+              {/* Show input for 'Other' if checked */}
+              {formData.objectives.includes("Other") && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    name="otherCollaborationArea"
+                    value={formData.otherCollaborationArea}
                     onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Please specify other area of collaboration..."
+                    className="w-full p-2 border border-blue-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                     required
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Duration of Partnership{" "}
-                    <span className="text-red-500">*</span>
-                  </label>
+              )}
+            </div>
+            {errors.objectives && (
+              <p className="text-red-500 text-xs mt-1">{errors.objectives}</p>
+            )}
+
+            {/* Scope (Optional) */}
+            <div className="mb-6">
+              <label
+                htmlFor="scope"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                <div className="flex items-center gap-2">
+                  <Target size={16} />
+                  <span>Scope (Optional)</span>
+                </div>
+              </label>
+              <textarea
+                id="scope"
+                name="scope"
+                rows="3"
+                placeholder="Define the scope of the partnership..."
+                value={formData.scope}
+                onChange={handleChange}
+                className={`w-full p-2 border ${
+                  errors.scope ? "border-red-500" : "border-gray-300"
+                } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+              ></textarea>
+              {errors.scope && (
+                <p className="text-red-500 text-xs mt-1">{errors.scope}</p>
+              )}
+            </div>
+
+            {/* Reporting Requirements (Optional) */}
+            <div className="mb-6">
+              <label
+                htmlFor="reportingRequirements"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                <div className="flex items-center gap-2">
+                  <FileSignature size={16} />
+                  <span>Reporting Requirements (Optional)</span>
+                </div>
+              </label>
+              <textarea
+                id="reportingRequirements"
+                name="reportingRequirements"
+                rows="3"
+                placeholder="Detail any reporting requirements..."
+                value={formData.reportingRequirements}
+                onChange={handleChange}
+                className={`w-full p-2 border ${
+                  errors.reportingRequirements
+                    ? "border-red-500"
+                    : "border-gray-300"
+                } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
+              ></textarea>
+              {errors.reportingRequirements && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.reportingRequirements}
+                </p>
+              )}
+            </div>
+
+            {/* Deliverables (Optional) */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="flex items-center gap-2">
+                  <ListChecks size={16} />
+                  <span>Deliverables (Optional)</span>
+                </div>
+              </label>
+              {formData.deliverables.map((deliverable, index) => (
+                <div key={index} className="flex items-center gap-2 mb-2">
                   <input
                     type="text"
-                    name="durationOfPartnership"
-                    value={formData.durationOfPartnership}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    required
+                    placeholder={`Deliverable ${index + 1}`}
+                    value={deliverable}
+                    onChange={(e) =>
+                      handleArrayChange(e, index, "deliverables")
+                    }
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                   />
+                  {formData.deliverables.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeArrayItem(index, "deliverables")}
+                      className="p-1 text-red-500 hover:text-red-700"
+                      title="Remove deliverable"
+                    >
+                      <XCircle size={20} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => addArrayItem("deliverables")}
+                className="mt-1 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium py-1 px-2 rounded-md hover:bg-blue-50 transition-colors"
+              >
+                <PlusCircle size={16} />
+                Add Deliverable
+              </button>
+              {errors.deliverables && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.deliverables}
+                </p>
+              )}
+            </div>
+            <div className="bg-white shadow rounded-lg p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Partnership Document
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Google Drive Document Link
+                  </label>
+                  <div className="mt-1 flex rounded-md shadow-sm">
+                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                      <Link className="h-5 w-5" />
+                    </span>
+                    <input
+                      type="url"
+                      name="mouFileUrl"
+                      value={formData.mouFileUrl}
+                      onChange={(e) =>
+                        setFormData({ ...formData, mouFileUrl: e.target.value })
+                      }
+                      placeholder="https://drive.google.com/..."
+                      className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300"
+                    />
+                  </div>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Paste the Google Drive link to your partnership document
+                    (MOU)
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Additional Information */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Additional Information
-              </h2>
-              <div className="grid grid-cols-1 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Description
-                  </label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    rows={4}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    MOU File URL
-                  </label>
-                  <input
-                    type="url"
-                    name="mouFileUrl"
-                    value={formData.mouFileUrl}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Status
-                  </label>
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  >
-                    <option value="">Select Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Rejected">Rejected</option>
-                    <option value="Pending">Pending</option>
-                  </select>
-                </div>
-              </div>
+            {/* Submit Button */}
+            <div className="flex justify-end mt-8">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
+              >
+                {isSubmitting ? "Submitting..." : "Save Changes"}
+              </button>
             </div>
           </form>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default EditPartnership;

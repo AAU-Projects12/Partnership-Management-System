@@ -90,11 +90,13 @@ const PartnershipDetail = () => {
           <div className="bg-white rounded-lg shadow-md">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center gap-4">
-                <img
-                  src={partner.logo || "/placeholder.svg"}
-                  alt={partnerInstitution.name || "-"}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
+                {/* Status Icon */}
+                <span style={{ fontSize: '2rem' }}>
+                  {partner.status?.toLowerCase() === 'active' && '🟢'}
+                  {partner.status?.toLowerCase() === 'pending' && '🟡'}
+                  {partner.status?.toLowerCase() === 'rejected' && '🔴'}
+                  {!['active','pending','rejected'].includes(partner.status?.toLowerCase()) && '⚪'}
+                </span>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">
                     {partnerInstitution.name || "-"}
@@ -179,6 +181,36 @@ const PartnershipDetail = () => {
                       </p>
                     </div>
                   </div>
+                  {/* Funding Amount */}
+                  <div className="flex items-center gap-3">
+                    <span className="h-5 w-5 text-gray-800">💰</span>
+                    <div>
+                      <p className="text-sm text-gray-500">Funding Amount</p>
+                      <p className="font-medium">
+                        {partner.fundingAmount !== undefined ? partner.fundingAmount : "-"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="h-5 w-5 text-gray-800">📄</span>
+                    <div>
+                      <p className="text-sm text-gray-500">Reporting Requirements</p>
+                      <p className="font-medium">
+                        {partner.reportingRequirements || "-"}
+                      </p>
+                    </div>
+                  </div>
+                  {/* Scope */}
+                  <div className="flex items-center gap-3">
+                    <span className="h-5 w-5 text-gray-800">📌</span>
+                    <div>
+                      <p className="text-sm text-gray-500">Scope</p>
+                      <p className="font-medium">
+                        {partner.scope || "-"}
+                      </p>
+                    </div>
+                  </div>
+                  {/* Other Collaboration Area */}
                   {partner.otherCollaborationArea && (
                     <div className="flex items-center gap-3">
                       <span className="h-5 w-5 text-gray-800">📝</span>
@@ -202,6 +234,16 @@ const PartnershipDetail = () => {
                   <p className="text-gray-600">
                     {partner.description || "No description provided."}
                   </p>
+                  {Array.isArray(partner.deliverables) && partner.deliverables.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="font-medium text-gray-800 mb-1">Deliverables</h4>
+                      <ul className="list-disc list-inside text-gray-700">
+                        {partner.deliverables.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -231,6 +273,16 @@ const PartnershipDetail = () => {
                     <span className="font-medium">Address:</span>{" "}
                     {partnerContact.address || "-"}
                   </div>
+                  {partner.partnerContactPersonSecondary && (
+                    <div className="mt-4">
+                      <h4 className="font-medium text-gray-700 mb-1">Secondary Contact</h4>
+                      <div><span className="font-medium">Name:</span> {partner.partnerContactPersonSecondary.name || "-"}</div>
+                      <div><span className="font-medium">Title:</span> {partner.partnerContactPersonSecondary.title || "-"}</div>
+                      <div><span className="font-medium">Email:</span> {partner.partnerContactPersonSecondary.institutionalEmail || "-"}</div>
+                      <div><span className="font-medium">Phone:</span> {partner.partnerContactPersonSecondary.phoneNumber || "-"}</div>
+                      <div><span className="font-medium">Address:</span> {partner.partnerContactPersonSecondary.address || "-"}</div>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-4">
                   <h3 className="font-semibold text-gray-800 mb-2">
@@ -256,6 +308,16 @@ const PartnershipDetail = () => {
                     <span className="font-medium">Phone:</span>{" "}
                     {aauContact.phoneNumber || "-"}
                   </div>
+                  {partner.aauContactPersonSecondary && (
+                    <div className="mt-4">
+                      <h4 className="font-medium text-gray-700 mb-1">Secondary AAU Contact</h4>
+                      <div><span className="font-medium">Name:</span> {partner.aauContactPersonSecondary.name || "-"}</div>
+                      <div><span className="font-medium">College:</span> {partner.aauContactPersonSecondary.college || "-"}</div>
+                      <div><span className="font-medium">Department/Unit:</span> {partner.aauContactPersonSecondary.schoolDepartmentUnit || "-"}</div>
+                      <div><span className="font-medium">Email:</span> {partner.aauContactPersonSecondary.institutionalEmail || "-"}</div>
+                      <div><span className="font-medium">Phone:</span> {partner.aauContactPersonSecondary.phoneNumber || "-"}</div>
+                    </div>
+                  )}
                   {partner.mouFileUrl && (
                     <div className="pt-3 border-t border-gray-100">
                       <div className="flex items-center justify-between">

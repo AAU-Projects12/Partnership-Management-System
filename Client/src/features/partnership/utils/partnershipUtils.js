@@ -72,6 +72,9 @@ export const filterBySearch = (partners, searchQuery) => {
       if (column === 'duration') {
         valueA = getDurationInMonths(a.duration);
         valueB = getDurationInMonths(b.duration);
+      } else if (column === 'createdAt') {
+        valueA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+        valueB = b.createdAt ? new Date(b.createdAt) : new Date(0);
       } else {
         valueA = a[column] ? String(a[column]).toLowerCase() : '';
         valueB = b[column] ? String(b[column]).toLowerCase() : '';

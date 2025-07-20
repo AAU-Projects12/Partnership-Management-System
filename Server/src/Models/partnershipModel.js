@@ -144,6 +144,20 @@ const partnershipSchema = new mongoose.Schema(
       required: [true, "Duration of partnership is required"],
       enum: ["1 year", "2 years", "3 years", "4 years", "5 years"],
     },
+    deliverables: {
+      type: [String],
+      required: false,
+    },
+    fundingAmount: {
+      type: Number,
+      required: [true, "Funding amount is required"],
+    },
+    reportingRequirements: {
+      type: String,
+      required: false,
+      trim: true,
+      maxlength: [500, "Reporting requirements cannot exceed 500 characters"],
+    },
     partnerContactPerson: {
       type: contactPersonSchema,
       required: true,
@@ -188,6 +202,12 @@ const partnershipSchema = new mongoose.Schema(
       required: [true, "Description is required"],
       trim: true,
       maxlength: [500, "Description cannot exceed 500 characters"],
+    },
+    scope: {
+      type: String,
+      required: false,
+      trim: true,
+      maxlength: [2000, "Scope cannot exceed 2000 characters"],
     },
   },
   {

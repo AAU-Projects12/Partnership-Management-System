@@ -46,6 +46,10 @@ export const createPartnership = async (req, res) => {
       description,
       mouFileUrl,
       status,
+      deliverables,
+      fundingAmount,
+      reportingRequirements,
+      scope,
     } = req.body;
 
     if (
@@ -83,6 +87,10 @@ export const createPartnership = async (req, res) => {
       isArchived: false,
       description,
       mouFileUrl,
+      deliverables,
+      fundingAmount,
+      reportingRequirements,
+      scope,
     });
 
     await partnership.save();
@@ -118,15 +126,28 @@ export const getPartnerships = async (req, res) => {
       archived,
       limit = 10,
       page = 1,
+      sortBy = 'createdAt',
+      sortDirection = 'asc',
+      types = [],
+      statuses = [],
+      durations = [],
     } = req.query;
     // Admins and SuperAdmins see all partnerships
     let filter = {};
+
+    // Support array or string for types/statuses/durations
+    const typesArr = Array.isArray(types) ? types : types ? [types] : [];
+    const statusesArr = Array.isArray(statuses) ? statuses : statuses ? [statuses] : [];
+    const durationsArr = Array.isArray(durations) ? durations : durations ? [durations] : [];
 
     if (status) filter.status = status;
     if (typeOfOrganization)
       filter["partnerInstitution.typeOfOrganization"] = typeOfOrganization;
     if (durationOfPartnership)
       filter.durationOfPartnership = durationOfPartnership;
+    if (typesArr.length > 0) filter["partnerInstitution.typeOfOrganization"] = { $in: typesArr };
+    if (statusesArr.length > 0) filter.status = { $in: statusesArr };
+    if (durationsArr.length > 0) filter.durationOfPartnership = { $in: durationsArr };
 
     if (potentialStartDate) {
       if (!isValidDate(potentialStartDate)) {
@@ -152,7 +173,13 @@ export const getPartnerships = async (req, res) => {
 
     const skip = (parsedPage - 1) * parsedLimit;
     const total = await Partnership.countDocuments(filter);
+    // Build sort object
+    const sortObj = {};
+    if (sortBy) {
+      sortObj[sortBy] = sortDirection === 'desc' ? -1 : 1;
+    }
     const partnerships = await Partnership.find(filter)
+      .sort(sortObj)
       .skip(skip)
       .limit(parsedLimit);
 

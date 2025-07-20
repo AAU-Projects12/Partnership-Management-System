@@ -8,6 +8,7 @@ import {
   X,
   Edit,
   Trash2,
+  ArrowUpDown,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -25,7 +26,6 @@ import LoadingSpinner from "../components/LoadingSpinner";
 
 // Data and utilities
 import {
-  samplePartners,
   partnerTypes,
   partnerStatuses,
   durationCategories,
@@ -66,12 +66,11 @@ const PartnershipDashboard = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useLocalStorage("currentPage", 1);
-  const [itemsPerPage, setItemsPerPage] = useLocalStorage("itemsPerPage", 5);
+  const [itemsPerPage, setItemsPerPage] = useLocalStorage("itemsPerPage", 10);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
   // UI states
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [toast, setToast] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
@@ -92,6 +91,11 @@ const PartnershipDashboard = () => {
         const response = await getPartnerships({
           page: currentPage,
           limit: itemsPerPage,
+          sortBy: sortConfig.column,
+          sortDirection: sortConfig.direction,
+          types: filters.types,
+          statuses: filters.statuses,
+          durations: filters.durations,
         });
         const { partnerships = [], pagination = {} } = response.data;
         // Map backend data to frontend table structure
@@ -103,6 +107,11 @@ const PartnershipDashboard = () => {
           duration: p.durationOfPartnership || "-",
           contact: p.partnerContactPerson?.name || "-",
           status: p.status || "-",
+          createdAt: p.createdAt || "-",
+          country: p.partnerInstitution?.country || "-",
+          deliverables: p.deliverables || [],
+          fundingAmount: p.fundingAmount,
+          description: p.description || "-",
         }));
         setPartners(mappedPartners);
         setTotalItems(pagination.total || 0);
@@ -118,18 +127,14 @@ const PartnershipDashboard = () => {
       }
     }
     fetchPartners();
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, sortConfig, filters]);
 
-  // Apply search, filters, and sorting client-side (on current page only)
+  // Apply search client-side only
   useEffect(() => {
     let result = [...partners];
     result = filterBySearch(result, searchQuery);
-    result = applyFilters(result, filters);
-    if (sortConfig.column) {
-      result = sortPartners(result, sortConfig.column, sortConfig.direction);
-    }
     setFilteredPartners(result);
-  }, [searchQuery, partners, filters, sortConfig]);
+  }, [searchQuery, partners]);
 
   // Handle sorting
   const handleSort = (column, direction) => {
@@ -219,9 +224,10 @@ const PartnershipDashboard = () => {
             </div>
             <Link
               to="/add-partnership"
-              className="bg-[#004165] hover:bg-[#00334e] text-white rounded-full px-6 py-2 flex items-center transition-colors"
+              className="bg-[#004165] hover:bg-[#00334e] text-white rounded-full px-10 py-2 flex items-center transition-colors"
             >
-              <Plus className="mr-2 h-4 w-4" /> New Partner
+              <Plus className="mr-2 h-4 w-4" />
+              <span className="text-base font-medium">New Partnership</span>
             </Link>
           </div>
           {/* Search and Filter */}
@@ -310,65 +316,71 @@ const PartnershipDashboard = () => {
                 {totalItems} partners
               </div>
               <button
-                onClick={() => setIsCollapsed(!isCollapsed)}
+                onClick={() => {
+                  setSortConfig((prev) => ({
+                    column: "createdAt",
+                    direction: prev.column === "createdAt" && prev.direction === "asc" ? "desc" : "asc",
+                  }));
+                  setActiveFilterButton(null);
+                }}
                 className="text-[#004165] hover:bg-[#004165]/10 p-2 rounded-full transition-colors"
+                title="Sort by Created At"
               >
-                {isCollapsed ? (
-                  <ChevronDown className="h-5 w-5" />
-                ) : (
-                  <ChevronUp className="h-5 w-5" />
+                <ArrowUpDown className="h-5 w-5" />
+                {sortConfig.column === "createdAt" && (
+                  sortConfig.direction === "asc"
+                    ? <ChevronUp className="h-4 w-4 ml-1" />
+                    : <ChevronDown className="h-4 w-4 ml-1" />
                 )}
               </button>
             </div>
-            {!isCollapsed && (
-              <div className="bg-white rounded-b-3xl overflow-hidden">
-                {/* Table Container with Horizontal Scroll */}
-                <div className="overflow-x-auto">
-                  <div className="min-w-[600px] sm:min-w-[800px]">
-                    {/* Table Header */}
-                    <TableHeader
-                      columns={modifiedColumns}
-                      sortConfig={sortConfig}
-                      onSort={handleSort}
-                    />
-                    {/* No Results */}
-                    {filteredPartners.length === 0 && (
-                      <div className="p-4 sm:p-8 text-center text-gray-500">
-                        <p>No partners found matching your criteria.</p>
-                        {hasActiveFilters && (
-                          <button
-                            onClick={clearAllFilters}
-                            className="mt-2 text-[#004165] hover:underline"
-                          >
-                            Clear all filters
-                          </button>
-                        )}
-                      </div>
-                    )}
-                    {/* Table Rows */}
-                    {filteredPartners.map((partner) => (
-                      <PartnerRow
-                        key={partner.id}
-                        partner={partner}
-                        onDelete={handleDeletePartner}
-                        onEdit={handleEditPartner}
-                      />
-                    ))}
-                  </div>
-                </div>
-                {/* Pagination */}
-                <div className="px-2 sm:px-4">
-                  <Pagination
-                    totalItems={totalItems}
-                    itemsPerPage={itemsPerPage}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    onItemsPerPageChange={setItemsPerPage}
+            <div className="bg-white rounded-b-3xl overflow-hidden">
+              {/* Table Container with Horizontal Scroll */}
+              <div className="overflow-x-auto">
+                <div className="min-w-[600px] sm:min-w-[800px]">
+                  {/* Table Header */}
+                  <TableHeader
+                    columns={modifiedColumns}
+                    sortConfig={sortConfig}
+                    onSort={handleSort}
                   />
+                  {/* No Results */}
+                  {filteredPartners.length === 0 && (
+                    <div className="p-4 sm:p-8 text-center text-gray-500">
+                      <p>No partners found matching your criteria.</p>
+                      {hasActiveFilters && (
+                        <button
+                          onClick={clearAllFilters}
+                          className="mt-2 text-[#004165] hover:underline"
+                        >
+                          Clear all filters
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {/* Table Rows */}
+                  {filteredPartners.map((partner) => (
+                    <PartnerRow
+                      key={partner.id}
+                      partner={partner}
+                      onDelete={handleDeletePartner}
+                      onEdit={handleEditPartner}
+                    />
+                  ))}
                 </div>
               </div>
-            )}
+              {/* Pagination */}
+              <div className="px-2 sm:px-4">
+                <Pagination
+                  totalItems={totalItems}
+                  itemsPerPage={itemsPerPage}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  onItemsPerPageChange={setItemsPerPage}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </main>
