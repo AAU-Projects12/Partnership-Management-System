@@ -61,7 +61,7 @@ export const UserProvider = ({ children }) => {
 
   // Provide user data and authentication functions
   return (
-    <UserContext.Provider value={{ user, loading, login, logout }}>
+    <UserContext.Provider value={{ user, loading, login, logout, setContextUser: setUser }}>
       {children}
     </UserContext.Provider>
   );
