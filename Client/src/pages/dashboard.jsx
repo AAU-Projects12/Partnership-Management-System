@@ -342,7 +342,7 @@ const Dashboard = () => {
 
   const maxCount = Math.max(...Object.values(countryCounts), 1);
   const colorScale = chroma
-    .scale(["#F5F6F0", "#00A087"])
+    .scale(["#bfdbfe", "#1e3a8a"])
     .mode("lch")
     .domain([0, maxCount]);
   const handleMouseEnter = (e, countryName, count) => {
@@ -611,7 +611,7 @@ const Dashboard = () => {
                 )}
               </div>
               <div className="w-full flex flex-col items-center mt-6">
-                <div className="h-4 w-full max-w-3xl bg-gradient-to-r from-[#F5F6F0] to-[#00A087] rounded-full"></div>
+                <div className="h-4 w-full max-w-3xl bg-gradient-to-r from-[#bfdbfe] to-[#1e3a8a] rounded-full"></div>
                 <div className="flex justify-between text-sm text-gray-700 w-full max-w-3xl mt-1">
                   <span>Low</span>
                   <span>High</span>
