@@ -35,12 +35,17 @@ ChartJS.register(
 
 const Dashboard = () => {
   // State management for filters, data, and loading status
-  const [timeFilter, setTimeFilter] = useState("Monthly");
+  const [timeFilter, setTimeFilter] = useState("All Times"); // Changed default to "All Times"
   const [collegeFilter, setCollegeFilter] = useState("All Colleges");
   const [partnerships, setPartnerships] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mapData, setMapData] = useState(null);
-  const [tooltip, setTooltip] = useState({ show: false, content: "", x: 0, y: 0 });
+  const [tooltip, setTooltip] = useState({
+    show: false,
+    content: "",
+    x: 0,
+    y: 0,
+  });
 
   // Expanded list of colleges and institutes
   const colleges = [
@@ -65,19 +70,20 @@ const Dashboard = () => {
 
   const geoUrl = "https://unpkg.com/world-atlas@2.0.2/countries-110m.json";
 
-  // Effect hook to fetch all partnerships using pagination.
+  // Effect hook to fetch all partnerships using pagination
   useEffect(() => {
     const fetchAllPartnerships = async () => {
       setLoading(true);
       let allPartnerships = [];
       let currentPage = 1;
-      const limit = 100; // Use the maximum allowed limit per page.
+      const limit = 100; // Use the maximum allowed limit per page
       let hasMore = true;
 
       try {
         while (hasMore) {
           const params = { limit, page: currentPage };
           const response = await getPartnerships(params);
+          console.log("Fetched partnerships:", response.data);
 
           const fetchedPartnerships = Array.isArray(
             response?.data?.partnerships
@@ -89,24 +95,24 @@ const Dashboard = () => {
             allPartnerships = [...allPartnerships, ...fetchedPartnerships];
             currentPage++;
           } else {
-            // No more partnerships to fetch, exit the loop.
             hasMore = false;
           }
         }
         setPartnerships(allPartnerships);
+        console.log("Total partnerships fetched:", allPartnerships.length);
       } catch (error) {
         console.error("Error fetching partnerships:", error);
         toast.error(
           error.response?.data?.message || "Failed to fetch partnerships"
         );
-        setPartnerships([]); // Reset to empty array on error
+        setPartnerships([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchAllPartnerships();
-  }, []); // Empty dependency array ensures this runs only once
+  }, []);
 
   // Fetch and parse TopoJSON for the world map
   useEffect(() => {
@@ -126,12 +132,14 @@ const Dashboard = () => {
   }, []);
 
   // Memoize the initial processing of partnerships to add a 'derivedStatus'
-  // This avoids recalculating the status for every filter change.
   const processedPartnerships = useMemo(() => {
     if (!Array.isArray(partnerships)) return [];
     const now = new Date();
 
     return partnerships.map((p) => {
+      if (!p.createdAt) {
+        console.warn("Partnership missing createdAt:", p._id);
+      }
       const expirationDate = p.expirationDate
         ? new Date(p.expirationDate)
         : null;
@@ -162,22 +170,29 @@ const Dashboard = () => {
     let startDate;
 
     if (timeFilter === "Weekly") {
-      startDate = new Date(new Date().setDate(now.getDate() - 7));
+      startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     } else if (timeFilter === "Monthly") {
-      startDate = new Date(new Date().setMonth(now.getMonth() - 1));
+      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     } else if (timeFilter === "Yearly") {
-      startDate = new Date(new Date().setFullYear(now.getFullYear() - 1));
+      startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
     } else {
-      // "All Times"
-      startDate = new Date(0); // The beginning of time
+      return processedPartnerships; // Return all for "All Times"
     }
 
-    return processedPartnerships.filter(
-      (p) => p.createdAt && new Date(p.createdAt) >= startDate
+    const filtered = processedPartnerships.filter(
+      (p) => !p.createdAt || new Date(p.createdAt) >= startDate
     );
+    console.log("Filtered partnerships by time:", filtered.length);
+    return filtered;
   }, [processedPartnerships, timeFilter]);
 
-  // Memoize aggregated data for the bar chart based on the time-filtered data
+  // Log college filter and data for debugging
+  useEffect(() => {
+    console.log("Selected college:", collegeFilter);
+    console.log("Total processed partnerships:", processedPartnerships.length);
+  }, [collegeFilter, processedPartnerships]);
+
+  // Memoize aggregated data for the bar chart
   const { collegeData, totalData } = useMemo(() => {
     const collegeData = colleges.reduce((acc, college) => {
       if (college === "All Colleges") return acc;
@@ -211,7 +226,7 @@ const Dashboard = () => {
     return { collegeData, totalData };
   }, [filteredByTime, colleges]);
 
-  // Memoize aggregated data for the line chart, now also based on time-filtered data
+  // Memoize aggregated data for the line chart
   const { months, lineDataByCollege } = useMemo(() => {
     const now = new Date();
     const months = Array.from({ length: 12 }, (_, i) => {
@@ -232,7 +247,6 @@ const Dashboard = () => {
     filteredByTime.forEach((p) => {
       if (!p.createdAt) return;
       const createdDate = new Date(p.createdAt);
-      // Calculate the month index relative to the last 12 months
       const monthIndex =
         (createdDate.getFullYear() - now.getFullYear()) * 12 +
         createdDate.getMonth() -
@@ -250,7 +264,7 @@ const Dashboard = () => {
     return { months, lineDataByCollege: initialCollegeData };
   }, [filteredByTime, colleges]);
 
-  // Memoize data for the pie chart (shows all-time distribution)
+  // Memoize data for the pie chart
   const pieData = useMemo(() => {
     const collegeCounts = colleges.reduce((acc, college) => {
       if (college !== "All Colleges") {
@@ -296,7 +310,6 @@ const Dashboard = () => {
   // World map partner density data
   const countryCounts = useMemo(() => {
     if (!Array.isArray(processedPartnerships)) return {};
-    // Normalize country names for better matching
     const normalizeCountryName = (name) => {
       if (!name) return "Unknown";
       const normalized = name.trim().toLowerCase();
@@ -320,13 +333,18 @@ const Dashboard = () => {
         : name.charAt(0).toUpperCase() + name.slice(1);
     };
     return processedPartnerships.reduce((acc, p) => {
-      const country = normalizeCountryName(p.partnerInstitution?.country) || "Unknown";
+      const country =
+        normalizeCountryName(p.partnerInstitution?.country) || "Unknown";
       acc[country] = (acc[country] || 0) + 1;
       return acc;
     }, {});
   }, [processedPartnerships]);
+
   const maxCount = Math.max(...Object.values(countryCounts), 1);
-  const colorScale = chroma.scale(["#F5F6F0", "#00A087"]).mode("lch").domain([0, maxCount]);
+  const colorScale = chroma
+    .scale(["#F5F6F0", "#00A087"])
+    .mode("lch")
+    .domain([0, maxCount]);
   const handleMouseEnter = (e, countryName, count) => {
     if (count > 0) {
       setTooltip({
@@ -341,8 +359,8 @@ const Dashboard = () => {
     setTooltip({ show: false, content: "", x: 0, y: 0 });
   };
 
-  // ----- Chart Configurations -----
-
+  // Chart Configurations
+  const totalAllPartnerships = processedPartnerships.length;
   const displayedTotal = Object.values(totalData).reduce(
     (sum, count) => sum + count,
     0
@@ -428,8 +446,7 @@ const Dashboard = () => {
     },
   };
 
-  // ----- Render JSX -----
-
+  // Render JSX
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
       <NavBar />
@@ -469,7 +486,8 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
               <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md lg:col-span-1">
                 <h2 className="text-2xl lg:text-4xl font-bold text-gray-800">
-                  {displayedTotal} Partners
+                  {totalAllPartnerships} Total Partners ({displayedTotal} in{" "}
+                  {timeFilter})
                 </h2>
                 <p className="text-gray-600 mt-2">
                   Units Per Status ({timeFilter})
@@ -535,7 +553,7 @@ const Dashboard = () => {
               </div>
               <Line data={lineData} options={lineOptions} height={80} />
             </div>
-            {/* World Map Partner Density Visualization */}
+
             <div className="bg-white p-4 lg:p-6 rounded-xl shadow-md mb-6 mt-6">
               <h2 className="text-lg font-medium text-gray-800 mb-4">
                 Partner Density by Country
@@ -601,7 +619,8 @@ const Dashboard = () => {
               </div>
               {countryCounts["Unknown"] > 0 && (
                 <p className="text-sm text-red-500 mt-2 text-center">
-                  {countryCounts["Unknown"]} partners have unknown or invalid country data
+                  {countryCounts["Unknown"]} partners have unknown or invalid
+                  country data
                 </p>
               )}
             </div>
