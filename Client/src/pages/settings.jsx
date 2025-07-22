@@ -85,42 +85,6 @@ const Settings = () => {
                   </p>
                 </div>
               </div>
-              <Switch
-                checked={darkMode}
-                onChange={toggleSwitch(setDarkMode)}
-                className={`${
-                  darkMode ? "bg-blue-600" : "bg-gray-200"
-                } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
-              >
-                <span className="sr-only">Enable Dark Mode</span>
-                <span
-                  className={`${
-                    darkMode ? "translate-x-6" : "translate-x-1"
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition`}
-                />
-              </Switch>
-            </div>
-
-            <div className="flex items-center justify-between py-4 border-b border-gray-200">
-              <div className="flex items-center space-x-3">
-                <LanguageIcon className="h-6 w-6 text-gray-500" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Language</p>
-                  <p className="text-xs text-gray-500">
-                    Select your preferred language
-                  </p>
-                </div>
-              </div>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm cursor-pointer"
-              >
-                <option>English</option>
-                <option>Amharic</option>
-                <option>French</option>
-                <option>Arabic</option>
-              </select>
             </div>
           </div>
         );
@@ -147,15 +111,13 @@ const Settings = () => {
               <Switch
                 checked={systemNotifications}
                 onChange={toggleSwitch(setSystemNotifications)}
-                className={`${
-                  systemNotifications ? "bg-blue-600" : "bg-gray-200"
-                } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
+                className={`${systemNotifications ? "bg-blue-600" : "bg-gray-200"
+                  } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
               >
                 <span className="sr-only">Enable System Notifications</span>
                 <span
-                  className={`${
-                    systemNotifications ? "translate-x-6" : "translate-x-1"
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                  className={`${systemNotifications ? "translate-x-6" : "translate-x-1"
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition`}
                 />
               </Switch>
             </div>
@@ -176,15 +138,13 @@ const Settings = () => {
               <Switch
                 checked={partnershipUpdates}
                 onChange={toggleSwitch(setPartnershipUpdates)}
-                className={`${
-                  partnershipUpdates ? "bg-blue-600" : "bg-gray-200"
-                } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
+                className={`${partnershipUpdates ? "bg-blue-600" : "bg-gray-200"
+                  } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
               >
                 <span className="sr-only">Enable Partnership Updates</span>
                 <span
-                  className={`${
-                    partnershipUpdates ? "translate-x-6" : "translate-x-1"
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                  className={`${partnershipUpdates ? "translate-x-6" : "translate-x-1"
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition`}
                 />
               </Switch>
             </div>
@@ -203,15 +163,13 @@ const Settings = () => {
               <Switch
                 checked={alerts}
                 onChange={toggleSwitch(setAlerts)}
-                className={`${
-                  alerts ? "bg-blue-600" : "bg-gray-200"
-                } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
+                className={`${alerts ? "bg-blue-600" : "bg-gray-200"
+                  } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
               >
                 <span className="sr-only">Enable Alerts</span>
                 <span
-                  className={`${
-                    alerts ? "translate-x-6" : "translate-x-1"
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                  className={`${alerts ? "translate-x-6" : "translate-x-1"
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition`}
                 />
               </Switch>
             </div>
@@ -248,15 +206,13 @@ const Settings = () => {
               <Switch
                 checked={dataSharing}
                 onChange={toggleSwitch(setDataSharing)}
-                className={`${
-                  dataSharing ? "bg-blue-600" : "bg-gray-200"
-                } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
+                className={`${dataSharing ? "bg-blue-600" : "bg-gray-200"
+                  } relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer`}
               >
                 <span className="sr-only">Enable Data Sharing</span>
                 <span
-                  className={`${
-                    dataSharing ? "translate-x-6" : "translate-x-1"
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                  className={`${dataSharing ? "translate-x-6" : "translate-x-1"
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition`}
                 />
               </Switch>
             </div>
@@ -335,44 +291,40 @@ const Settings = () => {
                 <nav className="space-y-2">
                   <button
                     onClick={() => setActiveTab("general")}
-                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${
-                      activeTab === "general"
+                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${activeTab === "general"
                         ? "bg-blue-50 text-blue-700"
                         : "text-gray-700 hover:bg-gray-100"
-                    }`}
+                      }`}
                   >
                     <Cog6ToothIcon className="h-5 w-5" />
                     <span>General</span>
                   </button>
                   <button
                     onClick={() => setActiveTab("notifications")}
-                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${
-                      activeTab === "notifications"
+                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${activeTab === "notifications"
                         ? "bg-blue-50 text-blue-700"
                         : "text-gray-700 hover:bg-gray-100"
-                    }`}
+                      }`}
                   >
                     <BellIcon className="h-5 w-5" />
                     <span>Notifications</span>
                   </button>
                   <button
                     onClick={() => setActiveTab("privacy")}
-                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${
-                      activeTab === "privacy"
+                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${activeTab === "privacy"
                         ? "bg-blue-50 text-blue-700"
                         : "text-gray-700 hover:bg-gray-100"
-                    }`}
+                      }`}
                   >
                     <ShieldCheckIcon className="h-5 w-5" />
                     <span>Privacy</span>
                   </button>
                   <button
                     onClick={() => setActiveTab("account")}
-                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${
-                      activeTab === "account"
+                    className={`flex items-center space-x-3 w-full px-3 py-2 text-sm font-medium rounded-md ${activeTab === "account"
                         ? "bg-blue-50 text-blue-700"
                         : "text-gray-700 hover:bg-gray-100"
-                    }`}
+                      }`}
                   >
                     <UserIcon className="h-5 w-5" />
                     <span>Account</span>

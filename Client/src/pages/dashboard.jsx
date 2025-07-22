@@ -16,7 +16,7 @@ import {
 import NavBar from "../components/NavBar";
 import { getPartnerships } from "../api";
 import { toast } from "react-hot-toast";
-import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+// import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import chroma from "chroma-js";
 import { feature } from "topojson-client";
 
