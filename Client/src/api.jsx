@@ -66,3 +66,7 @@ export const deleteNotification = (id) => API.delete(`/notifications/${id}`);
 export const getNotificationSettings = () => API.get("/notifications/settings");
 export const updateNotificationSettings = (preferences) =>
   API.patch("/notifications/settings", { preferences });
+
+// --- USER ACTIVITY LOGS (using notifications as activity logs) ---
+export const getUserActivityLogs = (params) =>
+  API.get("/notifications", { params });

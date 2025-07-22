@@ -9,9 +9,12 @@ import {
 } from "@heroicons/react/24/outline";
 import NavBar from "../components/NavBar";
 import { useUser } from "../context/UserContext";
+import { updateUser } from "../api";
+import toast from "react-hot-toast";
+import { getUserActivityLogs } from "../api";
 
 const Profile = () => {
-  const { user: contextUser, logout } = useUser();
+  const { user: contextUser, logout, setContextUser } = useUser();
   const navigate = useNavigate();
 
   const [user, setUser] = useState({
@@ -23,17 +26,36 @@ const Profile = () => {
     profileImage: null,
   });
 
+  // Modal state
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    firstName: contextUser?.firstName || "",
+    lastName: contextUser?.lastName || "",
+    email: contextUser?.email || "",
+  });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState("");
+
+  // Activity log modal state
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [activityLogs, setActivityLogs] = useState([]);
+  const [activityLoading, setActivityLoading] = useState(false);
+  const [activityError, setActivityError] = useState("");
+
   useEffect(() => {
     if (contextUser) {
       setUser({
-        name: `${contextUser.firstName || ""} ${
-          contextUser.lastName || ""
-        }`.trim(),
+        name: `${contextUser.firstName || ""} ${contextUser.lastName || ""}`.trim(),
         email: contextUser.email || "",
         role: contextUser.role || "User",
         department: contextUser.campusId ? "Department" : "Partnership Office",
         joinDate: new Date().toISOString(),
         profileImage: null,
+      });
+      setEditForm({
+        firstName: contextUser.firstName || "",
+        lastName: contextUser.lastName || "",
+        email: contextUser.email || "",
       });
     }
   }, [contextUser]);
@@ -82,6 +104,54 @@ const Profile = () => {
     });
   };
 
+  // Edit Profile handlers
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm((prev) => ({ ...prev, [name]: value }));
+  };
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    setEditError("");
+    try {
+      // Only allow update if contextUser exists
+      if (!contextUser?._id) throw new Error("User not found");
+      const payload = {
+        firstName: editForm.firstName,
+        lastName: editForm.lastName,
+        email: editForm.email,
+      };
+      const res = await updateUser(contextUser._id, payload);
+      // Update context and localStorage
+      const updatedUser = { ...contextUser, ...payload };
+      setContextUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setIsEditOpen(false);
+      toast.success("Profile updated successfully!");
+    } catch (err) {
+      setEditError(
+        err?.response?.data?.message || err.message || "Failed to update profile."
+      );
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Fetch all activity logs
+  const handleViewAllActivity = async () => {
+    setIsActivityModalOpen(true);
+    setActivityLoading(true);
+    setActivityError("");
+    try {
+      const res = await getUserActivityLogs({ userId: contextUser?._id, limit: 100 });
+      setActivityLogs(res.data.notifications || []);
+    } catch (err) {
+      setActivityError("Failed to fetch activity logs.");
+    } finally {
+      setActivityLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -90,6 +160,114 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
       <NavBar />
+      {/* Edit Profile Modal */}
+      {isEditOpen && (
+        <>
+          <div className="fixed inset-0 z-40 backdrop-blur-sm bg-black/10 transition-all"></div>
+          <div className="absolute left-0 right-0 mx-auto z-50 flex justify-center items-start mt-16 pointer-events-none">
+            <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md relative pointer-events-auto border border-gray-200">
+              <button
+                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                onClick={() => setIsEditOpen(false)}
+              >
+                &times;
+              </button>
+              <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
+              <form onSubmit={handleEditSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={editForm.firstName}
+                    onChange={handleEditChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={editForm.lastName}
+                    onChange={handleEditChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={editForm.email}
+                    onChange={handleEditChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                {editError && <div className="text-red-500 text-sm">{editError}</div>}
+                <button
+                  type="submit"
+                  className="w-full bg-[#004165] text-white py-2 rounded-md hover:bg-[#00334e] transition-colors"
+                  disabled={editLoading}
+                >
+                  {editLoading ? "Saving..." : "Save Changes"}
+                </button>
+              </form>
+            </div>
+          </div>
+        </>
+      )}
+      {/* Activity Log Modal */}
+      {isActivityModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+          <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-2xl relative">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+              onClick={() => setIsActivityModalOpen(false)}
+            >
+              &times;
+            </button>
+            <h2 className="text-xl font-bold mb-4">All Activity Logs</h2>
+            {activityLoading ? (
+              <div className="py-8 text-center text-gray-500">Loading...</div>
+            ) : activityError ? (
+              <div className="py-8 text-center text-red-500">{activityError}</div>
+            ) : activityLogs.length === 0 ? (
+              <div className="py-8 text-center text-gray-500">No activity found.</div>
+            ) : (
+              <div className="max-h-96 overflow-y-auto divide-y divide-gray-200">
+                {activityLogs.map((log) => (
+                  <div key={log._id || log.id} className="p-4 hover:bg-gray-50">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 pt-0.5">
+                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                          <ClockIcon className="h-5 w-5" />
+                        </div>
+                      </div>
+                      <div className="ml-3 flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-gray-900">
+                            {log.title || log.action || "Activity"}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {formatDate(log.timestamp)}
+                          </p>
+                        </div>
+                        <p className="mt-1 text-sm text-gray-600">
+                          {log.message || log.details || "-"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <div className="p-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-6">
@@ -147,7 +325,10 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="mt-6 space-y-3">
-                    <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button
+                      className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      onClick={() => setIsEditOpen(true)}
+                    >
                       <PencilIcon className="h-4 w-4 mr-2" />
                       Edit Profile
                     </button>
@@ -209,7 +390,10 @@ const Profile = () => {
                 </div>
                 {auditLogs.length >= 5 && (
                   <div className="px-6 py-4 border-t border-gray-200 text-center">
-                    <button className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
+                    <button
+                      className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
+                      onClick={handleViewAllActivity}
+                    >
                       View all activity
                     </button>
                   </div>
