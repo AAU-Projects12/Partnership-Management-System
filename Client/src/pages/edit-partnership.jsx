@@ -696,6 +696,7 @@ function EditPartnership() {
                   <option value="Active">Active</option>
                   <option value="Rejected">Rejected</option>
                   <option value="Pending">Pending</option>
+                  <option value="Expired">Expired</option>
                 </select>
                 {errors.status && (
                   <p className="text-red-500 text-xs mt-1">{errors.status}</p>

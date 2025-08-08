@@ -63,7 +63,7 @@ export const createPartnership = async (req, res) => {
     }
 
     // Validate status if provided
-    if (status && !["Active", "Rejected", "Pending"].includes(status)) {
+    if (status && !["Active", "Rejected", "Pending", "Expired"].includes(status)) {
       return res.status(400).json({
         error: "Invalid status. Must be one of: Active, Rejected, or Pending",
       });

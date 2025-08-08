@@ -158,248 +158,171 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
       <NavBar />
-      {/* Edit Profile Modal */}
+
+      {/* --- Edit Profile Modal --- */}
       {isEditOpen && (
         <>
-          <div className="fixed inset-0 z-40 backdrop-blur-sm bg-black/10 transition-all"></div>
-          <div className="absolute left-0 right-0 mx-auto z-50 flex justify-center items-start mt-16 pointer-events-none">
-            <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md relative pointer-events-auto border border-gray-200">
+          {/* Backdrop with stronger blur and darker overlay */}
+          <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300"></div>
+
+          {/* Modal Container */}
+          <div className="fixed inset-0 z-50 flex justify-center items-center p-4 sm:p-6 lg:p-8">
+            <div
+              className="bg-white rounded-xl shadow-xl border border-gray-100 p-6 w-full max-w-md relative animate-fade-in-up"
+              // Adding a subtle border color from our theme for a touch of elegance
+              style={{ borderColor: "rgb(100, 45, 15, 0.1)" }}
+            >
               <button
-                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl"
                 onClick={() => setIsEditOpen(false)}
               >
                 &times;
               </button>
-              <h2 className="text-xl font-bold mb-4">Edit Profile</h2>
-              <form onSubmit={handleEditSubmit} className="space-y-4">
+              <h2 className="text-2xl font-bold mb-6 text-center">Edit Profile</h2>
+              <form onSubmit={handleEditSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">First Name</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">First Name</label>
                   <input
                     type="text"
                     name="firstName"
                     value={editForm.firstName}
                     onChange={handleEditChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-[#014166] focus:border-[#014166] transition-all duration-200"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Last Name</label>
                   <input
                     type="text"
                     name="lastName"
                     value={editForm.lastName}
                     onChange={handleEditChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-[#014166] focus:border-[#014166] transition-all duration-200"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
                   <input
                     type="email"
                     name="email"
                     value={editForm.email}
                     onChange={handleEditChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-[#014166] focus:border-[#014166] transition-all duration-200"
                     required
                   />
                 </div>
-                {editError && <div className="text-red-500 text-sm">{editError}</div>}
+                {editError && <div className="text-red-500 text-sm mt-2">{editError}</div>}
                 <button
                   type="submit"
-                  className="w-full bg-[#004165] text-white py-2 rounded-md hover:bg-[#00334e] transition-colors"
+                  className="w-full bg-[#014166] text-white py-2.5 rounded-lg font-semibold hover:bg-[rgb(0,51,78)] transition-colors duration-200 flex items-center justify-center gap-2"
                   disabled={editLoading}
                 >
-                  {editLoading ? "Saving..." : "Save Changes"}
+                  {editLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white/80"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </button>
               </form>
             </div>
           </div>
         </>
       )}
-      {/* Activity Log Modal */}
-      {isActivityModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-          <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-2xl relative">
-            <button
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-              onClick={() => setIsActivityModalOpen(false)}
-            >
-              &times;
-            </button>
-            <h2 className="text-xl font-bold mb-4">All Activity Logs</h2>
-            {activityLoading ? (
-              <div className="py-8 text-center text-gray-500">Loading...</div>
-            ) : activityError ? (
-              <div className="py-8 text-center text-red-500">{activityError}</div>
-            ) : activityLogs.length === 0 ? (
-              <div className="py-8 text-center text-gray-500">No activity found.</div>
-            ) : (
-              <div className="max-h-96 overflow-y-auto divide-y divide-gray-200">
-                {activityLogs.map((log) => (
-                  <div key={log._id || log.id} className="p-4 hover:bg-gray-50">
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0 pt-0.5">
-                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                          <ClockIcon className="h-5 w-5" />
-                        </div>
-                      </div>
-                      <div className="ml-3 flex-1">
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium text-gray-900">
-                            {log.title || log.action || "Activity"}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {formatDate(log.timestamp)}
-                          </p>
-                        </div>
-                        <p className="mt-1 text-sm text-gray-600">
-                          {log.message || log.details || "-"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+
+
+      {/* --- Main Profile Section --- */}
       <div className="p-6">
         <div className="max-w-6xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Profile Info */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="p-6">
-                  <div className="flex flex-col items-center">
-                    <div className="h-24 w-24 bg-[#004165] rounded-full flex items-center justify-center text-white text-3xl font-bold mb-4">
-                      {user.profileImage ? (
-                        <img
-                          src={user.profileImage}
-                          alt={user.name}
-                          className="h-24 w-24 rounded-full"
-                        />
-                      ) : (
-                        user.name.charAt(0)
-                      )}
-                    </div>
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      {user.name}
-                    </h2>
-                    <p className="text-sm text-gray-500">{user.role}</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {user.department}
-                    </p>
-                  </div>
-                  <div className="mt-6 space-y-4">
-                    <div className="flex items-center">
-                      <div className="w-8 flex-shrink-0 text-gray-500">
-                        <UserIcon className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Email</p>
-                        <p className="text-sm font-medium">{user.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-8 flex-shrink-0 text-gray-500">
-                        <ClockIcon className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Joined</p>
-                        <p className="text-sm font-medium">
-                          {new Date(user.joinDate).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-6 space-y-3">
-                    <button
-                      className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      onClick={() => setIsEditOpen(true)}
-                    >
-                      <PencilIcon className="h-4 w-4 mr-2" />
-                      Edit Profile
-                    </button>
-                    <button
-                      onClick={() => navigate("/reset-password")}
-                      className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      <KeyIcon className="h-4 w-4 mr-2" />
-                      Change Password
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      <ArrowRightEndOnRectangleIcon className="w-5 h-5 mr-2" />
-                      <span>Logout</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-extrabold text-[#014166] mx-auto">My Profile</h1>
 
-            {/* Activity Logs */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    Activity Log
+          </div>
+          <div className="flex justify-center items-start w-full">
+            {/* Profile Info Card */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 w-full max-w-md">
+              <div className="p-8">
+                <div className="flex flex-col items-center mb-6">
+                  <div
+                    className="h-28 w-28 rounded-full flex items-center justify-center text-white text-4xl font-bold mb-4 border-4 border-white shadow-md"
+                    style={{ backgroundColor: "#014166" }} // Using the new theme color
+                  >
+                    {user.profileImage ? (
+                      <img
+                        src={user.profileImage}
+                        alt={user.name}
+                        className="h-full w-full rounded-full object-cover"
+                      />
+                    ) : (
+                      user.name.charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                    {user.name}
                   </h2>
-                  <p className="text-sm text-gray-500">
-                    Recent actions performed by you in the system
+                  <p className="text-base text-gray-600">{user.role}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {user.department}
                   </p>
                 </div>
-                <div className="divide-y divide-gray-200">
-                  {auditLogs.map((log) => (
-                    <div key={log.id} className="p-4 hover:bg-gray-50">
-                      <div className="flex items-start">
-                        <div className="flex-shrink-0 pt-0.5">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                            <ClockIcon className="h-5 w-5" />
-                          </div>
-                        </div>
-                        <div className="ml-3 flex-1">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-gray-900">
-                              {log.action}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {formatDate(log.timestamp)}
-                            </p>
-                          </div>
-                          <p className="mt-1 text-sm text-gray-600">
-                            {log.details}
-                          </p>
-                        </div>
-                      </div>
+                <div className="mt-6 space-y-4 border-t border-gray-200 pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 text-[#014166]">
+                      <UserIcon className="h-5 w-5" />
                     </div>
-                  ))}
-                </div>
-                {auditLogs.length >= 5 && (
-                  <div className="px-6 py-4 border-t border-gray-200 text-center">
-                    <button
-                      className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
-                      onClick={handleViewAllActivity}
-                    >
-                      View all activity
-                    </button>
+                    <div>
+                      <p className="text-sm text-gray-500">Email</p>
+                      <p className="text-base font-medium text-gray-800">{user.email}</p>
+                    </div>
                   </div>
-                )}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 text-[#014166]">
+                      <ClockIcon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Joined</p>
+                      <p className="text-base font-medium text-gray-800">
+                        {new Date(user.joinDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-8 space-y-3">
+                  <button
+                    className="w-full flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#014166] transition-colors duration-200"
+                    onClick={() => setIsEditOpen(true)}
+                  >
+                    <PencilIcon className="h-5 w-5 mr-2 text-[#014166]" />
+                    Edit Profile
+                  </button>
+                  <button
+                    onClick={() => navigate("/reset-password")}
+                    className="w-full flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#014166] transition-colors duration-200"
+                  >
+                    <KeyIcon className="h-5 w-5 mr-2 text-[#014166]" />
+                    Change Password
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#014166] transition-colors duration-200"
+                  >
+                    <ArrowRightEndOnRectangleIcon className="w-5 h-5 mr-2 text-[#014166]" />
+                    <span>Logout</span>
+                  </button>
+                </div>
               </div>
             </div>
+            {/* You would typically have other profile content here if it exists */}
           </div>
         </div>
       </div>

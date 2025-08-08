@@ -61,7 +61,12 @@ function AddPartnership() {
     const draft = localStorage.getItem(DRAFT_KEY);
     if (draft) {
       try {
-        return JSON.parse(draft);
+        const parsed = JSON.parse(draft);
+        // Ensure fundingAmount is a string for the new logic
+        if (parsed.fundingAmount) {
+          parsed.fundingAmount = String(parsed.fundingAmount);
+        }
+        return parsed;
       } catch { }
     }
     return initialFormData;
@@ -87,11 +92,6 @@ function AddPartnership() {
       "region",
       "country",
       "college",
-      "status",
-      "description",
-      "contactPhone",
-      "contactTitle",
-      "contactAddress",
       "aauContactName",
       "aauContactEmail",
       "aauContactPhone",
@@ -112,20 +112,72 @@ function AddPartnership() {
       errorMsg = "Invalid email format.";
     } else if (name === "fundingAmount" && value && isNaN(Number(value))) {
       errorMsg = "Funding amount must be a number.";
+    } else if (name === "fundingAmount" && value && Number(value) < 0) {
+      errorMsg = "Funding amount cannot be negative.";
     }
+
 
     setErrors((prev) => ({ ...prev, [name]: errorMsg }));
     return !errorMsg;
   };
 
+
+  const formatNumber = (numStr) => {
+    if (numStr === null || numStr === undefined || numStr === "") return "";
+    const [integerPart, decimalPart] = String(numStr).split(".");
+    const formattedIntegerPart = integerPart.replace(
+      /\B(?=(\d{3})+(?!\d))/g,
+      ","
+    );
+    let result = formattedIntegerPart;
+    if (decimalPart !== undefined) {
+      result += `.${decimalPart}`;
+    }
+    return result;
+  };
+
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
 
-    validateField(name, value);
+
+    if (name === "fundingAmount") {
+      const cleanValue = value.replace(/[^0-9.]/g, ''); 
+
+      if ((cleanValue.match(/\./g) || []).length > 1) {
+        return;
+      }
+
+      setFormData((prev) => ({ ...prev, [name]: cleanValue }));
+      validateField(name, cleanValue);
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+      validateField(name, value);
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    const optionalFields = [
+      "status",
+      "contactPerson",
+      "contactPhone",
+      "contactTitle",
+      "contactAddress", // Now optional
+      "description",
+      "scope",
+      "reportingRequirements",
+    ];
+
+    if (optionalFields.includes(name) && !value.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: "N/A",
+      }));
+    }
   };
 
   const handleArrayChange = (e, index, fieldName) => {
@@ -136,6 +188,18 @@ function AddPartnership() {
       ...prev,
       [fieldName]: updatedArray,
     }));
+  };
+
+  const handleArrayBlur = (e, index, fieldName) => {
+    const { value } = e.target;
+    if (!value.trim() && fieldName === "deliverables") {
+      const updatedArray = [...formData[fieldName]];
+      updatedArray[index] = "N/A";
+      setFormData((prev) => ({
+        ...prev,
+        [fieldName]: updatedArray,
+      }));
+    }
   };
 
   const addArrayItem = (fieldName) => {
@@ -159,7 +223,6 @@ function AddPartnership() {
     setErrors({});
 
     let formIsValid = true;
-    // FIX: Consolidated validation. This single loop now handles all required fields, including description.
     for (const [key, value] of Object.entries(formData)) {
       if (!Array.isArray(value)) {
         if (!validateField(key, value)) {
@@ -174,9 +237,12 @@ function AddPartnership() {
       return;
     }
 
-    // Additional specific format validations after checking for presence
     const e164Regex = /^\+\d{10,15}$/;
-    if (formData.contactPhone && !e164Regex.test(formData.contactPhone)) {
+    if (
+      formData.contactPhone &&
+      formData.contactPhone !== "N/A" &&
+      !e164Regex.test(formData.contactPhone)
+    ) {
       setErrors((prev) => ({
         ...prev,
         contactPhone: "Phone must be in E.164 format (e.g. +251911234567)",
@@ -196,8 +262,9 @@ function AddPartnership() {
       setIsSubmitting(false);
       return;
     }
+    const getSanitizedValue = (value) =>
+      String(value).trim() === "" ? "N/A" : value;
 
-    // Payload construction remains the same
     const payload = {
       partnerInstitution: {
         name: formData.name,
@@ -214,13 +281,13 @@ function AddPartnership() {
         : undefined,
       potentialStartDate: formData.signedDate,
       durationOfPartnership: formData.endDate,
-      fundingAmount: Number(formData.fundingAmount),
+      fundingAmount: Number(formData.fundingAmount) || 0, // Ensure it's a number
       partnerContactPerson: {
-        name: formData.contactPerson,
-        title: formData.contactTitle,
-        institutionalEmail: formData.contactEmail,
-        phoneNumber: formData.contactPhone,
-        address: formData.contactAddress,
+        name: getSanitizedValue(formData.contactPerson),
+        title: getSanitizedValue(formData.contactTitle),
+        institutionalEmail: formData.contactEmail || "N/A",
+        phoneNumber: getSanitizedValue(formData.contactPhone),
+        address: getSanitizedValue(formData.contactAddress), // Now sanitized
       },
       aauContactPerson: {
         name: formData.aauContactName,
@@ -229,23 +296,22 @@ function AddPartnership() {
         institutionalEmail: formData.aauContactEmail,
         phoneNumber: formData.aauContactPhone,
       },
-      description: formData.description.trim(),
-      status: formData.status,
-      reportingRequirements: formData.reportingRequirements?.trim() || "",
-      scope: formData.scope?.trim() || "",
-      deliverables: formData.deliverables.filter(d => d.trim() !== ""),
+      description: getSanitizedValue(formData.description),
+      status: getSanitizedValue(formData.status),
+      reportingRequirements: getSanitizedValue(formData.reportingRequirements),
+      scope: getSanitizedValue(formData.scope),
+      deliverables: formData.deliverables
+        .map((d) => getSanitizedValue(d))
+        .filter((d) => d !== ""),
       ...(formData.mouFileUrl && { mouFileUrl: formData.mouFileUrl.trim() }),
     };
-
-    // This part for removing empty optional fields is fine, but make sure your `requiredFields` list is accurate.
-    // We will keep it as is, assuming the logic matches backend expectations.
 
     try {
       await createPartnership(payload);
       toast.success("Partnership created successfully!");
       navigate("/partnership");
       setFormData(initialFormData);
-      localStorage.removeItem(DRAFT_KEY); // Clear draft on success
+      localStorage.removeItem(DRAFT_KEY);
     } catch (error) {
       console.error("Failed to create partnership:", error);
       const errorMsg =
@@ -267,6 +333,9 @@ function AddPartnership() {
     "INGO",
     "Government",
     "Private",
+    "Academic and Research",
+    "Government and Research",
+    "NGO and Research",
     "Other",
   ];
   const durationOptions = [
@@ -275,6 +344,7 @@ function AddPartnership() {
     "3 years",
     "4 years",
     "5 years",
+    "Above 5 years",
   ];
   const collegeOptions = [
     "All Colleges",
@@ -312,10 +382,13 @@ function AddPartnership() {
     phone: 20,
     address: 200,
     department: 100,
-    description: 200,
+    description: 500,
     institution: 200,
     country: 100,
   };
+  const countryOptions = [
+    "Afghanistan", "Albania", "Algeria", "American Samoa", "Andorra", "Angola", "Anguilla", "Antarctica", "Antigua and Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Bouvet Island", "Brazil", "British Indian Ocean Territory", "Brunei Darussalam", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde", "Cayman Islands", "Central African Republic", "Chad", "Chile", "China", "Christmas Island", "Cocos (Keeling) Islands", "Colombia", "Comoros", "Congo", "Congo, The Democratic Republic of the", "Cook Islands", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Falkland Islands (Malvinas)", "Faroe Islands", "Fiji", "Finland", "France", "French Guiana", "French Polynesia", "French Southern Territories", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guadeloupe", "Guam", "Guatemala", "Guernsey", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Heard Island and McDonald Islands", "Holy See (Vatican City State)", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran, Islamic Republic of", "Iraq", "Ireland", "Isle of Man", "Israel", "Italy", "Jamaica", "Japan", "Jersey", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Korea, Democratic People's Republic of", "Korea, Republic of", "Kuwait", "Kyrgyzstan", "Lao People's Democratic Republic", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macao", "Macedonia, The Former Yugoslav Republic of", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Martinique", "Mauritania", "Mauritius", "Mayotte", "Mexico", "Micronesia, Federated States of", "Moldova, Republic of", "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Niue", "Norfolk Island", "Northern Mariana Islands", "Norway", "Oman", "Pakistan", "Palau", "Palestine, State of", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Pitcairn", "Poland", "Portugal", "Puerto Rico", "Qatar", "Réunion", "Romania", "Russian Federation", "Rwanda", "Saint Barthélemy", "Saint Helena, Ascension and Tristan da Cunha", "Saint Kitts and Nevis", "Saint Lucia", "Saint Martin (French part)", "Saint Pierre and Miquelon", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Sint Maarten (Dutch part)", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Georgia and the South Sandwich Islands", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Svalbard and Jan Mayen", "Swaziland", "Sweden", "Switzerland", "Syrian Arab Republic", "Taiwan, Province of China", "Tajikistan", "Tanzania, United Republic of", "Thailand", "Timor-Leste", "Togo", "Tokelau", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela", "Viet Nam", "Western Sahara", "Yemen", "Zambia", "Zimbabwe"
+  ];
 
   return (
     <div className="min-h-screen bg-gray-100 font-sans">
@@ -487,7 +560,7 @@ function AddPartnership() {
                 )}
               </div>
 
-              {/* Funding Amount */}
+              {/* UPDATED Funding Amount */}
               <div>
                 <label
                   htmlFor="fundingAmount"
@@ -500,20 +573,21 @@ function AddPartnership() {
                   </div>
                 </label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   id="fundingAmount"
                   name="fundingAmount"
-                  placeholder="e.g. 10000"
-                  value={formData.fundingAmount}
+                  placeholder="e.g. 10,000"
+                  value={formatNumber(formData.fundingAmount)}
                   onChange={handleChange}
                   className={`w-full p-2 border ${errors.fundingAmount ? "border-red-500" : "border-gray-300"
                     } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
-                  min="0"
-                  step="any"
                   required
                 />
                 {errors.fundingAmount && (
-                  <p className="text-red-500 text-xs mt-1">{errors.fundingAmount}</p>
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.fundingAmount}
+                  </p>
                 )}
               </div>
 
@@ -558,18 +632,35 @@ function AddPartnership() {
                     <span className="text-red-500">*</span>
                   </div>
                 </label>
-                <input
-                  type="text"
-                  id="country"
-                  name="country"
-                  placeholder="Partner Country"
-                  value={formData.country}
-                  onChange={handleChange}
-                  className={`w-full p-2 border ${errors.country ? "border-red-500" : "border-gray-300"
-                    } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
-                  maxLength={maxLengths.country}
-                  required
-                />
+                <div className="relative">
+                  <select
+                    id="country"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleChange}
+                    className={`w-full p-2 border ${errors.country ? "border-red-500" : "border-gray-300"
+                      } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
+                    required
+                  >
+                    <option value="" disabled>
+                      Select country
+                    </option>
+                    {countryOptions.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg
+                      className="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M5.516 7.548l4.484 4.484 4.484-4.484L16 9l-6 6-6-6z" />
+                    </svg>
+                  </div>
+                </div>
                 {errors.country && (
                   <p className="text-red-500 text-xs mt-1">{errors.country}</p>
                 )}
@@ -622,7 +713,7 @@ function AddPartnership() {
                 )}
               </div>
 
-              {/* Partnership Status Section */}
+              {/* Partner Institution Contact Details Section */}
               <div className="col-span-1 md:col-span-2">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 flex items-center gap-3">
                   <ActivitySquare size={28} className="text-blue-500" />
@@ -631,8 +722,8 @@ function AddPartnership() {
                       Partner Institution Contact Details
                     </h3>
                     <p className="text-sm text-blue-700">
-                      Please provide the main contact information for the
-                      partner institution.
+                      Provide the contact information for the partner
+                      institution.
                     </p>
                   </div>
                 </div>
@@ -647,26 +738,27 @@ function AddPartnership() {
                   <div className="flex items-center gap-2">
                     <ActivitySquare size={16} />
                     <span>Status</span>
-                    <span className="text-red-500">*</span>
                   </div>
                 </label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 >
                   <option value="">Select Status</option>
                   <option value="Active">Active</option>
                   <option value="Rejected">Rejected</option>
                   <option value="Pending">Pending</option>
+                  <option value="Expired">Expired</option>
                 </select>
                 {errors.status && (
                   <p className="text-red-500 text-xs mt-1">{errors.status}</p>
                 )}
               </div>
 
-              {/* Contact Person (Optional) */}
+              {/* Contact Person */}
               <div>
                 <label
                   htmlFor="contactPerson"
@@ -684,6 +776,7 @@ function AddPartnership() {
                   placeholder="e.g. Dr. Jane Doe"
                   value={formData.contactPerson}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   className={`w-full p-2 border ${errors.contactPerson ? "border-red-500" : "border-gray-300"
                     } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.name}
@@ -695,7 +788,7 @@ function AddPartnership() {
                 )}
               </div>
 
-              {/* Contact Email (Optional) */}
+              {/* Contact Email */}
               <div>
                 <label
                   htmlFor="contactEmail"
@@ -733,7 +826,6 @@ function AddPartnership() {
                   <div className="flex items-center gap-2">
                     <Phone size={16} />
                     <span>Partner Contact Phone</span>
-                    <span className="text-red-500">*</span>
                   </div>
                 </label>
                 <input
@@ -743,10 +835,10 @@ function AddPartnership() {
                   placeholder="+251911234567"
                   value={formData.contactPhone}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   className={`w-full p-2 border ${errors.contactPhone ? "border-red-500" : "border-gray-300"
                     } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.phone}
-                  required
                 />
                 {errors.contactPhone && (
                   <p className="text-red-500 text-xs mt-1">
@@ -764,7 +856,6 @@ function AddPartnership() {
                   <div className="flex items-center gap-2">
                     <User size={16} />
                     <span>Partner Contact Person Title</span>
-                    <span className="text-red-500">*</span>
                   </div>
                 </label>
                 <input
@@ -774,10 +865,10 @@ function AddPartnership() {
                   placeholder="e.g., Project Manager"
                   value={formData.contactTitle}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   className={`w-full p-2 border ${errors.contactTitle ? "border-red-500" : "border-gray-300"
                     } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.title}
-                  required
                 />
                 {errors.contactTitle && (
                   <p className="text-red-500 text-xs mt-1">
@@ -795,7 +886,6 @@ function AddPartnership() {
                   <div className="flex items-center gap-2">
                     <MapPin size={16} />
                     <span>Partner Contact Person Address</span>
-                    <span className="text-red-500">*</span>
                   </div>
                 </label>
                 <input
@@ -805,10 +895,10 @@ function AddPartnership() {
                   placeholder="e.g., 123 Innovation Dr, Addis Ababa"
                   value={formData.contactAddress}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   className={`w-full p-2 border ${errors.contactAddress ? "border-red-500" : "border-gray-300"
                     } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.address}
-                  required
                 />
                 {errors.contactAddress && (
                   <p className="text-red-500 text-xs mt-1">
@@ -817,22 +907,21 @@ function AddPartnership() {
                 )}
               </div>
 
-              {/* AAU Contact Person Section */}
+              {/* AAU Contact Details Section */}
               <div className="col-span-1 md:col-span-2">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 flex items-center gap-3">
-                  <User size={28} className="text-blue-500" />
+                  <GraduationCap size={28} className="text-blue-500" />
                   <div>
                     <h3 className="text-lg font-semibold text-blue-800">
-                      AAU Contact Person
+                      AAU Contact Details
                     </h3>
                     <p className="text-sm text-blue-700">
-                      Please provide the contact information for the AAU representative involved in this partnership.
+                      Please provide the main AAU contact information for this
+                      partnership.
                     </p>
                   </div>
                 </div>
               </div>
-
-              {/* AAU Contact Name */}
               <div>
                 <label
                   htmlFor="aauContactName"
@@ -863,7 +952,6 @@ function AddPartnership() {
                 )}
               </div>
 
-              {/* AAU Contact Email */}
               <div>
                 <label
                   htmlFor="aauContactEmail"
@@ -883,8 +971,8 @@ function AddPartnership() {
                   value={formData.aauContactEmail}
                   onChange={handleChange}
                   className={`w-full p-2 border ${errors.aauContactEmail
-                      ? "border-red-500"
-                      : "border-gray-300"
+                    ? "border-red-500"
+                    : "border-gray-300"
                     } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.email}
                   required
@@ -896,7 +984,6 @@ function AddPartnership() {
                 )}
               </div>
 
-              {/* AAU Contact Phone */}
               <div>
                 <label
                   htmlFor="aauContactPhone"
@@ -916,8 +1003,8 @@ function AddPartnership() {
                   value={formData.aauContactPhone}
                   onChange={handleChange}
                   className={`w-full p-2 border ${errors.aauContactPhone
-                      ? "border-red-500"
-                      : "border-gray-300"
+                    ? "border-red-500"
+                    : "border-gray-300"
                     } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.phone}
                   required
@@ -929,7 +1016,6 @@ function AddPartnership() {
                 )}
               </div>
 
-              {/* AAU Contact College */}
               <div>
                 <label
                   htmlFor="aauContactCollege"
@@ -948,8 +1034,8 @@ function AddPartnership() {
                     value={formData.aauContactCollege}
                     onChange={handleChange}
                     className={`w-full p-2 border ${errors.aauContactCollege
-                        ? "border-red-500"
-                        : "border-gray-300"
+                      ? "border-red-500"
+                      : "border-gray-300"
                       } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-colors`}
                     required
                   >
@@ -979,7 +1065,6 @@ function AddPartnership() {
                 )}
               </div>
 
-              {/* AAU Contact School/Department/Unit */}
               <div>
                 <label
                   htmlFor="aauContactSchoolDepartmentUnit"
@@ -999,8 +1084,8 @@ function AddPartnership() {
                   value={formData.aauContactSchoolDepartmentUnit}
                   onChange={handleChange}
                   className={`w-full p-2 border ${errors.aauContactSchoolDepartmentUnit
-                      ? "border-red-500"
-                      : "border-gray-300"
+                    ? "border-red-500"
+                    : "border-gray-300"
                     } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
                   maxLength={maxLengths.department}
                   required
@@ -1022,7 +1107,6 @@ function AddPartnership() {
                 <div className="flex items-center gap-2">
                   <FileText size={16} />
                   <span>Description</span>
-                  <span className="text-red-500">*</span>
                 </div>
               </label>
               <textarea
@@ -1031,9 +1115,9 @@ function AddPartnership() {
                 rows="4"
                 placeholder="Detailed description of the partnership..."
                 value={formData.description}
-                required
-                maxLength={500}
+                maxLength={maxLengths.description}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 className={`w-full p-2 border ${errors.description ? "border-red-500" : "border-gray-300"
                   } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
               ></textarea>
@@ -1053,35 +1137,36 @@ function AddPartnership() {
                   <span className="text-red-500">*</span>
                 </div>
               </label>
-              <div className="flex flex-wrap gap-2"></div>
-              {collaborationOptions.map((option) => (
-                <label
-                  key={option}
-                  className={`flex items-center px-3 py-1 rounded-full border cursor-pointer transition-colors ${formData.objectives.includes(option)
+              <div className="flex flex-wrap gap-2">
+                {collaborationOptions.map((option) => (
+                  <label
+                    key={option}
+                    className={`flex items-center px-3 py-1 rounded-full border cursor-pointer transition-colors ${formData.objectives.includes(option)
                       ? "bg-blue-100 border-blue-500 text-blue-700"
                       : "bg-white border-gray-300 text-gray-700"
-                    }`}
-                >
-                  <input
-                    type="checkbox"
-                    name="objectives"
-                    value={option}
-                    checked={formData.objectives.includes(option)}
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      setFormData((prev) => ({
-                        ...prev,
-                        objectives: checked
-                          ? [...prev.objectives, option]
-                          : prev.objectives.filter((obj) => obj !== option),
-                      }));
-                      setErrors((prev) => ({ ...prev, objectives: "" }));
-                    }}
-                    className="mr-2"
-                  />
-                  {option}
-                </label>
-              ))}
+                      }`}
+                  >
+                    <input
+                      type="checkbox"
+                      name="objectives"
+                      value={option}
+                      checked={formData.objectives.includes(option)}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setFormData((prev) => ({
+                          ...prev,
+                          objectives: checked
+                            ? [...prev.objectives, option]
+                            : prev.objectives.filter((obj) => obj !== option),
+                        }));
+                        setErrors((prev) => ({ ...prev, objectives: "" }));
+                      }}
+                      className="mr-2"
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
               {/* Show input for 'Other' if checked */}
               {formData.objectives.includes("Other") && (
                 <div className="mt-3">
@@ -1096,12 +1181,12 @@ function AddPartnership() {
                   />
                 </div>
               )}
+              {errors.objectives && (
+                <p className="text-red-500 text-xs mt-1">{errors.objectives}</p>
+              )}
             </div>
-            {errors.objectives && (
-              <p className="text-red-500 text-xs mt-1">{errors.objectives}</p>
-            )}
 
-            {/* Scope (Optional) */}
+            {/* Scope */}
             <div className="mb-6">
               <label
                 htmlFor="scope"
@@ -1109,7 +1194,7 @@ function AddPartnership() {
               >
                 <div className="flex items-center gap-2">
                   <Target size={16} />
-                  <span>Scope (Optional)</span>
+                  <span>Scope</span>
                 </div>
               </label>
               <textarea
@@ -1119,6 +1204,7 @@ function AddPartnership() {
                 placeholder="Define the scope of the partnership..."
                 value={formData.scope}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 className={`w-full p-2 border ${errors.scope ? "border-red-500" : "border-gray-300"
                   } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
               ></textarea>
@@ -1127,7 +1213,7 @@ function AddPartnership() {
               )}
             </div>
 
-            {/* Reporting Requirements (Optional) */}
+            {/* Reporting Requirements */}
             <div className="mb-6">
               <label
                 htmlFor="reportingRequirements"
@@ -1135,7 +1221,7 @@ function AddPartnership() {
               >
                 <div className="flex items-center gap-2">
                   <FileSignature size={16} />
-                  <span>Reporting Requirements (Optional)</span>
+                  <span>Reporting Requirements</span>
                 </div>
               </label>
               <textarea
@@ -1145,9 +1231,10 @@ function AddPartnership() {
                 placeholder="Detail any reporting requirements..."
                 value={formData.reportingRequirements}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 className={`w-full p-2 border ${errors.reportingRequirements
-                    ? "border-red-500"
-                    : "border-gray-300"
+                  ? "border-red-500"
+                  : "border-gray-300"
                   } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors`}
               ></textarea>
               {errors.reportingRequirements && (
@@ -1157,12 +1244,12 @@ function AddPartnership() {
               )}
             </div>
 
-            {/* Deliverables (Optional) */}
+            {/* Deliverables */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <div className="flex items-center gap-2">
                   <ListChecks size={16} />
-                  <span>Deliverables (Optional)</span>
+                  <span>Deliverables</span>
                 </div>
               </label>
               {formData.deliverables.map((deliverable, index) => (
@@ -1174,6 +1261,7 @@ function AddPartnership() {
                     onChange={(e) =>
                       handleArrayChange(e, index, "deliverables")
                     }
+                    onBlur={(e) => handleArrayBlur(e, index, "deliverables")}
                     className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                   />
                   {formData.deliverables.length > 1 && (

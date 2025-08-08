@@ -13,6 +13,7 @@ import NavBar from "../../../components/NavBar";
 import StatusBadge from "../components/StatusBadge";
 import { getPartnershipById } from "../../../api.jsx";
 
+
 const PartnershipDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -74,6 +75,12 @@ const PartnershipDetail = () => {
     ? partner.potentialAreasOfCollaboration
     : [];
 
+
+  const formatNumber = (num) => {
+    if (num == null) return "";
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <NavBar />
@@ -95,7 +102,8 @@ const PartnershipDetail = () => {
                   {partner.status?.toLowerCase() === 'active' && '🟢'}
                   {partner.status?.toLowerCase() === 'pending' && '🟡'}
                   {partner.status?.toLowerCase() === 'rejected' && '🔴'}
-                  {!['active','pending','rejected'].includes(partner.status?.toLowerCase()) && '⚪'}
+                  {partner.status?.toLowerCase() === 'expired' && '🔴'}
+                  {!['active', 'pending', 'rejected'].includes(partner.status?.toLowerCase()) && '⚪'}
                 </span>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">
@@ -155,8 +163,8 @@ const PartnershipDetail = () => {
                       <p className="font-medium">
                         {partner.potentialStartDate
                           ? new Date(
-                              partner.potentialStartDate
-                            ).toLocaleDateString()
+                            partner.potentialStartDate
+                          ).toLocaleDateString()
                           : "-"}
                       </p>
                     </div>
@@ -187,7 +195,7 @@ const PartnershipDetail = () => {
                     <div>
                       <p className="text-sm text-gray-500">Funding Amount</p>
                       <p className="font-medium">
-                        {partner.fundingAmount !== undefined ? partner.fundingAmount : "-"}
+                        {partner.fundingAmount !== undefined ? formatNumber(partner.fundingAmount) : "-"}
                       </p>
                     </div>
                   </div>

@@ -151,7 +151,7 @@ const partnershipSchema = new mongoose.Schema(
     durationOfPartnership: {
       type: String,
       required: [true, "Duration of partnership is required"],
-      enum: ["1 year", "2 years", "3 years", "4 years", "5 years"],
+      enum: ["1 year", "2 years", "3 years", "4 years", "5 years", "Above 5 years"],
     },
     deliverables: {
       type: [String],
@@ -185,7 +185,7 @@ const partnershipSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Pending", "Active", "Rejected"],
+      enum: ["Pending", "Active", "Rejected","Expired"],
       default: "Pending",
     },
     campusId: {

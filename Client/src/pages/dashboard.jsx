@@ -16,9 +16,10 @@ import {
 import NavBar from "../components/NavBar";
 import { getPartnerships } from "../api";
 import { toast } from "react-hot-toast";
-// import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import chroma from "chroma-js";
 import { feature } from "topojson-client";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 // Register Chart.js components
 ChartJS.register(
@@ -314,18 +315,219 @@ const Dashboard = () => {
       if (!name) return "Unknown";
       const normalized = name.trim().toLowerCase();
       const countryMap = {
-        "united states": "United States",
-        usa: "United States",
-        "united states of america": "United States",
+        // --- North America ---
+        "united states": "United States of America",
+        "usa": "United States of America",
+        "united states of america": "United States of America",
+
+        "canada": "Canada",
+
+        "mexico": "Mexico",
+
+        "cuba": "Cuba",
+        "haiti": "Haiti",
+        "dominican republic": "Dominican Republic",
+        "jamaica": "Jamaica",
+        "bahamas": "The Bahamas",
+        "costa rica": "Costa Rica",
+        "panama": "Panama",
+        "guatemala": "Guatemala",
+        "honduras": "Honduras",
+        "nicaragua": "Nicaragua",
+        "el salvador": "El Salvador",
+        "belize": "Belize",
+
+        // --- South America ---
+        "brazil": "Brazil",
+        "argentina": "Argentina",
+        "colombia": "Colombia",
+        "peru": "Peru",
+        "chile": "Chile",
+        "ecuador": "Ecuador",
+        "venezuela": "Venezuela",
+        "bolivia": "Bolivia",
+        "paraguay": "Paraguay",
+        "uruguay": "Uruguay",
+        "guyana": "Guyana",
+        "suriname": "Suriname",
+        "french guiana": "France", // French Guiana is an overseas department of France
+
+        // --- Europe ---
         "united kingdom": "United Kingdom",
-        uk: "United Kingdom",
+        "uk": "United Kingdom",
         "great britain": "United Kingdom",
+
+        "germany": "Germany",
+        "france": "France",
+        "italy": "Italy",
+        "spain": "Spain",
+        "portugal": "Portugal",
+        "ireland": "Ireland",
+        "netherlands": "Netherlands",
+        "belgium": "Belgium",
+        "switzerland": "Switzerland",
+        "austria": "Austria",
+        "sweden": "Sweden",
+        "norway": "Norway",
+        "finland": "Finland",
+        "denmark": "Denmark",
+        "greece": "Greece",
+        "poland": "Poland",
+        "czech republic": "Czech Republic",
+        "slovakia": "Slovakia",
+        "hungary": "Hungary",
+        "romania": "Romania",
+        "bulgaria": "Bulgaria",
+        "serbia": "Serbia",
+        "croatia": "Croatia",
+        "bosnia and herzegovina": "Bosnia and Herzegovina",
+        "slovenia": "Slovenia",
+        "montenegro": "Montenegro",
+        "albania": "Albania",
+        "north macedonia": "North Macedonia",
+        "kosovo": "Kosovo", // World Atlas includes Kosovo
+        "estonia": "Estonia",
+        "latvia": "Latvia",
+        "lithuania": "Lithuania",
+        "iceland": "Iceland",
+        "luxembourg": "Luxembourg",
+        "malta": "Malta",
+        "cyprus": "Cyprus",
+        "monaco": "Monaco",
+        "andorra": "Andorra",
+        "san marino": "San Marino",
+        "vatican city": "Italy", // Vatican City is within Italy, often mapped as part of it
+        "liechtenstein": "Liechtenstein",
+
+        // --- Asia ---
+        "china": "China",
+        "peoples republic of china": "China",
+
+        "india": "India",
+        "japan": "Japan",
+
         "south korea": "South Korea",
         "korea, republic of": "South Korea",
-        russia: "Russian Federation",
-        china: "China",
-        taiwan: "Taiwan",
-        ethiopia: "Ethiopia",
+
+        "russia": "Russian Federation", // World Atlas standard name
+        "russian federation": "Russian Federation",
+
+        "indonesia": "Indonesia",
+        "pakistan": "Pakistan",
+        "bangladesh": "Bangladesh",
+        "philippines": "Philippines",
+        "vietnam": "Vietnam",
+        "thailand": "Thailand",
+        "myanmar": "Myanmar",
+        "malaysia": "Malaysia",
+        "singapore": "Singapore",
+        "afghanistan": "Afghanistan",
+        "iran": "Iran",
+        "iraq": "Iraq",
+        "saudi arabia": "Saudi Arabia",
+        "turkey": "Turkey", // Sometimes Türkiye
+        "israel": "Israel",
+        "lebanon": "Lebanon",
+        "jordan": "Jordan",
+        "syria": "Syria",
+        "united arab emirates": "United Arab Emirates",
+        "uae": "United Arab Emirates",
+        "qatar": "Qatar",
+        "kuwait": "Kuwait",
+        "oman": "Oman",
+        "yemen": "Yemen",
+        "azerbaijan": "Azerbaijan",
+        "georgia": "Georgia",
+        "armenia": "Armenia",
+        "kazakhstan": "Kazakhstan",
+        "uzbekistan": "Uzbekistan",
+        "kyrgyzstan": "Kyrgyzstan",
+        "tajikistan": "Tajikistan",
+        "turkmenistan": "Turkmenistan",
+        "nepal": "Nepal",
+        "sri lanka": "Sri Lanka",
+        "mongolia": "Mongolia",
+        "north korea": "North Korea",
+        "korea, democratic peoples republic of": "North Korea",
+        "taiwan": "Taiwan", // World Atlas includes Taiwan
+
+        // --- Africa ---
+        "ethiopia": "Ethiopia", // World Atlas standard name
+        "nigeria": "Nigeria",
+        "egypt": "Egypt",
+        "south africa": "South Africa",
+        "kenya": "Kenya",
+        "tanzania": "Tanzania",
+        "algeria": "Algeria",
+        "sudan": "Sudan",
+        "democratic republic of congo": "Dem. Rep. Congo", // World Atlas uses a shorter name
+        "dr congo": "Dem. Rep. Congo",
+        "morocco": "Morocco",
+        "ghana": "Ghana",
+        "ivory coast": "Côte d'Ivoire", // World Atlas uses French name
+        "cote d'ivoire": "Côte d'Ivoire",
+        "cameroon": "Cameroon",
+        "uganda": "Uganda",
+        "mozambique": "Mozambique",
+        "madagascar": "Madagascar",
+        "angola": "Angola",
+        "zambia": "Zambia",
+        "zimbabwe": "Zimbabwe",
+        "tunisia": "Tunisia",
+        "libya": "Libya",
+        "mali": "Mali",
+        "niger": "Niger",
+        "burkina faso": "Burkina Faso",
+        "chad": "Chad",
+        "somalia": "Somalia",
+        "eritrea": "Eritrea",
+        "djibouti": "Djibouti",
+        "south sudan": "South Sudan",
+        "central african republic": "Central African Republic",
+        "republic of the congo": "Republic of the Congo",
+        "gabon": "Gabon",
+        "equatorial guinea": "Equatorial Guinea",
+        "sao tome and principe": "Sao Tome and Principe",
+        "gambia": "Gambia",
+        "senegal": "Senegal",
+        "mauritania": "Mauritania",
+        "western sahara": "Western Sahara", // World Atlas includes Western Sahara
+        "guinea": "Guinea",
+        "guinea-bissau": "Guinea-Bissau",
+        "sierra leone": "Sierra Leone",
+        "liberia": "Liberia",
+        "togo": "Togo",
+        "benin": "Benin",
+        "botswana": "Botswana",
+        "namibia": "Namibia",
+        "lesotho": "Lesotho",
+        "eswatini": "Eswatini", // Formerly Swaziland
+        "swaziland": "Eswatini",
+        "malawi": "Malawi",
+        "burundi": "Burundi",
+        "rwanda": "Rwanda",
+        "comoros": "Comoros",
+        "mauritius": "Mauritius",
+        "seychelles": "Seychelles",
+        "cabo verde": "Cabo Verde", // Formerly Cape Verde
+        "cape verde": "Cabo Verde",
+
+        // --- Oceania ---
+        "australia": "Australia",
+        "new zealand": "New Zealand",
+        "papua new guinea": "Papua New Guinea",
+        "fiji": "Fiji",
+        "solomon islands": "Solomon Islands",
+        "vanuatu": "Vanuatu",
+        "new caledonia": "New Caledonia", // Often mapped as part of France
+        "samoa": "Samoa",
+        "tonga": "Tonga",
+        "kiribati": "Kiribati",
+        "tuvalu": "Tuvalu",
+        "micronesia": "Micronesia",
+        "marshall islands": "Marshall Islands",
+        "palau": "Palau",
+        "nauru": "Nauru",
       };
       const mappedName = countryMap[normalized];
       return mappedName
@@ -370,11 +572,11 @@ const Dashboard = () => {
     collegeFilter === "All Colleges"
       ? totalData
       : collegeData[collegeFilter] || {
-          active: 0,
-          expiringSoon: 0,
-          expired: 0,
-          prospect: 0,
-        };
+        active: 0,
+        expiringSoon: 0,
+        expired: 0,
+        prospect: 0,
+      };
 
   const barData = {
     labels: ["Active Partners", "Expiring Soon", "Expired", "Prospect"],
@@ -477,10 +679,7 @@ const Dashboard = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center p-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#004165]"></div>
-            <span className="ml-3 text-[#004165] font-medium">Loading...</span>
-          </div>
+          <LoadingSpinner />
         ) : (
           <>
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
@@ -539,11 +738,10 @@ const Dashboard = () => {
                       <button
                         key={filter}
                         onClick={() => setTimeFilter(filter)}
-                        className={`px-3 py-1 rounded-md text-sm ${
-                          timeFilter === filter
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-200 text-gray-600"
-                        } cursor-pointer`}
+                        className={`px-3 py-1 rounded-md text-sm ${timeFilter === filter
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-600"
+                          } cursor-pointer`}
                       >
                         {filter}
                       </button>
